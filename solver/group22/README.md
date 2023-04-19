@@ -29,7 +29,7 @@ Group 22 - Davide Macario
   - max_weight: maximum *total* supported weight
   - max_weight_stack: maximum weight of each stack of items
   - cost: truck cost (the total cost is what needs to be optimized)
-  - max_density: ??
+  - max_density: max weight/surface ratio that can be withstood by the trailer
 
 ## Reference system and solution representation
 
@@ -56,6 +56,10 @@ Additionally, the truck must be filled starting from the origin (no spaces allow
 
 *Idea*: solution representation based on ordered lists of items (from bottom to top), whose position is identified by the origin of the stack only and the orientation.
 
+## ILP model
+
+The problem consists in a 3d extension of the knapsack problem. It is useful, however to look at it from the 2D perspective, as the $z$ dimension is developed according to the stacking of object of the same 2d size (e.g., stack until constraints are violated).
+
 ## Proposed heuristics
 
 ### *Some possible decisions/approaches*
@@ -63,7 +67,7 @@ Additionally, the truck must be filled starting from the origin (no spaces allow
 An effective approach has been found to be that of proceeding in 'slices' along the Y directions, i.e., by filling the truck from the 'beginning' with different layers (see: "Peak Filing Slices Push" - ["A New Heuristic Algorithm for the 3D Bin Packing Problem"](https://link.springer.com/chapter/10.1007/978-1-4020-8735-6_64)).
 The fundamental idea of the heuristic is to use decision rules to fill the slices, and then to 'push' the slices towards the 'beginning' of the truck.
 
-This approach can be complicated by 
+This approach can be complicated by [?]
 
 For what conserns the z dimension, it can be tried to simply create stacks when filling the slices... (might be easier said then done).
 
