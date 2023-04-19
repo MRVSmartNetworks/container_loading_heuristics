@@ -4,6 +4,14 @@ Group 22 - Davide Macario
 
 ---
 
+## TODO
+
+- How to create the stacks? (introduce some random behavior - VERY IMPORTANT)
+- End method for creating stacks (`create_stack`)
+- End method for filling 2D slice (`fill_width`)
+- Understand how to place the stacks (keeping track of the reference system)
+- Put together the solution - how to use the one provided by the prof?
+
 ## Data structures
 
 **df_items**: pandas dataframe
@@ -63,6 +71,9 @@ The problem consists in a 3d extension of the knapsack problem. It is useful, ho
 ## Proposed heuristics
 
 ### *Some possible decisions/approaches*
+
+Choice of trucks: evaluate the *volume/cost* ratio for each truck and choose trucks based on higher value.
+(**Decision rule**)
 
 An effective approach has been found to be that of proceeding in 'slices' along the Y directions, i.e., by filling the truck from the 'beginning' with different layers (see: "Peak Filing Slices Push" - ["A New Heuristic Algorithm for the 3D Bin Packing Problem"](https://link.springer.com/chapter/10.1007/978-1-4020-8735-6_64)).
 The fundamental idea of the heuristic is to use decision rules to fill the slices, and then to 'push' the slices towards the 'beginning' of the truck.
