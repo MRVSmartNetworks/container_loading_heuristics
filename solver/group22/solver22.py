@@ -1,5 +1,6 @@
 import os
 import math
+import random
 import pandas as pd
 import numpy as np
 import itertools
@@ -21,6 +22,8 @@ class Solver22:
         ---------------------------------------------------------------
         """
         self.name = "solver22"
+
+        # self.current_stacks
 
     def solve(self, df_items, df_vehicles):
         tmp_items = pd.DataFrame.copy(df_items)
@@ -106,10 +109,105 @@ class Solver22:
         ---
         Solution of the 2D problem (which is performed once the stacks are provided).
         """
+        # Create a copy, which will be modified (elem. removed)
+        up_stacks = stacks.copy()
+        # Solution based on the bound given by the stacks which were already placed
+        # Extract truck info
+        x_truck = truck["length"]
+        y_truck = truck["width"]
+        # No need for height (we are solving 2D currently)
+        max_weight = truck["max_weight"]
+
+        # This solution simply consists of a 2D bin packing with no constraint but the 
+        # dimensions of the bin and max_weight: it is assumed the stacks have been built 
+        # satisfying the other constraint (height, density, stack weight)
+
+        # Initialize bound
+        bound = [[0,0],[0,y_truck]]
+
+        # 1. Assign prices to each stack:
+        self.priceStack(up_stacks)
+
+        # 2. Build slices - choose stacks according to highest price
+        # Brute force
+        # TODO: understand what is the best value of x_dim to be passed to the method below
+        rightmost = max([p[0] for p in bound])
+        x_dim = x_truck - rightmost
+        new_slice = self.buildSlice(up_stacks, x_dim, y_truck)
+
         
 
         pass
     
+    def priceStack(self, stacks):
+        """
+        pricesStack
+        ---
+        Assign to each stack a price, which will be used to choose which
+        one to place first when solving the 2D bin packing problem.
+
+        There are 4 different rules to assign the price, chosen randomly:
+        - Price = Area
+        - Price = length
+        - Price = width
+        - Price = perimeter
+
+        The input variable 'stacks' is a list of Stack objects.
+        This method updates the 'price' attribute inside each Stack object.
+        """
+        # Select which pricing type
+        val = random.randint(0,3)
+
+        if val == 0:
+            for i in range(len(stacks)):
+                stacks[i].assignPrice(stacks[i].area)
+        elif val == 1:
+            for i in range(len(stacks)):
+                stacks[i].assignPrice(stacks[i].length)
+        elif val == 2:
+            for i in range(len(stacks)):
+                stacks[i].assignPrice(stacks[i].width)
+        elif val == 3:
+            for i in range(len(stacks)):
+                stacks[i].assignPrice(stacks[i].perimeter)
+
+    def buildSlice(self, stacks, x_dim, y_dim):
+        """
+        buildSlice
+        ---
+        This method is used to populate slices of the trailer to be filled.
+        This is done by choosing first slices with higher 'price'.
+
+        Note that this method can be used to build slices of arbitrary 2D 
+        dimensions, so it may also be used to fill spaces with smaller/fewer boxes...
+        """
+        new_slice = []
+        stacks_ids = []
+
+        # Sort the stacks according to price
+        stacks.sort(key=lambda x: x.price, reverse=True)
+        
+        i = 0
+        delta_y = y_dim
+        # Until all possible stacks have been visited, try to add new one to fill slice
+        # NOTE: this can be improved in the future, e.g., by finding optimal slice at each
+        # iteration, in terms of minimum delta_y left
+        # For now, I will keep this approach as it follows what explained in the paper...
+        while i < len(stacks):
+            if delta_y > stacks[i].width:
+                new_slice.append(stacks[i])
+                stacks_ids.append(i)
+                delta_y -= stacks[i].width
+            elif stacks[i].forced_orientation == "n" and delta_y > stacks[i].length:
+                new_slice.append(stacks[i])
+                stacks_ids.append(i)
+                delta_y -= stacks[i].length
+
+            ######################## TODO: keep track of the 'x' dimension
+
+            i += 1
+
+
 
     def getLowerBound(self, df_items, df_trucks):
         """

@@ -6,7 +6,7 @@ Group 22 - Davide Macario
 
 ## TODO
 
-- Suggested approach (2023-21-04):
+- Suggested approach (2023-04-21):
   - Iterate on the trucks (which have not been used yet)
   - Build stacks with the items which remain (`Stack` class)
   - Place the stacks (random behavior for filling) - need to develop the details (random choice + decision rule for filling slices)

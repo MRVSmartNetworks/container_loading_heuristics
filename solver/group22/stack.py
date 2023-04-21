@@ -19,6 +19,8 @@ class Stack:
         # The following are not changed
         self.length = item["length"]
         self.width = item["width"]
+        self.area = self.length*self.width
+        self.perimeter = 2*self.length + 2*self.width
         self.stack_code = item["stackability_code"]
         self.max_stack = item["max_stackability"]
         
@@ -28,6 +30,9 @@ class Stack:
         self.tot_weight = item["weight"]
         self.tot_dens = self.tot_weight/(self.length*self.width)
         self.forced_orientation = item["forced_orientation"]    # A new element may have a different forced orientation
+
+        # Some other parameters which are used
+        self.price = 0
 
     def add_item(self, newitem, other_constraints=None):
         """
@@ -68,7 +73,7 @@ class Stack:
                         other_constraints = False
                 elif other_const_flg and "max_dens" in list(other_constraints.keys()):
                     tmp_new_w = self.tot_weight + newitem["weight"]
-                    tmp_new_d = tmp_new_w/(self.length*self.width)
+                    tmp_new_d = tmp_new_w/(self.area)
                     if tmp_new_d > other_constraints["max_dens"]:
                         other_constraints = False
 
@@ -116,7 +121,7 @@ class Stack:
                         other_constraints = False
                 elif other_const_flg and "max_dens" in list(other_constraints.keys()):
                     tmp_new_w = self.tot_weight + newitem["weight"]
-                    tmp_new_d = tmp_new_w/(self.length*self.width)
+                    tmp_new_d = tmp_new_w/(self.area)
                     if tmp_new_d > other_constraints["max_dens"]:
                         other_constraints = False
 
@@ -133,3 +138,5 @@ class Stack:
             if (newitem["forced_orientation"] != "n") and self.forced_orientation == "n":
                 self.forced_orientation = newitem["forced_orientation"]
             
+    def assignPrice(self, val):
+        self.price = val
