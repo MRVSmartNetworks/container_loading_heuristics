@@ -2,6 +2,9 @@ import os
 import math
 import pandas as pd
 import numpy as np
+import itertools
+
+from solver.group22.stack import Stack
 
 class Solver22:
     def __init__(self):
@@ -23,13 +26,18 @@ class Solver22:
         tmp_items = pd.DataFrame.copy(df_items)
         tmp_vehicles = pd.DataFrame.copy(df_vehicles)
 
+        min_cost, min_n_trucks = self.getLowerBound(tmp_items, tmp_vehicles)
+        
+        print(f"The minimum cost possible is {min_cost} and it is achieved with {min_n_trucks}")
+
         tmp_items['surface'] = tmp_items['width']*tmp_items['length']
         # Order items according to the surface
         ord_items = tmp_items.sort_values(by=['surface'], ascending=False)
 
         # Iterate over trucks (order?)
         # Order according to dimensions/cost ratio
-        tmp_vehicles["dim_cost_ratio"] = (tmp_vehicles['width']*tmp_vehicles['length']*tmp_vehicles['height'])/tmp_vehicles['cost']
+        if "dim_cost_ratio" not in tmp_vehicles.columns:
+            tmp_vehicles["dim_cost_ratio"] = (tmp_vehicles['width']*tmp_vehicles['length']*tmp_vehicles['height'])/tmp_vehicles['cost']
         # print(tmp_vehicles)
 
         ord_vehicles = tmp_vehicles.sort_values(by=['dim_cost_ratio'], ascending=False)
@@ -67,12 +75,83 @@ class Solver22:
         # Need to make sure the items left have been updated
         final_sol.append(curr_sol)
 
+        with open(os.path.join('results', f'{self.name}_sol.csv'), "w") as f:
+            f.close()
+
         return
     
     def create_stack(self, df_items, truck):
+        """
+        create_stack
+        ---
+        Given an object dataframe and a truck, create stacks which 
+        can be placed into the truck.
+
+        Input parameters:
+        - df_items: pandas Dataframe of usable items.
+        - truck: pandas Series object containing the truck information.
+
+        *Approach*
+
+        Stacks can be created only for items with the same stackability code.
+        """
         pass
     
     def fill_width(self, df_items, truck):
         pass
+
+    def solve2D(self, stacks, truck):
+        """
+        solve2D
+        ---
+        Solution of the 2D problem (which is performed once the stacks are provided).
+        """
+        
+
+        pass
+    
+
+    def getLowerBound(self, df_items, df_trucks):
+        """
+        getLowerBound
+        ---
+        Obtain the lower bound on the number of trucks & objective function cost
+        for the solution of the problem
+        """
+        # Get overall volume of the items
+        df_items["volume"] = df_items['length']*df_items["width"]*df_items['height']
+        tot_item_vol = sum(df_items["volume"])
+
+        print(f"Total items volume: {tot_item_vol}")
+
+        # Get volume of trucks
+        df_trucks["volume"] = df_trucks["height"]*df_trucks["width"]*df_trucks["height"]
+        print(df_trucks["volume"])
+        # Get dim/cost ratio
+        df_trucks["dim_cost_ratio"] = (df_trucks['width']*df_trucks['length']*df_trucks['height'])/df_trucks['cost']
+
+        # Get all possible combinations of elements from 0 to len(df_trucks.index)-1
+        possib = list(itertools.permutations(list(df_trucks.index)))
+
+        n_trucks_min = len(df_trucks.index)
+        best_cost = sum(df_trucks["cost"])
+
+        for i in range(len(possib)):
+            vol_tot = 0
+            cost_tot = 0
+            j = 0
+            while vol_tot < tot_item_vol and j < len(possib[i]):
+                vol_tot += df_trucks.iloc[possib[i][j]]["volume"]
+                cost_tot += df_trucks.iloc[possib[i][j]]["cost"]
+                j += 1
+            
+            if cost_tot < best_cost:
+                best_cost = cost_tot
+                n_trucks_min = j
+        
+        return best_cost, n_trucks_min
+
+        
+
 
         
