@@ -6,6 +6,25 @@ Group 22 - Davide Macario
 
 ## TODO
 
+- Suggested approach (2023-21-04):
+  - Iterate on the trucks (which have not been used yet)
+  - Build stacks with the items which remain (`Stack` class)
+  - Place the stacks (random behavior for filling) - need to develop the details (random choice + decision rule for filling slices)
+    - Slice Push technique (CRUCIAL)
+  - At the end of the full iteration on the trucks select as solution the one with the least amount of free space (space_truck - sum(space_stacks))
+
+Need to define a way to represent the boxes in the truck.
+It needs to be efficient to access and find 'free space'.
+Some possible ideas can be of 'tracking' the 'perimeter' of the boxes accumulated at the end of the truck as a set of points indicating the vertices of the line (while still keeping the set of used stacks as solution).
+
+In my head the placement of the stacks in the truck is performed as follows: since the stacks are first organized in slices, the $y_0$ component of each stack after building the slice will be known.
+Then, a 'push' operation will be performed, for which the boxes will be pushed towards the bottom of the truck, finding the lowest value of $x_0$ available.
+
+Also, the representation of the perimeter, as described previously, can help in detecting the possibility of 'filling some holes' in the structure (especially after some slices have been placed already).
+Referring to the figure, if some items which have one dimension equal (or smaller) to $p_1-p_3$, it is possible to place them in order to reduce the imparity of $x$ coordinate in the perimeter.
+
+<img src="./img_md/perimeter_sol_represent.jpeg" alt="Definition of the perimeter" style="width: 500px"/>
+
 - How to create the stacks? (introduce some random behavior - VERY IMPORTANT)
 - End method for creating stacks (`create_stack`)
 - End method for filling 2D slice (`fill_width`)
