@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 import pandas as pd
+from sol_representation import *
 
 class Solver23():
     def __init__(self):
@@ -23,8 +24,9 @@ class Solver23():
         # for on truck's type
         # work on single truck
         vehicle = self.df_vehicles.iloc[0] # vehicle type V0
-
+        
         stack_lst = self.buildStacks(self, vehicle)
+
 
 
     def buildStacks(self, vehicle):
@@ -35,7 +37,9 @@ class Solver23():
                  creating the stacks for this specific truck
         """
         
-        # stack creation:
+        # stack creation: adesso è fatta in modo molto stupido ma dato che item con lo stesso
+        # stackability code possono avere diverse altezze probabilmente si può ottimizzare molto 
+        # date le diverse altezze dei trucks
         stackability_codes = self.df_items.stackability_code.unique()
         stack_lst = []
         for code in stackability_codes:
@@ -67,7 +71,7 @@ class Solver23():
     
 
 
-    def solve():
+    def solve(self, df_items, df_vehicles):
         """ 
         solve
         -----
@@ -76,10 +80,34 @@ class Solver23():
         df_vehicles: dataframe containing all the different
                      types of trucks that can be choose
         """
-        pass
+        self.solve_single_vehicle(df_items, df_vehicles)
+        
 
 
 if __name__ == "__main__":
     
-    sol = Solver23()
-    sol.single_truck()
+    os.path.join('.', 'results', "sol1.csv")
+    df_items = pd.read_csv(
+        os.path.join(
+            '.', 'data',
+            'items.csv'
+        ),
+    )
+    df_vehicles = pd.read_csv(
+        os.path.join(
+            '.', 'data',
+            'vehicles.csv'
+        ),
+    )
+    tmp = Solver23()
+    tmp.solve(df_items, df_vehicles)
+    # read dataframe solution
+    df_sol = pd.read_csv(
+        os.path.join('results', f'{tmp.name}_sol.csv'),
+    )
+
+    orthogonal_plane(df_items, df_vehicles, df_sol)
+
+    stack_3D(df_items, df_vehicles, df_sol)
+
+    
