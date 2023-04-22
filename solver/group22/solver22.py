@@ -1,11 +1,14 @@
-import os
-import math
-import random
-import pandas as pd
-import numpy as np
+# -*- coding: utf-8 -*-
 import itertools
+import math
+import os
+import random
+
+import numpy as np
+import pandas as pd
 
 from solver.group22.stack import Stack
+
 
 class Solver22:
     def __init__(self):
@@ -122,11 +125,13 @@ class Solver22:
         # dimensions of the bin and max_weight: it is assumed the stacks have been built 
         # satisfying the other constraint (height, density, stack weight)
 
-        # Initialize bound
+        ########### Initialize bound
         bound = [[0,0],[0,y_truck]]
 
         # 1. Assign prices to each stack:
         self.priceStack(up_stacks)
+
+        curr_stacks_n = len(up_stacks)
 
         # 2. Build slices - choose stacks according to highest price
         # Brute force
@@ -134,6 +139,18 @@ class Solver22:
         rightmost = max([p[0] for p in bound])
         x_dim = x_truck - rightmost
         new_slice = self.buildSlice(up_stacks, x_dim, y_truck)
+
+        assert (len(up_stacks) + len(new_slice) == curr_stacks_n), "Something went wrong! The stacks don't add up"
+
+        # TODO: check slice is not empty - if it is, close bin 
+        # (or maybe check if it is possible to pack another stack by creating a stack of the suitable size...)
+
+        # Having built the slice (and removed stacks from the ):
+        # 'Push' stack towards bottom
+
+
+        # TODO: create 'pushSlice' method
+
 
         
 
@@ -178,11 +195,26 @@ class Solver22:
         This method is used to populate slices of the trailer to be filled.
         This is done by choosing first slices with higher 'price'.
 
+        ### Input parameters:
+        - stacks: list of Stack object, need price to be initialized already.
+        - x_dim: available space in the x direction (length)
+        - y_dim: available space in the y direction (width) - slice is built 
+        along this direction
+
+        ### Returned variables:
+        - new_slice: list of sublists; each sublist contains:
+          - Stack object
+          - Index of the stack in the initial list (TODO: check if needed)
+          - Rotation - 0 if not rotated, 1 if rotated
+          - y coordinate of the origin
+
         Note that this method can be used to build slices of arbitrary 2D 
         dimensions, so it may also be used to fill spaces with smaller/fewer boxes...
+
+        This method contains the main procedure used to fill the truck. 
+        To change strategy, just change this function.
         """
         new_slice = []
-        stacks_ids = []
 
         # Sort the stacks according to price
         stacks.sort(key=lambda x: x.price, reverse=True)
@@ -194,20 +226,83 @@ class Solver22:
         # iteration, in terms of minimum delta_y left
         # For now, I will keep this approach as it follows what explained in the paper...
         while i < len(stacks):
-            if delta_y > stacks[i].width:
-                new_slice.append(stacks[i])
-                stacks_ids.append(i)
+            if delta_y >= stacks[i].width and x_dim >= stacks[i].length:
+                # Stack is good as-is - insert it
+                new_slice.append([stacks[i], i, 0])
                 delta_y -= stacks[i].width
-            elif stacks[i].forced_orientation == "n" and delta_y > stacks[i].length:
-                new_slice.append(stacks[i])
-                stacks_ids.append(i)
+            elif stacks[i].forced_orientation == "n" and delta_y >= stacks[i].length and x_dim >= stacks[i].width:
+                # If the stack cannot be placed, try rotating it by 90 degrees, if allowed
+                new_slice.append([stacks[i], i, 1])
                 delta_y -= stacks[i].length
 
-            ######################## TODO: keep track of the 'x' dimension
-
+            # Update origin y coordinate
+            if i != 0:
+                # Get width (length if rotated) of 2nd to last element
+                if new_slice[-2][2] == 0:
+                    w_min2 = new_slice[-2][0].width
+                else:
+                    w_min2 = new_slice[-2][0].length
+                # Add the width to the origin of the stack to get new origin
+                # THis ensures no space is left
+                new_slice[i].append(new_slice[-2][-1] + w_min2)
+            else:
+                new_slice[i].append(0)
             i += 1
+        # When out of the loop, the slice has been built 
+        # NOTE: this is not the optimal slice in terms of delta_y left! 
+        # This is the best stack in terms of maximum price, but we are sure 
+        # that in the delta_y left no other item can be placed!
 
+        # Remove used stacks from the initial list
+        for i in [x[1] for x in new_slice[::-1]]:
+            del stacks[i]
 
+        # Technically the indices of the stacks are not used anymore (and cannot be used...)
+
+        return new_slice
+
+    def pushSlice(self, bound, new_slice):
+        """
+        pushSlice
+        ---
+        Perform the 'push' operation on the new slice.
+
+        ### Input parameters
+        - bound: current bound - will be updated by the function (NOTE: property of Python 
+        language - modifying strings in a method also modifies them outside, for how they 
+        are referenced)
+        - new_slice: slice to be pushed; the format is the same as the output of 'buildSlice'
+
+        ### Return values
+        - TBD
+
+        ### Push operation
+        - For each new stack 'i':
+          - Isolate the points in the current bound which have y coordinates in the range 
+          [y_origin[i], y_origin[i] + y_dim[i]], being y_origin the y coordinate of the origin 
+          of the stack (fixed at slice creation) and y_dim the dimension of the stack along 
+          the y direction (it is the width if not rotated, the length if rotated)
+          - The x coordinate of the origin in the stack will be the max value of x for the 
+          isolated points
+        
+        ### Updating the bound
+
+        """
+        # Store the index of the first element in the bound which is valid
+        ind_bound = 0
+        for new_stack in new_slice:
+            y_i = new_stack[3]
+            if new_stack[2] == 0:
+                w_i = new_stack[0].length
+            else:
+                w_i = new_stack[0].width
+            
+            # search for valid points
+            ind_top = ind_bound
+            while bound[ind_top][1] < y_i+w_i:
+                ind_top += 1
+            
+            ########## HERE
 
     def getLowerBound(self, df_items, df_trucks):
         """

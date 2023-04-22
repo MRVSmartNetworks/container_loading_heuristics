@@ -140,3 +140,18 @@ class Stack:
             
     def assignPrice(self, val):
         self.price = val
+
+    def rot90deg(self):
+        """
+        rot90deg
+        ---
+        If possible, rotate the stack by 90 degrees (i.e., swap width and length).
+
+        This method returns true if the operation was successful.
+        """
+        if self.forced_orientation == "n":
+            tmp = self.width
+            self.width = self.length
+            self.length = tmp
+            return True
+        return False
