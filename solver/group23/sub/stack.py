@@ -1,0 +1,17 @@
+class Stack:
+    def __init__(self, stack_code, length, width, max_stack, orient):
+        self.stack_code = stack_code
+        self.items = []
+        self.weight = 0
+        self.height = 0
+        self.n_items = len(self.items)
+
+    def addItem(self, id_item):
+        self.items.append(id_item)
+        self.n_items += 1
+    
+    def updateWeight(self, item_weight):
+        self.weight += item_weight
+    
+    def updateHeight(self, item_height):
+        self.height += item_height
