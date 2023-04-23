@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import os
 import pandas as pd
-from sol_representation import *
 
 class Solver23():
     def __init__(self):
@@ -25,8 +24,8 @@ class Solver23():
         # work on single truck
         vehicle = self.df_vehicles.iloc[0] # vehicle type V0
         
-        stack_lst = self.buildStacks(self, vehicle)
-
+        stack_lst = self.buildStacks(vehicle)
+        pass
 
 
     def buildStacks(self, vehicle):
@@ -69,6 +68,28 @@ class Solver23():
         
         return stack_lst
     
+    def ACO_2D_bin(self, stack_lst, alpha = 1, beta = 1, n_ants = 10):
+        """ 
+        Ant Colony Optimization for 2D bin packing
+        ---
+        #### INPUT PARAMETERS:
+            - stack_lst: list of stacks (format: [[I001, I002, NaN], [I003, I005, NaN]])
+            - alpha: realative trail importance (default 1)
+            - beta: relative attractivness importance (default 1)
+            - n_ants: number of ants
+        #### ACO PARAMETERS:
+            - attr: matrix of attractiveness from state i to j
+            - trail: matrix of trails from state i to j
+            - pr_move: matrix of probabilities of moves from i to j 
+        """
+        #TODO: outer loop contaning a termination condition (no. of iterations, solution's goodness???)
+        ants = []
+        for ant_k in range(n_ants):
+            free_space = True   
+            while(free_space):  # loop until free space available in vehicle
+                #stack_toAdd = #TODO:function to retrieve random from pr_move 
+                pass
+
 
 
     def solve(self, df_items, df_vehicles):
@@ -106,8 +127,5 @@ if __name__ == "__main__":
         os.path.join('results', f'{tmp.name}_sol.csv'),
     )
 
-    orthogonal_plane(df_items, df_vehicles, df_sol)
-
-    stack_3D(df_items, df_vehicles, df_sol)
 
     
