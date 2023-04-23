@@ -28,6 +28,28 @@ class Solver22:
 
         # self.current_stacks
 
+        self.curr_sol = {
+            "type_vehicle": [],
+            "idx_vehicle": [],
+            "id_stack": [],
+            "id_item": [],
+            "x_origin": [],
+            "y_origin": [],
+            "z_origin": [],
+            "orient": []
+        }
+
+        self.curr_best_sol = {
+            "type_vehicle": [],
+            "idx_vehicle": [],
+            "id_stack": [],
+            "id_item": [],
+            "x_origin": [],
+            "y_origin": [],
+            "z_origin": [],
+            "orient": []
+        }
+
     def solve(self, df_items, df_vehicles):
         tmp_items = pd.DataFrame.copy(df_items)
         tmp_vehicles = pd.DataFrame.copy(df_vehicles)
@@ -73,8 +95,6 @@ class Solver22:
             # OR
             # Fill with equal-dimension items, and build stacks
 
-
-
         # Proceed with possible solutions 
 
         # Append best solution for current truck
@@ -93,7 +113,7 @@ class Solver22:
         Given an object dataframe and a truck, create stacks which 
         can be placed into the truck.
 
-        Input parameters:
+        ### Input parameters:
         - df_items: pandas Dataframe of usable items.
         - truck: pandas Series object containing the truck information.
 
@@ -101,6 +121,8 @@ class Solver22:
 
         Stacks can be created only for items with the same stackability code.
         """
+        ###################### TODO: Next up
+        
         pass
     
     def fill_width(self, df_items, truck):
@@ -125,6 +147,17 @@ class Solver22:
         # dimensions of the bin and max_weight: it is assumed the stacks have been built 
         # satisfying the other constraint (height, density, stack weight)
 
+        # Initialize solution
+        # Keep in mind: this is just the 2D solution, the task of the main solver is 
+        # that of "translating" this solution into the overall one
+        # TODO: check memory efficency...
+        sol_2D = {
+            "x_sol":[],
+            "y_sol":[],
+            "stack":[],
+            "orient": []
+        }
+
         ########### Initialize bound
         bound = [[0,0],[0,y_truck]]
 
@@ -142,20 +175,24 @@ class Solver22:
 
         assert (len(up_stacks) + len(new_slice) == curr_stacks_n), "Something went wrong! The stacks don't add up"
 
-        # TODO: check slice is not empty - if it is, close bin 
-        # (or maybe check if it is possible to pack another stack by creating a stack of the suitable size...)
+        if len(new_slice) > 0:
+            # Having built the slice (and removed stacks from the ):
+            # 'Push' stack towards bottom
 
-        # Having built the slice (and removed stacks from the ):
-        # 'Push' stack towards bottom
+            # TODO: create 'pushSlice' method
+            sol_2D = self.pushSlice(bound)
+        else:
+            # If the new slice is empty, close the bin
+            # Maybe can also check for big spaces to fill with arbitrary slices
+            # but tricky (buildSlice can be used for arbitrary dimensions)
+            
+            ## Translate solution into 3D one
+            # First, build lists of the same size, then assign them
+            
+            self.updateCurrSol(sol_2D, truck)
 
+        # Something else?
 
-        # TODO: create 'pushSlice' method
-
-
-        
-
-        pass
-    
     def priceStack(self, stacks):
         """
         pricesStack
@@ -201,7 +238,7 @@ class Solver22:
         - y_dim: available space in the y direction (width) - slice is built 
         along this direction
 
-        ### Returned variables:
+        ### Output variables:
         - new_slice: list of sublists; each sublist contains:
           - Stack object
           - Index of the stack in the initial list (TODO: check if needed)
@@ -261,7 +298,7 @@ class Solver22:
 
         return new_slice
 
-    def pushSlice(self, bound, new_slice):
+    def pushSlice(self, bound, new_slice, curr_sol_2D):
         """
         pushSlice
         ---
@@ -274,7 +311,7 @@ class Solver22:
         - new_slice: slice to be pushed; the format is the same as the output of 'buildSlice'
 
         ### Return values
-        - TBD
+        - curr_sol_2D: the updated 2D solution (dict)
 
         ### Push operation
         - For each new stack 'i':
@@ -301,8 +338,68 @@ class Solver22:
             ind_top = ind_bound
             while bound[ind_top][1] < y_i+w_i:
                 ind_top += 1
-            
+            # When the loop finishes, the element bound[ind_top] contains the upper end 
+
             ########## HERE
+            # The lower end considered should either be:
+            # - The previous upper end if the point coincides with y_0
+            # - The one before (in the bound list) else
+            if bound[ind_bound][1] == y_i:
+                pass
+            else:
+                ind_bound -= 1
+            
+            assert (len(bound[ind_bound:ind_top]) > 1), "The considered elements of the bound are less than 2! Something went wrong"
+
+            # The x coordinate is the max between the x coord of the elements of 
+            # index between ind_bound and ind_top
+            x_i = max([p[0] for p in bound[ind_bound:ind_top]])
+            
+            # Build new (current) solution
+            """
+            sol_2D = {
+                "x_sol":[],
+                "y_sol":[],
+                "stack":[],
+                "orient":[]
+            }
+            """
+            curr_sol_2D["x_sol"].append(x_i)
+            curr_sol_2D["y_sol"].append(y_i)
+            curr_sol_2D["stack"].append(new_stack[0])
+            curr_sol_2D["orient"].append(new_stack[2])
+                        
+            # Update the index of the low bound with the current top
+            # Needed in order to do the update as before
+            ind_bound = ind_top
+        
+        return curr_sol_2D
+            
+    def updateCurrSol(self, sol_2D, truck):
+        """
+        updateCurrSol
+        ---
+        Update the current solution for this iteration, contained in class
+        attribute 'self.curr_sol'.
+
+        ### Input parameters
+        - sol_2D: 2D solution - dict containing info on stack placement
+        """
+
+        for i in range(len(sol_2D["stack"])):
+            z_lst = sol_2D["stack"][i].getZList()
+            j = 0
+            for it in sol_2D["stack"][i].items:
+                self.curr_sol["type_vehicle"].append(truck["cost"])
+                self.curr_sol["idx_vehicle"].append(truck["idtruck"])
+                self.curr_sol["id_stack"].append(sol_2D["stack"][i].id)
+                self.curr_sol["id_item"].append(it["id_item"])
+                self.curr_sol["x_origin"].append(sol_2D["x_sol"][i])
+                self.curr_sol["y_origin"].append(sol_2D["y_sol"][i])
+                self.curr_sol["z_origin"].append(z_lst[j])
+                self.curr_sol["orient"].append(sol_2D["orient"][i])
+
+                j += 1
 
     def getLowerBound(self, df_items, df_trucks):
         """
@@ -343,8 +440,3 @@ class Solver22:
                 n_trucks_min = j
         
         return best_cost, n_trucks_min
-
-        
-
-
-        

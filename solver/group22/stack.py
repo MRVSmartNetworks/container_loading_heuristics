@@ -16,6 +16,9 @@ class Stack:
         """
         self.items = [item]     # Elements on top are APPENDED
 
+        # TODO: assign ID - look at prof code
+        self.id = None
+
         # The following are not changed
         self.length = item["length"]
         self.width = item["width"]
@@ -87,7 +90,6 @@ class Stack:
             self.next_nesting = newitem["nesting_height"]
             self.tot_dens = self.tot_weight/(self.length*self.width)
 
-
     def add_item_override(self, newitem, other_constraints=None):
         """
         add_item_override
@@ -155,3 +157,22 @@ class Stack:
             self.length = tmp
             return True
         return False
+
+    def getZList(self):
+        """
+        getZList
+        ---
+        Get the list of the z coordinates of the origins of the items 
+        contained in the stack.
+
+        ### Output value
+        - z_lst: list of the z coordinates, ordered from lowest to 
+        highest (bottom to top)
+        """
+        z_lst = [0]
+        
+        if len(self.items) > 1:
+            for it in self.items[1:]:
+                z_lst.append(z_lst[-1]+self.items["height"])
+        
+        return z_lst
