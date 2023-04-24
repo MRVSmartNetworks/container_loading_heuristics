@@ -15,5 +15,6 @@ def popStack(stack_lst, code):
     """
     for i,stack in enumerate(stack_lst):
         if stack.stack_code == code:
-            return stack, stack_lst.pop(i)
+            stack = stack_lst.pop(i)
+            return stack, stack_lst
     raise Exception("No more stacks with specified code")

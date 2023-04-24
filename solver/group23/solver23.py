@@ -76,10 +76,9 @@ class Solver23():
                 else:
                     # else add the item
                     stack.addItem(row.id_item)
-                    #TODO: control max_weight of vehicle
                     
-        
         return stack_lst
+        
     
     def ACO_2D_bin(self, stack_lst, alpha = 1, beta = 1, n_ants = 10):
         """ 
@@ -92,37 +91,46 @@ class Solver23():
             - n_ants: number of ants
         #### ACO PARAMETERS:
             - attr(η): matrix of attractiveness from state i to j
-            - trail(τ): matrix of trails from state i to j #TODO:6x6 matrix considering stackability codes
-            - pr_move: matrix of probabilities of moves from i to j 
+            - trail(τ): matrix of trails from state i to j
+            - pr_move: 8x8 matrix of probabilities of moves from i to j (state 7 is related to empty vehicle)
         """
         attr = np.random.rand(6, 6) #NOTE: take random value for attractivenss matrix just to test
-        pr_move = np.full((6,6), 1./12) # initialize pr_move with same prob for each movement
+        # initialize pr_move with same prob for each movement but set to zero prob to move to no stack
+        pr_move = np.full((8,8), 1./7) * np.array([1, 1, 1, 1, 1, 1, 1, 0]) #TODO: add states also for possible orientations?  
         #TODO: outer loop contaning a termination condition (no. of iterations, solution's goodness???)
         ants = []
         for ant_k in range(n_ants):
             free_space = True 
-            empty_vehicle = True
+            prev_s_code = 6 # empty vehicle state
             
             while(free_space):  # loop until free space available in vehicle
-                code_toAdd = self.choose_move(pr_move, Stack.stack_code) #BUG: consider the initial case with empty veichle 
+                next_s_code = self.choose_move(pr_move, prev_s_code) 
                 # ants[ant_k].append()
-                new_stack, stack_lst = popStack(stack_lst, code_toAdd)
-                pass
+                new_stack, stack_lst = popStack(stack_lst, next_s_code) #TODO: what if no more stacks with this stack code??
+                #TODO: posizionare new_stack
+                prev_s_code = next_s_code
+                #TODO: controllo se free space
+                
+                
+            
+                
 
 
-    def choose_move(self, pr_move, stack_code):
+
+    def choose_move(self, pr_move, prev_s_code):
         """ 
         choose_move
         -----
         #### INPUT PARAMETERS:
             - pr_move: matrix of probabilities of moves from i to j 
-            - stack_code: stackability code of the last stack placed into the truck
+            - prev_s_code: stackability code of the last stack placed into the truck
         #### OUTPUT PARAMETERS:
-            - stack_code: stackability code of the next stack to be placed into the truck
+            - next_s_code: stackability code of the next stack to be placed into the truck
         """
-        row_to_choose = pr_move[stack_code][:] # select the row from the stack the ant is moving
-        stack_code = choice(range(len(row_to_choose)), p=row_to_choose) + 1 # indexes start from 0
-        return stack_code 
+        row_to_choose = pr_move[prev_s_code][:] # select the row from the stack the ant is moving
+        next_s_code = int(choice(range(len(row_to_choose)), p=row_to_choose))
+        
+        return next_s_code 
     
 
     def solve(self, df_items, df_vehicles):
@@ -134,7 +142,7 @@ class Solver23():
         df_vehicles: dataframe containing all the different
                      types of trucks that can be choose
         """
-        self.solve_single_vehicle(df_items[:200][:], df_vehicles)
+        self.solve_single_vehicle(df_items, df_vehicles)
         
 
 

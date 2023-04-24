@@ -1,6 +1,10 @@
 class Stack:
     def __init__(self, stack_code, length, width, max_stack, orient):
         self.stack_code = stack_code
+        self.length = length
+        self.width = width
+        self.max_stack = max_stack
+        self.orient = orient
         self.items = []
         self.weight = 0
         self.height = 0
