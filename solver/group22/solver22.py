@@ -121,9 +121,45 @@ class Solver22:
 
         Stacks can be created only for items with the same stackability code.
         """
-        ###################### TODO: Next up
+        stack_codes = df_items.stackability_code.unique()
+        stacks_list = []        # Outcome of this function
         
-        pass
+        for code in stack_codes:
+            tot_high = 0
+            tot_weight = 0
+            new_stack_needed = False
+            other_constraints = {
+                "max_height": truck["height"],
+                "max_weight": truck["max_weight_stack"],
+                "max_dens": truck["max_density"]
+            }
+            for i, row in df_items[df_items.stackability_code == code].iterrows():
+                if i == 0:
+                    # First element in the stack - initialize Stack object
+                    new_stack = Stack(row)
+                else:
+                    new_stack.add_item(row, other_constraints)
+                
+                tot_high += row.height - row.nesting_height
+                tot_weight += row.weight
+                if tot_high > vehicle['height']:
+                    new_stack_needed = True
+                if tot_weight > vehicle['max_weight_stack']:
+                    new_stack_needed = True
+                if len(stack) == row.max_stackability:
+                    new_stack_needed = True
+                # if a new stack is needed:
+                if new_stack_needed:
+                    stack_lst.append(stack)
+                    stack = [row.id_item]
+                    tot_high = row.height
+                    tot_weight = row.weight
+                    new_stack_needed = False
+                else:
+                    # else add the item
+                    stack.append(row.id_item)
+        
+        return stacks_list
     
     def fill_width(self, df_items, truck):
         pass
@@ -133,6 +169,17 @@ class Solver22:
         solve2D
         ---
         Solution of the 2D problem (which is performed once the stacks are provided).
+
+        ### Input parameters
+        - stacks: list of (remaining) stacks, i.e., the one available to fill the current truck
+        - truck: pandas Series object containing the information of the truck currently being filled
+
+        ### Output parameters
+        - sol_2D: python dict containing the 2D solution obtained; it contains:
+            - x_sol: x coordinates of the origin of each stack
+            - y_sol: y coordinates of the origin of each stack
+            - stack: Stack object used in the solution
+            - orient: flag which is 1 if the stack was rotated by 90 degrees
         """
         # Create a copy, which will be modified (elem. removed)
         up_stacks = stacks.copy()
@@ -192,6 +239,8 @@ class Solver22:
             self.updateCurrSol(sol_2D, truck)
 
         # Something else?
+        
+        return sol_2D
 
     def priceStack(self, stacks):
         """
@@ -323,7 +372,7 @@ class Solver22:
           isolated points
         
         ### Updating the bound
-
+        TODO
         """
         # Store the index of the first element in the bound which is valid
         ind_bound = 0
@@ -407,8 +456,8 @@ class Solver22:
         ---
         Obtain the lower bound on the number of trucks & objective function cost
         for the solution of the problem
-
-        TODO: fix behavior - any type of truck can be selected as many times as possible
+        
+        FIXME: fix behavior - any type of truck can be selected as many times as possible
         """
         # Get overall volume of the items
         df_items["volume"] = df_items['length']*df_items["width"]*df_items['height']
