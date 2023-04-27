@@ -407,6 +407,8 @@ class Solver22:
         ---
         Obtain the lower bound on the number of trucks & objective function cost
         for the solution of the problem
+
+        TODO: fix behavior - any type of truck can be selected as many times as possible
         """
         # Get overall volume of the items
         df_items["volume"] = df_items['length']*df_items["width"]*df_items['height']
