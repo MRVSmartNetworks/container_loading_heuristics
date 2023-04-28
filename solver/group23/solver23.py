@@ -26,8 +26,8 @@ class Solver23():
         """
         self.df_items = df_items
         self.df_vehicles = df_vehicles
-        self.pr_move = statesCreation(pd.unique(df_items["stackability_code"]), df_items.groupby(["stackability_code"])["forced_orientation"])
-        # self.pr_move = statesCreation(pd.unique(df_items[["stackability_code", "forced_orientation"]].values.ravel()))
+
+        self.pr_move = statesCreation(df_items[["stackability_code","forced_orientation"]].drop_duplicates())
         
         # for on truck's type
         # work on single truck
