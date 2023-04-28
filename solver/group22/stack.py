@@ -3,9 +3,11 @@ import math
 import pandas as pd
 import numpy as np
 
+N_DIGITS = 10
+
 class Stack:
 
-    def __init__(self, item=None, other_constraints=None):
+    def __init__(self, item=None, other_constraints=None, stack_id=None):
         """
         Stack
         ---
@@ -22,8 +24,9 @@ class Stack:
         """
         self.items = []     # Elements on top are APPENDED
 
-        # TODO: assign ID - look at prof code
         self.id = None
+        if stack_id is not None:
+            self.id = f"S{str(stack_id).zfill(N_DIGITS)}"
         
         self.length = 0
         self.width = 0
@@ -44,7 +47,7 @@ class Stack:
         if item is not None:
             # If an item is provided, it is added
             # Can already check for 
-            self.add_item(item, other_constraints)
+            self.add_item_override(item, other_constraints)
 
 
     def add_item(self, newitem, other_constraints=None):
@@ -88,10 +91,13 @@ class Stack:
                         return 0
                 
                 if "max_dens" in list(other_constraints.keys()):
-                    tmp_new_w = self.tot_weight + newitem["weight"]
-                    tmp_new_d = tmp_new_w/(self.area)
-                    if tmp_new_d > other_constraints["max_dens"]:
-                        return 0
+                    if len(self.items) > 0:
+                        # TODO: review this; the if was added to prevent 
+                        # division by 0 when checking empty stack
+                        tmp_new_w = self.tot_weight + newitem["weight"]
+                        tmp_new_d = tmp_new_w/(self.area)
+                        if tmp_new_d > other_constraints["max_dens"]:
+                            return 0
 
         if (newitem["forced_orientation"] != "n") and self.forced_orientation == "n":
             # This condition is only valid if the stack is not empty
@@ -105,7 +111,7 @@ class Stack:
             # Can add
             self.items.append(newitem)
             # Update parameters
-            self.tot_height = self.tot_height + self.newitem["height"] - self.next_nesting
+            self.tot_height = self.tot_height + newitem["height"] - self.next_nesting
             self.tot_weight += newitem["weight"]
             self.next_nesting = newitem["nesting_height"]
             self.tot_dens = self.tot_weight/(self.length*self.width)
@@ -166,17 +172,20 @@ class Stack:
                         return 0
                 
                 if "max_dens" in list(other_constraints.keys()):
-                    tmp_new_w = self.tot_weight + newitem["weight"]
-                    tmp_new_d = tmp_new_w/(self.area)
-                    if tmp_new_d > other_constraints["max_dens"]:
-                        return 0
+                    if len(self.items) > 0:
+                        # TODO: review this; the if was added to prevent 
+                        # division by 0 when checking empty stack
+                        tmp_new_w = self.tot_weight + newitem["weight"]
+                        tmp_new_d = tmp_new_w/(self.area)
+                        if tmp_new_d > other_constraints["max_dens"]:
+                            return 0
 
         # Check stack_code, max_stack and previous flag
         if newitem["stackability_code"] == self.stack_code and len(self.items)+1 <= self.max_stack:
             # Can add
             self.items.append(newitem)
             # Update parameters
-            self.tot_height = self.tot_height + self.newitem["height"] - self.next_nesting
+            self.tot_height = self.tot_height + newitem["height"] - self.next_nesting
             self.tot_weight += newitem["weight"]
             self.next_nesting = newitem["nesting_height"]
             self.tot_dens = self.tot_weight/(self.length*self.width)
@@ -240,6 +249,14 @@ class Stack:
         
         if len(self.items) > 1:
             for it in self.items[1:]:
-                z_lst.append(z_lst[-1]+self.items["height"])
+                z_lst.append(z_lst[-1] + it["height"])
         
         return z_lst
+    
+    def assignID(self, id_int):
+        """
+        assignID
+        ---
+        Method used to assign the 
+        """
+        self.id = f"S{str(id_int).zfill(N_DIGITS)}"

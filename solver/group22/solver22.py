@@ -12,6 +12,8 @@ from solver.group22.stack import Stack
 # TODO: remove full list of items from stack attributes, only store the item ID, which can be used
 # in the dataframe to locate the correct row (supposing NO DUPLICATES).
 
+DEBUG = True
+
 class Solver22:
     def __init__(self):
         """
@@ -97,7 +99,8 @@ class Solver22:
             "orient": []
         }
 
-        for i in range(len(ord_vehicles.index)):
+        for i in range(5):
+            print(f"Iter {i}")
             # Iterate over the vehicles to pack first 'better' trucks
             # TODO: find more efficient solution for reading all rows one at a time (if possible)
             curr_truck = ord_vehicles.iloc[i]
@@ -122,8 +125,11 @@ class Solver22:
             # Build stacks with the copied list of items 'tmp_items'
             valid_stacks_list = self.create_stack(tmp_items, curr_truck)
 
+            if DEBUG:
+                print(f"Total number of generated stacks: {len(valid_stacks_list)}")
+
             # Solve 2D problems to place the stacks
-            sol_2D = self.solve2D(valid_stacks_list, curr_truck)
+            sol_2D = self.solve2D(valid_stacks_list, curr_truck, df_items)
 
             tmp_items = self.updateCurrSol(sol_2D, curr_truck, tmp_items)
 
@@ -131,10 +137,14 @@ class Solver22:
 
         # Append best solution for current truck
         # Need to make sure the items left have been updated
-        final_sol.append(curr_sol)
+        df_sol = pd.DataFrame.from_dict(self.curr_sol)
+        df_sol.to_csv(
+            os.path.join('results', f'{self.name}_sol.csv'),
+            index=False
+        )
 
-        with open(os.path.join('results', f'{self.name}_sol.csv'), "w") as f:
-            f.close()
+        # with open(os.path.join('results', f'{self.name}_sol.csv'), "w") as f:
+        #     f.close()
 
         return
     
@@ -204,10 +214,18 @@ class Solver22:
                 else:
                     # The item was already added
                     pass
+            
+            # Last stack is probably not appended to the list, since it does 
+            # not trigger new_stack_needed
+            stacks_list.append(new_stack)
         
+        
+        for i in range(len(stacks_list)):
+            stacks_list[i].assignID(i)
+
         return stacks_list
 
-    def solve2D(self, stacks, truck):
+    def solve2D(self, stacks, truck, items_df):
         """
         solve2D
         ---
@@ -224,6 +242,8 @@ class Solver22:
             - stack: Stack object used in the solution
             - orient: flag which is 1 if the stack was rotated by 90 degrees
         """
+        print("Started solution in 2D")
+       
         # Create a copy, which will be modified (elem. removed)
         up_stacks = stacks.copy()
         # Solution based on the bound given by the stacks which were already placed
@@ -251,35 +271,40 @@ class Solver22:
         ########### Initialize bound
         bound = [[0,0],[0,y_truck]]
 
-        # 1. Assign prices to each stack:
-        self.priceStack(up_stacks)
+        # TODO: add iteration
 
-        curr_stacks_n = len(up_stacks)
+        space_left = True
 
-        # 2. Build slices - choose stacks according to highest price
-        # Brute force
-        # TODO: understand what is the best value of x_dim to be passed to the method below
-        rightmost = max([p[0] for p in bound])
-        x_dim = x_truck - rightmost
-        new_slice = self.buildSlice(up_stacks, x_dim, y_truck)
+        while space_left:
+            # 1. Assign prices to each stack:
+            self.priceStack(up_stacks)
 
-        assert (len(up_stacks) + len(new_slice) == curr_stacks_n), "Something went wrong! The stacks don't add up"
+            curr_stacks_n = len(up_stacks)
 
-        if len(new_slice) > 0:
-            # Having built the slice (and removed stacks from the ):
-            # 'Push' stack towards bottom
+            # 2. Build slices - choose stacks according to highest price
+            # Brute force
+            # TODO: understand what is the best value of x_dim to be passed to the method below
+            rightmost = max([p[0] for p in bound])
+            x_dim = x_truck - rightmost
+            new_slice = self.buildSlice(up_stacks, x_dim, y_truck)
 
-            # TODO: create 'pushSlice' method
-            sol_2D = self.pushSlice(bound)
-        else:
-            # If the new slice is empty, close the bin
-            # Maybe can also check for big spaces to fill with arbitrary slices
-            # but tricky (buildSlice can be used for arbitrary dimensions)
-            
-            ## Translate solution into 3D one
-            # First, build lists of the same size, then assign them
-            
-            self.updateCurrSol(sol_2D, truck)
+            assert (len(up_stacks) + len(new_slice) == curr_stacks_n), "Something went wrong! The stacks don't add up"
+
+            if len(new_slice) > 0:
+                # Having built the slice:
+                # 'Push' stack towards bottom
+
+                # TODO: create 'pushSlice' method
+                sol_2D, bound = self.pushSlice(bound, new_slice, sol_2D)
+            else:
+                # If the new slice is empty, close the bin
+                # Maybe can also check for big spaces to fill with arbitrary slices
+                # but tricky (buildSlice can be used for arbitrary dimensions)
+                
+                ## Translate solution into 3D one
+                # First, build lists of the same size, then assign them
+                space_left = False
+                self.updateCurrSol(sol_2D, truck, items_df)
 
         # Something else?
         
@@ -360,27 +385,41 @@ class Solver22:
         # iteration, in terms of minimum delta_y left
         # For now, I will keep this approach as it follows what explained in the paper...
         while i < len(stacks):
+            # if DEBUG:
+            #     print(f"Analyzing stack {i}")
+            stack_added = False
             if delta_y >= stacks[i].width and x_dim >= stacks[i].length:
                 # Stack is good as-is - insert it
                 new_slice.append([stacks[i], i, 0])
+
+                if DEBUG:
+                    print("Stack added to slice!")
+
                 delta_y -= stacks[i].width
+                stack_added = True
             elif stacks[i].forced_orientation == "n" and delta_y >= stacks[i].length and x_dim >= stacks[i].width:
                 # If the stack cannot be placed, try rotating it by 90 degrees, if allowed
                 new_slice.append([stacks[i], i, 1])
-                delta_y -= stacks[i].length
 
-            # Update origin y coordinate
-            if i != 0:
-                # Get width (length if rotated) of 2nd to last element
-                if new_slice[-2][2] == 0:
-                    w_min2 = new_slice[-2][0].width
+                if DEBUG:
+                    print("Stack added to slice!")
+
+                delta_y -= stacks[i].length
+                stack_added = True
+
+            if stack_added:
+                # Update origin y coordinate
+                if i != 0:
+                    # Get width (length if rotated) of 2nd to last element
+                    if new_slice[-2][2] == 0:
+                        w_min2 = new_slice[-2][0].width
+                    else:
+                        w_min2 = new_slice[-2][0].length
+                    # Add the width to the origin of the stack to get new origin
+                    # This ensures no space is left
+                    new_slice[-1].append(new_slice[-2][-1] + w_min2)
                 else:
-                    w_min2 = new_slice[-2][0].length
-                # Add the width to the origin of the stack to get new origin
-                # THis ensures no space is left
-                new_slice[i].append(new_slice[-2][-1] + w_min2)
-            else:
-                new_slice[i].append(0)
+                    new_slice[-1].append(0)
             i += 1
         # When out of the loop, the slice has been built 
         # NOTE: this is not the optimal slice in terms of delta_y left! 
@@ -388,11 +427,15 @@ class Solver22:
         # that in the delta_y left no other item can be placed!
 
         # Remove used stacks from the initial list
+        # This modifies the 'stacks' list which is passed to the function
         for i in [x[1] for x in new_slice[::-1]]:
             del stacks[i]
 
         # Technically the indices of the stacks are not used anymore (and cannot be used...)
-
+        
+        if DEBUG:
+            print(f"N. stacks in new slice: {len(new_slice)}")
+        
         return new_slice
 
     def pushSlice(self, bound, new_slice, curr_sol_2D):
@@ -422,35 +465,37 @@ class Solver22:
         ### Updating the bound
         TODO
         """
+        new_bound = []
+
         # Store the index of the first element in the bound which is valid
-        ind_bound = 0
         for new_stack in new_slice:
             y_i = new_stack[3]
             if new_stack[2] == 0:
-                w_i = new_stack[0].length
-            else:
                 w_i = new_stack[0].width
+            else:
+                w_i = new_stack[0].length
             
-            # search for valid points
-            ind_top = ind_bound
-            while bound[ind_top][1] < y_i+w_i:
-                ind_top += 1
-            # When the loop finishes, the element bound[ind_top] contains the upper end 
+            # Find lower bound starting from 0
+            ind_bound = 0
+            while bound[ind_bound][1] < y_i:
+                ind_bound += 1
 
-            ########## HERE
-            # The lower end considered should either be:
-            # - The previous upper end if the point coincides with y_0
-            # - The one before (in the bound list) else
             if bound[ind_bound][1] == y_i:
                 pass
             else:
                 ind_bound -= 1
             
-            assert (len(bound[ind_bound:ind_top]) > 1), "The considered elements of the bound are less than 2! Something went wrong"
+            # Search for valid points
+            ind_top = ind_bound + 0             # Needed to prevent to just copy the reference and update both indices...
+            while bound[ind_top][1] < y_i+w_i:
+                ind_top += 1
+            # When the loop finishes, the element bound[ind_top] contains the upper end 
+            
+            assert (len(bound[ind_bound:ind_top+1]) > 1), "The considered elements of the bound are less than 2! Something went wrong"
 
             # The x coordinate is the max between the x coord of the elements of 
             # index between ind_bound and ind_top
-            x_i = max([p[0] for p in bound[ind_bound:ind_top]])
+            x_i = max([p[0] for p in bound[ind_bound:ind_top+1]])
             
             # Build new (current) solution
             """
@@ -466,11 +511,29 @@ class Solver22:
             curr_sol_2D["stack"].append(new_stack[0])
             curr_sol_2D["orient"].append(new_stack[2])
                         
-            # Update the index of the low bound with the current top
-            # Needed in order to do the update as before
-            ind_bound = ind_top
+            # Update the bound
+            # Simply add the points of the 'rightmost' points of the current stack
+            if new_stack[2] == 0:
+                l_i = new_stack[0].length
+            else:
+                l_i = new_stack[0].width
+            x_br = x_i + l_i
+            y_br = y_i
+
+            x_tr = x_i + l_i
+            y_tr = y_i + w_i
+            new_bound.append([x_br, y_br])
+            new_bound.append([x_tr, y_tr])
+
+        # Fill the bound if the current slice does not reach the full width
+        if new_bound[-1][1] < bound[-1][1]:
+            # Increase the index from 0 until the element of the old bound is bigger
+
+            ############### TODO - NEXT UP
+            pass
+
         
-        return curr_sol_2D
+        return curr_sol_2D, new_bound
             
     def updateCurrSol(self, sol_2D, truck, items):
         """
@@ -494,7 +557,7 @@ class Solver22:
             j = 0
             for it in sol_2D["stack"][i].items:
                 self.curr_sol["type_vehicle"].append(truck["cost"])
-                self.curr_sol["idx_vehicle"].append(truck["idtruck"])
+                self.curr_sol["idx_vehicle"].append(truck["id_truck"])
                 self.curr_sol["id_stack"].append(sol_2D["stack"][i].id)
                 self.curr_sol["id_item"].append(it["id_item"])
                 self.curr_sol["x_origin"].append(sol_2D["x_sol"][i])
