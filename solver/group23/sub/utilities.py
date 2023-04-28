@@ -18,3 +18,13 @@ def popStack(stack_lst, code):
             stack = stack_lst.pop(i)
             return stack, stack_lst
     raise Exception("No more stacks with specified code")
+
+
+def statesCreation(stack_df, orientation):
+    """ 
+    Pop the first stack with the specified code
+    Note: the stack is removed form stack_lst
+    """
+    a = stack_df
+    b = orientation
+    c = a
