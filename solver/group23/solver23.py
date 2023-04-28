@@ -7,8 +7,8 @@ from numpy.random import choice
 from sub.stack import Stack
 from sub.utilities import *
 #TODO:
-# - costruire dimensione della matrice considerando orientation (aggiungere stato per orientation)
-# - iniziare a mettere gli stack nel camion
+# - in addStack boolean quando camion pieno
+# - integrare classe ACO con solver
 # - 
 class Solver23():
     def __init__(self):
