@@ -19,3 +19,7 @@ class Stack:
     
     def updateHeight(self, item_height):
         self.height += item_height
+    
+    def position(self, x_origin, y_origin):
+        self.x_origin = x_origin
+        self.y_origin = y_origin
