@@ -6,7 +6,10 @@ import numpy as np
 from numpy.random import choice
 from sub.stack import Stack
 from sub.utilities import *
-
+#TODO:
+# - costruire dimensione della matrice considerando orientation (aggiungere stato per orientation)
+# - iniziare a mettere gli stack nel camion
+# - 
 class Solver23():
     def __init__(self):
         """
@@ -31,8 +34,6 @@ class Solver23():
         stack_lst = self.buildStacks(vehicle)
 
         self.ACO_2D_bin(stack_lst, alpha = 1, beta = 1, n_ants = 10)
-
-
 
     def buildStacks(self, vehicle):
         """"
@@ -79,7 +80,6 @@ class Solver23():
                     
         return stack_lst
         
-    
     def ACO_2D_bin(self, stack_lst, alpha = 1, beta = 1, n_ants = 10):
         """ 
         Ant Colony Optimization for 2D bin packing
@@ -96,7 +96,7 @@ class Solver23():
         """
         attr = np.random.rand(6, 6) #NOTE: take random value for attractivenss matrix just to test
         # initialize pr_move with same prob for each movement but set to zero prob to move to no stack
-        pr_move = np.full((8,8), 1./7) * np.array([1, 1, 1, 1, 1, 1, 1, 0]) #TODO: add states also for possible orientations?  
+        pr_move = np.full((8,8), 1./7) * np.array([1, 1, 1, 1, 1, 1, 1, 0]) 
         #TODO: outer loop contaning a termination condition (no. of iterations, solution's goodness???)
         ants = []
         for ant_k in range(n_ants):
@@ -111,12 +111,6 @@ class Solver23():
                 prev_s_code = next_s_code
                 #TODO: controllo se free space
                 
-                
-            
-                
-
-
-
     def choose_move(self, pr_move, prev_s_code):
         """ 
         choose_move
@@ -131,8 +125,7 @@ class Solver23():
         next_s_code = int(choice(range(len(row_to_choose)), p=row_to_choose))
         
         return next_s_code 
-    
-
+                
     def solve(self, df_items, df_vehicles):
         """ 
         solve
@@ -142,6 +135,7 @@ class Solver23():
         df_vehicles: dataframe containing all the different
                      types of trucks that can be choose
         """
+        #TODO: take random 200 items for less computation (random for getting different stack code)
         self.solve_single_vehicle(df_items, df_vehicles)
         
 
@@ -167,6 +161,3 @@ if __name__ == "__main__":
     df_sol = pd.read_csv(
         os.path.join('results', f'{tmp.name}_sol.csv'),
     )
-
-
-    
