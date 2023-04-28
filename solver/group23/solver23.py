@@ -26,6 +26,8 @@ class Solver23():
         """
         self.df_items = df_items
         self.df_vehicles = df_vehicles
+        self.pr_move = statesCreation(pd.unique(df_items["stackability_code"]), df_items.groupby(["stackability_code"])["forced_orientation"])
+        # self.pr_move = statesCreation(pd.unique(df_items[["stackability_code", "forced_orientation"]].values.ravel()))
         
         # for on truck's type
         # work on single truck
@@ -33,7 +35,7 @@ class Solver23():
         
         stack_lst = self.buildStacks(vehicle)
 
-        self.ACO_2D_bin(stack_lst, alpha = 1, beta = 1, n_ants = 10)
+        self.ACO_2D_bin(stack_lst, vehicle,alpha = 1, beta = 1, n_ants = 10)
 
     def buildStacks(self, vehicle):
         """"
@@ -46,6 +48,7 @@ class Solver23():
         # stack creation: adesso è fatta in modo molto stupido ma dato che item con lo stesso
         # stackability code possono avere diverse altezze probabilmente si può ottimizzare molto 
         # date le diverse altezze dei trucks
+        #TODO: controllo max density
         stackability_codes = self.df_items.stackability_code.unique()
         stack_lst = []
         for code in stackability_codes:
@@ -80,7 +83,7 @@ class Solver23():
                     
         return stack_lst
         
-    def ACO_2D_bin(self, stack_lst, alpha = 1, beta = 1, n_ants = 10):
+    def ACO_2D_bin(self, stack_lst, vehicle, alpha = 1, beta = 1, n_ants = 10):
         """ 
         Ant Colony Optimization for 2D bin packing
         ---
@@ -96,18 +99,32 @@ class Solver23():
         """
         attr = np.random.rand(6, 6) #NOTE: take random value for attractivenss matrix just to test
         # initialize pr_move with same prob for each movement but set to zero prob to move to no stack
-        pr_move = np.full((8,8), 1./7) * np.array([1, 1, 1, 1, 1, 1, 1, 0]) 
+        pr_move = np.full((8,8), 1./7) * np.array([1, 1, 1, 1, 1, 1, 1, 0]) #TODO: create automatically the matrix
         #TODO: outer loop contaning a termination condition (no. of iterations, solution's goodness???)
         ants = []
         for ant_k in range(n_ants):
             free_space = True 
             prev_s_code = 6 # empty vehicle state
-            
+            # initialize solution of ant k
+            sol = {
+            "type_vehicle": [],
+            "idx_vehicle": [],
+            "id_stack": [],
+            "id_item": [],
+            "x_origin": [],
+            "y_origin": [],
+            "z_origin": [],
+            "orient": []
+            }
+            x_pos = 0
+            y_pos = 0
             while(free_space):  # loop until free space available in vehicle
                 next_s_code = self.choose_move(pr_move, prev_s_code) 
                 # ants[ant_k].append()
                 new_stack, stack_lst = popStack(stack_lst, next_s_code) #TODO: what if no more stacks with this stack code??
+                #TODO: se widthwise mettere come length la width
                 #TODO: posizionare new_stack
+
                 prev_s_code = next_s_code
                 #TODO: controllo se free space
                 
@@ -125,6 +142,15 @@ class Solver23():
         next_s_code = int(choice(range(len(row_to_choose)), p=row_to_choose))
         
         return next_s_code 
+    
+    def addStack(self, toAddStack, x_pos, vehicle):
+        """  
+        
+        """
+        if x_pos + toAddStack.length < vehicle['length']:
+            pass
+        else:
+            pass
                 
     def solve(self, df_items, df_vehicles):
         """ 
