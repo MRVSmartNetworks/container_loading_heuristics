@@ -102,7 +102,7 @@ class Solver23():
         pr_move = np.full((8,8), 1./7) * np.array([1, 1, 1, 1, 1, 1, 1, 0]) #TODO: create automatically the matrix
         #TODO: outer loop contaning a termination condition (no. of iterations, solution's goodness???)
         ants = []
-        for ant_k in range(n_ants):
+        for k in range(n_ants):
             free_space = True 
             prev_s_code = 6 # empty vehicle state
             # initialize solution of ant k
@@ -117,14 +117,16 @@ class Solver23():
             "orient": []
             }
             x_pos = 0
-            y_pos = 0
+            y_pos = y_max = 0
+            ant_k = []
             while(free_space):  # loop until free space available in vehicle
                 next_s_code = self.choose_move(pr_move, prev_s_code) 
                 # ants[ant_k].append()
                 new_stack, stack_lst = popStack(stack_lst, next_s_code) #TODO: what if no more stacks with this stack code??
                 #TODO: se widthwise mettere come length la width
                 #TODO: posizionare new_stack
-
+                toAddStack, x_pos, y_max = self.addStack(new_stack, x_pos, y_pos, y_max, vehicle)
+                ant_k.append(toAddStack)
                 prev_s_code = next_s_code
                 #TODO: controllo se free space
                 
@@ -143,14 +145,28 @@ class Solver23():
         
         return next_s_code 
     
-    def addStack(self, toAddStack, x_pos, vehicle):
+    def addStack(self, toAddStack, x_pos, y_pos, y_max, vehicle):
         """  
         
         """
         if x_pos + toAddStack.length < vehicle['length']:
-            pass
+            toAddStack.position(x_pos, y_pos)
+            x_pos += toAddStack.length
+            if toAddStack.width > y_max:
+                y_max = toAddStack.width
         else:
-            pass
+            x_pos = 0
+            y_pos = y_max
+            y_max = 0
+            if y_pos + toAddStack.width < vehicle['width']:
+                toAddStack.position(x_pos, y_pos)
+                x_pos += toAddStack.length
+                if toAddStack.width > y_max:
+                    y_max = toAddStack.width
+            else:
+                # completed solution
+                pass
+        return toAddStack, x_pos, y_max
                 
     def solve(self, df_items, df_vehicles):
         """ 
