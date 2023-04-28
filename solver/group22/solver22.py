@@ -9,6 +9,8 @@ import pandas as pd
 
 from solver.group22.stack import Stack
 
+# TODO: remove full list of items from stack attributes, only store the item ID, which can be used
+# in the dataframe to locate the correct row (supposing NO DUPLICATES).
 
 class Solver22:
     def __init__(self):
@@ -26,8 +28,7 @@ class Solver22:
         """
         self.name = "solver22"
 
-        # self.current_stacks
-
+        # Current solution
         self.curr_sol = {
             "type_vehicle": [],
             "idx_vehicle": [],
@@ -38,7 +39,12 @@ class Solver22:
             "z_origin": [],
             "orient": []
         }
+        # Current value of the objective function
+        # TODO: function to evaluate the objective value of the current solution...
+        curr_obj_value = 0
 
+        # Current best solution (so far)
+        # TODO: method to update it - at each complete iteration
         self.curr_best_sol = {
             "type_vehicle": [],
             "idx_vehicle": [],
@@ -49,20 +55,29 @@ class Solver22:
             "z_origin": [],
             "orient": []
         }
+        # Objective value of the best solution - to be updated
+        # Initialized to big M
+        best_obj_value = 1e20
+
+    ##########################################################################
 
     def solve(self, df_items, df_vehicles):
         tmp_items = pd.DataFrame.copy(df_items)
         tmp_vehicles = pd.DataFrame.copy(df_vehicles)
 
-        min_cost, min_n_trucks = self.getLowerBound(tmp_items, tmp_vehicles)
-        
-        print(f"The minimum cost possible is {min_cost} and it is achieved with {min_n_trucks}")
+        # TODO: review this
+        # min_cost, min_n_trucks = self.getLowerBound(tmp_items, tmp_vehicles)
+        # print(f"The minimum cost possible is {min_cost} and it is achieved with {min_n_trucks}")
 
         tmp_items['surface'] = tmp_items['width']*tmp_items['length']
         # Order items according to the surface
         ord_items = tmp_items.sort_values(by=['surface'], ascending=False)
 
-        # Iterate over trucks (order?)
+        ########## TODO: review the choice of the trucks - any number of trucks can be used for each type
+        # Idea: choose truck with lowest cost/volume ratio among the trucks whose volume is the closest
+        # upper bound for the number of objects
+
+        # Iterate over trucks (FIXME: order?)
         # Order according to dimensions/cost ratio
         if "dim_cost_ratio" not in tmp_vehicles.columns:
             tmp_vehicles["dim_cost_ratio"] = (tmp_vehicles['width']*tmp_vehicles['length']*tmp_vehicles['height'])/tmp_vehicles['cost']
@@ -71,7 +86,16 @@ class Solver22:
         ord_vehicles = tmp_vehicles.sort_values(by=['dim_cost_ratio'], ascending=False)
 
         # Initialize solution - list of lists (one for each truck, in order)
-        final_sol = []
+        final_sol = {
+            "type_vehicle": [],
+            "idx_vehicle": [],
+            "id_stack": [],
+            "id_item": [],
+            "x_origin": [],
+            "y_origin": [],
+            "z_origin": [],
+            "orient": []
+        }
 
         for i in range(len(ord_vehicles.index)):
             # Iterate over the vehicles to pack first 'better' trucks
@@ -95,6 +119,14 @@ class Solver22:
             # OR
             # Fill with equal-dimension items, and build stacks
 
+            # Build stacks with the copied list of items 'tmp_items'
+            valid_stacks_list = self.create_stack(tmp_items, curr_truck)
+
+            # Solve 2D problems to place the stacks
+            sol_2D = self.solve2D(valid_stacks_list, curr_truck)
+
+            tmp_items = self.updateCurrSol(sol_2D, curr_truck, tmp_items)
+
         # Proceed with possible solutions 
 
         # Append best solution for current truck
@@ -117,7 +149,15 @@ class Solver22:
         - df_items: pandas Dataframe of usable items.
         - truck: pandas Series object containing the truck information.
 
-        *Approach*
+        FIXME: *Approach*
+
+        Having isolated all stackability codes, iterate on all items for each code value.
+        Place each item in a stack, until an item does not pass the checks for being added.
+        Once this happens, close current stack and add it to the list of stacks, then 
+        start a new stack by placing the current item in a new one.
+
+        This method makes use of the Stack class and its method(s) 'add_item' (and 
+        'add_item_override').
 
         Stacks can be created only for items with the same stackability code.
         """
@@ -128,41 +168,44 @@ class Solver22:
             tot_high = 0
             tot_weight = 0
             new_stack_needed = False
-            other_constraints = {
+            other_constraints = {           # Enforce constraints on the 
                 "max_height": truck["height"],
                 "max_weight": truck["max_weight_stack"],
                 "max_dens": truck["max_density"]
             }
+
+            new_stack = Stack()
             for i, row in df_items[df_items.stackability_code == code].iterrows():
-                if i == 0:
-                    # First element in the stack - initialize Stack object
-                    new_stack = Stack(row)
-                else:
-                    new_stack.add_item(row, other_constraints)
-                
-                tot_high += row.height - row.nesting_height
-                tot_weight += row.weight
-                if tot_high > vehicle['height']:
+                # FIXME: the procedure is not ideal! If an item is not added because too heavy it does 
+                # not mean that we need to start a new stack...
+
+                was_added = new_stack.add_item_override(row, other_constraints)
+                # The value of 'new_stack_needed' can be: 
+                # 0: cannot add item as it won't satisfy constraint (weight, height, density, stackability)
+                # 1: success
+                # NOT HERE - {-1: cannot add item since it would lock the orientation property}
+                if was_added == 0:
                     new_stack_needed = True
-                if tot_weight > vehicle['max_weight_stack']:
-                    new_stack_needed = True
-                if len(stack) == row.max_stackability:
-                    new_stack_needed = True
-                # if a new stack is needed:
+                    # In all other cases can still try to add elements to the stack
+                    # FIXME: it may happen that one element cannot be added because too tall/heavy
+                    # need to allow for a search for compatible items
+                    # IDEA: only stop if max_stackability was violated, else act as in the 
+
+                # if a new stack is needed (current element was not added):
                 if new_stack_needed:
-                    stack_lst.append(stack)
-                    stack = [row.id_item]
-                    tot_high = row.height
-                    tot_weight = row.weight
+                    stacks_list.append(new_stack)
+                    # Open new stack (with current element as first)
+                    new_stack = Stack(row, other_constraints)
                     new_stack_needed = False
+
+                    # NOTE: this approach also works when we end the loop for the current 
+                    # stackability code value, as next item will not be added (won't pass 
+                    # checks in add_item[_override])... 
                 else:
-                    # else add the item
-                    stack.append(row.id_item)
+                    # The item was already added
+                    pass
         
         return stacks_list
-    
-    def fill_width(self, df_items, truck):
-        pass
 
     def solve2D(self, stacks, truck):
         """
@@ -254,6 +297,11 @@ class Solver22:
         - Price = length
         - Price = width
         - Price = perimeter
+
+        TODO: think of new proces to assign
+        - total volume
+        - delta height wrt truck
+        - number of items
 
         The input variable 'stacks' is a list of Stack objects.
         This method updates the 'price' attribute inside each Stack object.
@@ -424,7 +472,7 @@ class Solver22:
         
         return curr_sol_2D
             
-    def updateCurrSol(self, sol_2D, truck):
+    def updateCurrSol(self, sol_2D, truck, items):
         """
         updateCurrSol
         ---
@@ -433,6 +481,12 @@ class Solver22:
 
         ### Input parameters
         - sol_2D: 2D solution - dict containing info on stack placement
+        - truck: pandas Series object containing the current truck info
+        - items: DataFrame containing the list of items to be updated
+
+        ### Output parameters
+        - upd_items: updated list of items (the ones used in the solution 
+        have been removed)
         """
 
         for i in range(len(sol_2D["stack"])):
@@ -447,8 +501,14 @@ class Solver22:
                 self.curr_sol["y_origin"].append(sol_2D["y_sol"][i])
                 self.curr_sol["z_origin"].append(z_lst[j])
                 self.curr_sol["orient"].append(sol_2D["orient"][i])
-
                 j += 1
+
+                # Remove used items from the items DF
+                upd_items = items[items.id_item != it["id_item"]]
+
+        return upd_items
+
+    ##########################################################################
 
     def getLowerBound(self, df_items, df_trucks):
         """

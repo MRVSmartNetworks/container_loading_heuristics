@@ -5,7 +5,7 @@ import numpy as np
 
 class Stack:
 
-    def __init__(self, item):
+    def __init__(self, item=None, other_constraints=None):
         """
         Stack
         ---
@@ -14,33 +14,38 @@ class Stack:
         stackability code placen one onto the other.
 
         ### Input parameters
-        - item: pandas Series object containing the first item in the stack
+        - item: pandas Series object containing the first item in the stack; if None
+        the stack is initialized empty and it will be needed to call the method 
+        'add_item' on it with a new item to initialize the parameters
+        - other_constraints (default None): dict containing the additional 
+        constraints, which may be ''max_weight', 'max_height' and 'max_dens'
         """
-        self.items = [item]     # Elements on top are APPENDED
+        self.items = []     # Elements on top are APPENDED
 
         # TODO: assign ID - look at prof code
         self.id = None
-
-        # The following are not changed
-        self.length = item["length"]
-        self.width = item["width"]
-        self.area = self.length*self.width
-        self.perimeter = 2*self.length + 2*self.width
-        self.stack_code = item["stackability_code"]
-        self.max_stack = item["max_stackability"]
         
-        # The following need to be changed
-        self.next_nesting = item["nesting_height"]  # Nesting height of the topmost element
-        self.tot_height = item["height"]
-        self.tot_weight = item["weight"]
-        self.tot_dens = self.tot_weight/(self.length*self.width)
-        self.forced_orientation = item["forced_orientation"]    # A new element may have a different forced orientation
+        self.length = 0
+        self.width = 0
+        self.area = 0
+        self.perimeter = 0
+        self.stack_code = -1
+        self.max_stack = 100000
+
+        self.next_nesting = 0
+        self.tot_height = 0
+        self.tot_weight = 0
+        self.tot_dens = 0
+        self.forced_orientation = "n"
 
         # Some other parameters which are used
         self.price = 0
 
-################## FIXME: the following methods (add_items) can be built around the returned values
-################## As soon as 1 constraint is not respected, return 0
+        if item is not None:
+            # If an item is provided, it is added
+            # Can already check for 
+            self.add_item(item, other_constraints)
+
 
     def add_item(self, newitem, other_constraints=None):
         """
@@ -51,6 +56,8 @@ class Stack:
 
         In this method, if the stack has no forced orientation, but the new 
         item has, the object is not added!
+
+        This method also works if the stack was empty.
 
         It is also possible to add further constraints to be checked here, e.g., 
         max_weight, max_height, max_density.
@@ -68,6 +75,7 @@ class Stack:
         if other_constraints is not None:
             # Check other constraints - look for valid keys
             if isinstance(other_constraints, dict):
+                # These checks work fine even if the stack is currently empty
                 # Max_height:
                 if "max_height" in list(other_constraints.keys()):
                     tmp_new_h = self.tot_height + newitem["height"] - self.next_nesting
@@ -86,11 +94,14 @@ class Stack:
                         return 0
 
         if (newitem["forced_orientation"] != "n") and self.forced_orientation == "n":
-            # The new item would override free orientation of the stack
-            return -1
+            # This condition is only valid if the stack is not empty
+            if len(self.items) > 0:
+                # The new item would override free orientation of the stack
+                return -1
 
         # Check stack_code, max_stack and previous flag
         if newitem["stackability_code"] == self.stack_code and len(self.items)+1 <= self.max_stack:
+            # Here ONLY IF STACK WAS NOT EMPTY
             # Can add
             self.items.append(newitem)
             # Update parameters
@@ -98,9 +109,28 @@ class Stack:
             self.tot_weight += newitem["weight"]
             self.next_nesting = newitem["nesting_height"]
             self.tot_dens = self.tot_weight/(self.length*self.width)
-            
+
             return 1
         
+        elif len(self.items) == 0:
+            # HERE ONLY IF STACK WAS EMPTY
+            # Need to initialize the stack parameters
+            self.length = newitem["length"]
+            self.width = newitem["width"]
+            self.area = self.length*self.width
+            self.perimeter = 2*self.length + 2*self.width
+            self.stack_code = newitem["stackability_code"]
+            self.max_stack = newitem["max_stackability"]
+            
+            # The following need to be changed
+            self.next_nesting = newitem["nesting_height"]  # Nesting height of the topmost element
+            self.tot_height = newitem["height"]
+            self.tot_weight = newitem["weight"]
+            self.tot_dens = self.tot_weight/(self.length*self.width)
+            self.forced_orientation = newitem["forced_orientation"]
+
+            return 1
+
         return 0
 
     def add_item_override(self, newitem, other_constraints=None):
@@ -153,6 +183,25 @@ class Stack:
 
             if (newitem["forced_orientation"] != "n") and self.forced_orientation == "n":
                 self.forced_orientation = newitem["forced_orientation"]
+
+            return 1
+        
+        elif len(self.items) == 0:
+            # HERE ONLY IF STACK WAS EMPTY
+            # Need to initialize the stack parameters
+            self.length = newitem["length"]
+            self.width = newitem["width"]
+            self.area = self.length*self.width
+            self.perimeter = 2*self.length + 2*self.width
+            self.stack_code = newitem["stackability_code"]
+            self.max_stack = newitem["max_stackability"]
+            
+            # The following need to be changed
+            self.next_nesting = newitem["nesting_height"]  # Nesting height of the topmost element
+            self.tot_height = newitem["height"]
+            self.tot_weight = newitem["weight"]
+            self.tot_dens = self.tot_weight/(self.length*self.width)
+            self.forced_orientation = newitem["forced_orientation"]
 
             return 1
         
