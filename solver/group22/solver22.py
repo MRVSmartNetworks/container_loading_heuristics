@@ -13,6 +13,7 @@ from solver.group22.stack import Stack
 # in the dataframe to locate the correct row (supposing NO DUPLICATES).
 
 DEBUG = True
+MAX_ITER = 10
 
 class Solver22:
     def __init__(self):
@@ -87,40 +88,13 @@ class Solver22:
 
         ord_vehicles = tmp_vehicles.sort_values(by=['dim_cost_ratio'], ascending=False)
 
-        # Initialize solution - list of lists (one for each truck, in order)
-        final_sol = {
-            "type_vehicle": [],
-            "idx_vehicle": [],
-            "id_stack": [],
-            "id_item": [],
-            "x_origin": [],
-            "y_origin": [],
-            "z_origin": [],
-            "orient": []
-        }
-
-        for i in range(5):
+        i = 0
+        while len(tmp_items.index) > 0 and i < MAX_ITER:
             print(f"Iter {i}")
             # Iterate over the vehicles to pack first 'better' trucks
             # TODO: find more efficient solution for reading all rows one at a time (if possible)
             curr_truck = ord_vehicles.iloc[i]
             # print(curr_truck)
-
-            curr_sol = {
-                "type_vehicle": [],
-                "idx_vehicle": [],
-                "id_stack": [],
-                "id_item": [],
-                "x_origin": [],
-                "y_origin": [],
-                "z_origin": [],
-                "orient": []
-            }
-
-            # Start filling from bottom - find best combination 
-            # of widths that fills the full width of the truck
-            # OR
-            # Fill with equal-dimension items, and build stacks
 
             # Build stacks with the copied list of items 'tmp_items'
             valid_stacks_list = self.create_stack(tmp_items, curr_truck)
@@ -131,7 +105,10 @@ class Solver22:
             # Solve 2D problems to place the stacks
             sol_2D = self.solve2D(valid_stacks_list, curr_truck, df_items)
 
+            # Use the 2D solution to update the overall solution
             tmp_items = self.updateCurrSol(sol_2D, curr_truck, tmp_items)
+
+            # Update total volume left
 
         # Proceed with possible solutions 
 
@@ -296,6 +273,9 @@ class Solver22:
 
                 # TODO: create 'pushSlice' method
                 sol_2D, bound = self.pushSlice(bound, new_slice, sol_2D)
+
+                assert (bound[-1][1] == truck["width"]), "Bound was built wrong!"
+
             else:
                 # If the new slice is empty, close the bin
                 # Maybe can also check for big spaces to fill with arbitrary slices
@@ -528,11 +508,22 @@ class Solver22:
         # Fill the bound if the current slice does not reach the full width
         if new_bound[-1][1] < bound[-1][1]:
             # Increase the index from 0 until the element of the old bound is bigger
+            ind_extra = 0
 
-            ############### TODO - NEXT UP
-            pass
+            while bound[ind_extra][1] < new_bound[-1][1]:
+                ind_extra += 1
 
-        
+            # ind_extra locates the 1st corner in the old bound which has y bigger 
+            # than the current last element in the new bound
+
+            # Add adjustment point:
+            # x is the one of the old bound
+            # y is the same as the last element in the current bound
+            new_bound.append([bound[ind_extra][0], new_bound[-1][1]])
+
+            for p in bound[ind_extra:]:
+                new_bound.append(p)
+
         return curr_sol_2D, new_bound
             
     def updateCurrSol(self, sol_2D, truck, items):
