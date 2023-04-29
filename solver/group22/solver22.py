@@ -12,8 +12,8 @@ from solver.group22.stack import Stack
 # TODO: remove full list of items from stack attributes, only store the item ID, which can be used
 # in the dataframe to locate the correct row (supposing NO DUPLICATES).
 
-DEBUG = True
-MAX_ITER = 10
+DEBUG = False
+MAX_ITER = 10000
 
 class Solver22:
     def __init__(self):
@@ -44,7 +44,7 @@ class Solver22:
         }
         # Current value of the objective function
         # TODO: function to evaluate the objective value of the current solution...
-        curr_obj_value = 0
+        self.curr_obj_value = 0
 
         # Current best solution (so far)
         # TODO: method to update it - at each complete iteration
@@ -59,41 +59,60 @@ class Solver22:
             "orient": []
         }
         # Objective value of the best solution - to be updated
-        # Initialized to big M
-        best_obj_value = 1e20
+        # Initialized to -1 - check it to detect 1st iteration
+        self.best_obj_value = -1
+
+        ###### The following are variables used during the run to guide some decision
+        self.last_truck_was_empty = False
+        self.last_truck = []
 
     ##########################################################################
+    ## Solvers
 
     def solve(self, df_items, df_vehicles):
         tmp_items = pd.DataFrame.copy(df_items)
         tmp_vehicles = pd.DataFrame.copy(df_vehicles)
 
-        # TODO: review this
+        # TODO: review lower bound evaluation
         # min_cost, min_n_trucks = self.getLowerBound(tmp_items, tmp_vehicles)
         # print(f"The minimum cost possible is {min_cost} and it is achieved with {min_n_trucks}")
 
         tmp_items['surface'] = tmp_items['width']*tmp_items['length']
-        # Order items according to the surface
-        ord_items = tmp_items.sort_values(by=['surface'], ascending=False)
+        tmp_items['volume'] = tmp_items['surface']*tmp_items['height']
 
-        ########## TODO: review the choice of the trucks - any number of trucks can be used for each type
-        # Idea: choose truck with lowest cost/volume ratio among the trucks whose volume is the closest
-        # upper bound for the number of objects
-
-        # Iterate over trucks (FIXME: order?)
         # Order according to dimensions/cost ratio
         if "dim_cost_ratio" not in tmp_vehicles.columns:
-            tmp_vehicles["dim_cost_ratio"] = (tmp_vehicles['width']*tmp_vehicles['length']*tmp_vehicles['height'])/tmp_vehicles['cost']
-        # print(tmp_vehicles)
+            tmp_vehicles["volume"] = tmp_vehicles['width']*tmp_vehicles['length']*tmp_vehicles['height']
+            tmp_vehicles["dim_cost_ratio"] = tmp_vehicles['volume']/tmp_vehicles['cost']
 
         ord_vehicles = tmp_vehicles.sort_values(by=['dim_cost_ratio'], ascending=False)
+        
+        # Used to track the different types of used vehicles and assign unique IDs:
+        n_trucks = {}
+        for id in ord_vehicles.id_truck.unique():
+            n_trucks[id] = 0
 
         i = 0
         while len(tmp_items.index) > 0 and i < MAX_ITER:
             print(f"Iter {i}")
+            if DEBUG:
+                print(f"> Items left: {len(tmp_items.index)}")
+
+            # Strategy for selecting the trucks
+            curr_truck = self.selectNextTruck(ord_vehicles, tmp_items, self.last_truck)    
+            self.last_truck.append(str(curr_truck.id_truck))
+
+            # Having selected the truck type, update its ID by appending the counter found in n_trucks
+            # NOTE: the padding done in this case allows for at most 999 trucks of the same type...
+            n_trucks[curr_truck.id_truck] += 1
+            curr_truck.id_truck = f"{curr_truck.id_truck}_{str(n_trucks[curr_truck.id_truck]).zfill(3)}"
+
+            if DEBUG:
+                print(f"Truck ID: {curr_truck.id_truck}")
+
             # Iterate over the vehicles to pack first 'better' trucks
             # TODO: find more efficient solution for reading all rows one at a time (if possible)
-            curr_truck = ord_vehicles.iloc[i]
+            # curr_truck = ord_vehicles.iloc[i]
             # print(curr_truck)
 
             # Build stacks with the copied list of items 'tmp_items'
@@ -108,9 +127,18 @@ class Solver22:
             # Use the 2D solution to update the overall solution
             tmp_items = self.updateCurrSol(sol_2D, curr_truck, tmp_items)
 
-            # Update total volume left
+            i += 1
 
-        # Proceed with possible solutions 
+        self.curr_obj_value = self.evalObj()
+
+        print(f"Current optimal value: {self.curr_obj_value}")
+
+        used_trucks = 0
+        for t in n_trucks.keys():
+            used_trucks += n_trucks[t]
+
+        print(f"Number of trucks analyzed: {used_trucks}")
+        print(f"Actual number of used trucks: {len(list(set(self.curr_sol['idx_vehicle'])))}")
 
         # Append best solution for current truck
         # Need to make sure the items left have been updated
@@ -119,12 +147,48 @@ class Solver22:
             os.path.join('results', f'{self.name}_sol.csv'),
             index=False
         )
-
-        # with open(os.path.join('results', f'{self.name}_sol.csv'), "w") as f:
-        #     f.close()
-
-        return
     
+    def selectNextTruck(self, trucks_df, remaining_items, forbidden_trucks=[]):
+        """ 
+        selectNextTruck
+        ---
+        Choose the best truck to be selected next, depending on the amount of items left.
+
+        Introduce random behavior: TODO (maybe)
+
+        ### Input parameters
+        - trucks_df: dataframe containing all available trucks - it should contain the 
+        column "volume" and "dim_cost_ratio".
+        - remaining_items: dataframe containing the remaining items; it should contain 
+        the column "volume"
+        """
+        # TODO: introduce some random behavior, as the current procedure gets stuck...
+
+        if "volume" not in remaining_items.columns:
+            remaining_items["volume"] = remaining_items["length"]*remaining_items["width"]*remaining_items["height"]
+        
+        tot_item_vol = sum(remaining_items["volume"])
+
+        if "volume" not in trucks_df.columns:
+            trucks_df["volume"] = trucks_df["length"]*trucks_df["width"]*trucks_df["height"]
+
+        if "dim_cost_ratio" not in trucks_df.columns:
+            trucks_df["dim_cost_ratio"] = trucks_df["volume"]/trucks_df["cost"]
+
+        if all(trucks_df.volume < tot_item_vol):
+            # If the volume of all trucks is lower than the overall volume: 
+            # return truck with highest dim/cost ratio
+            ord_vehicles = trucks_df.sort_values(by=['dim_cost_ratio'], ascending=False)
+            
+            return ord_vehicles.iloc[0]
+        else:
+            # Else: return the truck with the lowest cost among the ones which are bigger than 
+            # the whole volume
+            valid_trucks = trucks_df[trucks_df.volume >= tot_item_vol]
+            ord_vehicles = valid_trucks.sort_values(by=['cost'], ascending=True)
+
+            return ord_vehicles.iloc[0]
+
     def create_stack(self, df_items, truck):
         """
         create_stack
@@ -208,6 +272,9 @@ class Solver22:
         ---
         Solution of the 2D problem (which is performed once the stacks are provided).
 
+        The heuristics is based on the methods "priceStack", "buildSlice" and "pushSlice" and 
+        follows an approach based on the 'Peak Filling Slices Push'.
+
         ### Input parameters
         - stacks: list of (remaining) stacks, i.e., the one available to fill the current truck
         - truck: pandas Series object containing the information of the truck currently being filled
@@ -219,7 +286,8 @@ class Solver22:
             - stack: Stack object used in the solution
             - orient: flag which is 1 if the stack was rotated by 90 degrees
         """
-        print("Started solution in 2D")
+        if DEBUG:
+            print("Started solution in 2D")
        
         # Create a copy, which will be modified (elem. removed)
         up_stacks = stacks.copy()
@@ -280,7 +348,10 @@ class Solver22:
                 # If the new slice is empty, close the bin
                 # Maybe can also check for big spaces to fill with arbitrary slices
                 # but tricky (buildSlice can be used for arbitrary dimensions)
-                
+                if len(sol_2D['x_sol']) == 0:
+                    print("Cannot fit any item in this truck!")
+                    self.last_truck_was_empty = True
+
                 ## Translate solution into 3D one
                 # First, build lists of the same size, then assign them
                 space_left = False
@@ -358,7 +429,8 @@ class Solver22:
         # Sort the stacks according to price
         stacks.sort(key=lambda x: x.price, reverse=True)
         
-        i = 0
+        i = 0       # i tracks the index of the stack list
+        j = 0       # j tracks the number of stacks in the current slice
         delta_y = y_dim
         # Until all possible stacks have been visited, try to add new one to fill slice
         # NOTE: this can be improved in the future, e.g., by finding optimal slice at each
@@ -368,43 +440,55 @@ class Solver22:
             # if DEBUG:
             #     print(f"Analyzing stack {i}")
             stack_added = False
-            if delta_y >= stacks[i].width and x_dim >= stacks[i].length:
-                # Stack is good as-is - insert it
-                new_slice.append([stacks[i], i, 0])
+            if len(stacks[i].items) > 0:        # (Don't know why) but sometimes stacks are created empty...
+                if delta_y >= stacks[i].width and x_dim >= stacks[i].length:
+                    # Stack is good as-is - insert it
+                    new_slice.append([stacks[i], i, 0])
 
-                if DEBUG:
-                    print("Stack added to slice!")
+                    if DEBUG:
+                        print("Stack added to slice!")
 
-                delta_y -= stacks[i].width
-                stack_added = True
-            elif stacks[i].forced_orientation == "n" and delta_y >= stacks[i].length and x_dim >= stacks[i].width:
-                # If the stack cannot be placed, try rotating it by 90 degrees, if allowed
-                new_slice.append([stacks[i], i, 1])
+                    delta_y -= stacks[i].width
+                    stack_added = True
+                elif stacks[i].forced_orientation == "n" and delta_y >= stacks[i].length and x_dim >= stacks[i].width:
+                    # If the stack cannot be placed, try rotating it by 90 degrees, if allowed
+                    new_slice.append([stacks[i], i, 1])
 
-                if DEBUG:
-                    print("Stack added to slice!")
-
-                delta_y -= stacks[i].length
-                stack_added = True
+                    if DEBUG:
+                        print("Stack added to slice! (2)")
+                    # Rotated stack - can place it width-wise
+                    delta_y -= stacks[i].length
+                    stack_added = True
 
             if stack_added:
                 # Update origin y coordinate
-                if i != 0:
+                if j != 0:
                     # Get width (length if rotated) of 2nd to last element
                     if new_slice[-2][2] == 0:
+                        if DEBUG:
+                            print("Success here")
                         w_min2 = new_slice[-2][0].width
                     else:
+                        if DEBUG:
+                            print("Success here (2)")
                         w_min2 = new_slice[-2][0].length
                     # Add the width to the origin of the stack to get new origin
                     # This ensures no space is left
                     new_slice[-1].append(new_slice[-2][-1] + w_min2)
                 else:
+                    # Stack is placed at y = 0
                     new_slice[-1].append(0)
+                
+                j += 1
+
             i += 1
         # When out of the loop, the slice has been built 
         # NOTE: this is not the optimal slice in terms of delta_y left! 
         # This is the best stack in terms of maximum price, but we are sure 
         # that in the delta_y left no other item can be placed!
+
+        # TODO: its possible to think of a way to solve the slice filling sub-problem with
+        #  other approaches (e.g., Gurobi/OR tools)
 
         # Remove used stacks from the initial list
         # This modifies the 'stacks' list which is passed to the function
@@ -542,6 +626,7 @@ class Solver22:
         - upd_items: updated list of items (the ones used in the solution 
         have been removed)
         """
+        upd_items = items.copy()
 
         for i in range(len(sol_2D["stack"])):
             z_lst = sol_2D["stack"][i].getZList()
@@ -558,11 +643,33 @@ class Solver22:
                 j += 1
 
                 # Remove used items from the items DF
-                upd_items = items[items.id_item != it["id_item"]]
+                upd_items = upd_items[upd_items.id_item != it["id_item"]]
 
         return upd_items
 
+    def evalObj(self, sol=None):
+        """
+        evalObj
+        ---
+        Evaluate the objective value of the given solution.
+
+        ### Input parameters
+        - sol (default None): solution, Dictionary; the format is the one specified in the 
+        attributes of Solver22; if None, the current solution is used 
+        (self.curr_sol)
+        """
+        if sol is None:
+            s = self.curr_sol
+        else:
+            s = sol
+
+        o_val = 0
+        # FIXME: don't know why but it works - seems a bit weak...
+        for t_id in list(set(s["idx_vehicle"])):
+            o_val += float(s["type_vehicle"][s["idx_vehicle"] == t_id])
+
     ##########################################################################
+    ## Utilities
 
     def getLowerBound(self, df_items, df_trucks):
         """
@@ -605,3 +712,14 @@ class Solver22:
                 n_trucks_min = j
         
         return best_cost, n_trucks_min
+
+    ##########################################################################
+    ## Displaying the solution
+
+    def myStack3D(df_items, df_vehicles, df_sol, idx_vehicle=0):
+        """
+        myStack3D
+        ---
+
+        """
+        pass
