@@ -4,33 +4,6 @@ Group 22 - Davide Macario
 
 ---
 
-## TODO
-
-- Suggested approach (2023-04-21):
-  - Iterate on the trucks (which have not been used yet)
-  - Build stacks with the items which remain (`Stack` class)
-  - Place the stacks (random behavior for filling) - need to develop the details (random choice + decision rule for filling slices)
-    - Slice Push technique (CRUCIAL)
-  - At the end of the full iteration on the trucks select as solution the one with the least amount of free space (space_truck - sum(space_stacks))
-
-Need to define a way to represent the boxes in the truck.
-It needs to be efficient to access and find 'free space'.
-Some possible ideas can be of 'tracking' the 'perimeter' of the boxes accumulated at the end of the truck as a set of points indicating the vertices of the line (while still keeping the set of used stacks as solution).
-
-In my head the placement of the stacks in the truck is performed as follows: since the stacks are first organized in slices, the $y_0$ component of each stack after building the slice will be known.
-Then, a 'push' operation will be performed, for which the boxes will be pushed towards the bottom of the truck, finding the lowest value of $x_0$ available.
-
-Also, the representation of the perimeter, as described previously, can help in detecting the possibility of 'filling some holes' in the structure (especially after some slices have been placed already).
-Referring to the figure, if some items which have one dimension equal (or smaller) to $p_1-p_3$, it is possible to place them in order to reduce the imparity of $x$ coordinate in the perimeter.
-
-<img src="./img_md/perimeter_sol_represent.jpeg" alt="Definition of the perimeter" style="width: 500px"/>
-
-- How to create the stacks? (introduce some random behavior - VERY IMPORTANT)
-- End method for creating stacks (`create_stack`)
-- End method for filling 2D slice (`fill_width`)
-- Understand how to place the stacks (keeping track of the reference system)
-- Put together the solution - how to use the one provided by the prof?
-
 ## Data structures
 
 **df_items**: pandas dataframe
@@ -83,31 +56,45 @@ Additionally, the truck must be filled starting from the origin (no spaces allow
 
 *Idea*: solution representation based on ordered lists of items (from bottom to top), whose position is identified by the origin of the stack only and the orientation.
 
-## ILP model
+## Model
+
+*TODO*
 
 The problem consists in a 3d extension of the knapsack problem. It is useful, however to look at it from the 2D perspective, as the $z$ dimension is developed according to the stacking of object of the same 2d size (e.g., stack until constraints are violated).
 
 ## Proposed heuristics
+
+The approach is based on what reported in [Peak Filling Sices Push](https://link.springer.com/chapter/10.1007/978-1-4020-8735-6_64), but the procedure is used to solve the 2D bin packing problem instead.
+
+The fundamental approach consists of the following steps:
+
+- Choose the current best truck
+  - If the total items volume is bigger than any truck's volume, choose the truck with the best volume/cost ratio, i.e., the truck with the lowest cost per unit volume.
+  - Else, choose the cheapest truck among the ones which would be able to fit all the remaining objects.
+- From the remaining items, create stacks which respect the constraints imposed by the chosen truck (height, weight, density) and by the maximum stackability of each object.
+- Solve the problem in 2D, i.e., place the stacks in the best possible way, without concerning about their height (as constraints have been enforced at the creation)
+- Update the solution by adding the used stacks (and the contained items) to the current bin
+
+It is evident, from this description, how 2D bin packing is a subproblem of the solution.
+In order to solve it, the approach was the following:
+
+- Start from the empty truck and the list of available stacks (in particular their length and width)
+- Randomly choose among different possible pricing techniques and assign each stack a value (typically based on its geometry)
+- Sort the stacks by decreasing price
+- While the truck allows space left:
+  - Build a slice
+  - Push each stack in the slice towards the $-x$ direction (as much as possible)
+
+
+<img src="./img_md/perimeter_sol_represent.jpeg" alt="Definition of the perimeter" style="width: 500px"/>
 
 ### *Some possible decisions/approaches*
 
 Choice of trucks: evaluate the *volume/cost* ratio for each truck and choose trucks based on higher value.
 (**Decision rule**)
 
-An effective approach has been found to be that of proceeding in 'slices' along the Y directions, i.e., by filling the truck from the 'beginning' with different layers (see: "Peak Filing Slices Push" - ["A New Heuristic Algorithm for the 3D Bin Packing Problem"](https://link.springer.com/chapter/10.1007/978-1-4020-8735-6_64)).
-The fundamental idea of the heuristic is to use decision rules to fill the slices, and then to 'push' the slices towards the 'beginning' of the truck.
-
-This approach can be complicated by [?]
-
-For what conserns the z dimension, it can be tried to simply create stacks when filling the slices... (might be easier said then done).
-
 In general, maximize the amount of 'y' dimension occupied, e.g., when choosing the objects, evaluate all the possible stacking options and choose the one which minimizes the difference between $W_i$ (truck width) and the total width of the stacks.
 Possible optimizations of this require the widest elements to be placed first (left, looking in the direction $-\textbf{x}$) in each slice.
-
-### *Needed utility functions*
-
-- Function for removing elements from the list of available ones
-- Function for evaluating stack parameters
 
 ## Useful links
 
