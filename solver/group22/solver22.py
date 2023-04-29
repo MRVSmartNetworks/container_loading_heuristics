@@ -12,7 +12,8 @@ from solver.group22.stack import Stack
 # TODO: remove full list of items from stack attributes, only store the item ID, which can be used
 # in the dataframe to locate the correct row (supposing NO DUPLICATES).
 
-DEBUG = False
+DEBUG = True
+DEBUG_MORE = False
 MAX_ITER = 10000
 
 class Solver22:
@@ -64,12 +65,19 @@ class Solver22:
 
         ###### The following are variables used during the run to guide some decision
         self.last_truck_was_empty = False
-        self.last_truck = []
+        self.unusable_trucks = []
+
+        self.iter = 0
 
     ##########################################################################
-    ## Solvers
+    ## Solver
 
     def solve(self, df_items, df_vehicles):
+        """
+        solve
+        ---
+        Solution of the problem with the proposed heuristics.
+        """
         tmp_items = pd.DataFrame.copy(df_items)
         tmp_vehicles = pd.DataFrame.copy(df_vehicles)
 
@@ -92,15 +100,18 @@ class Solver22:
         for id in ord_vehicles.id_truck.unique():
             n_trucks[id] = 0
 
-        i = 0
-        while len(tmp_items.index) > 0 and i < MAX_ITER:
-            print(f"Iter {i}")
+        self.iter = 0
+        while len(tmp_items.index) > 0 and self.iter < MAX_ITER:
+            print(f"Iter {self.iter}")
             if DEBUG:
                 print(f"> Items left: {len(tmp_items.index)}")
 
+            if self.last_truck_was_empty:
+                self.unusable_trucks.append(str(curr_truck.id_truck))
+            
+            self.last_truck_was_empty = False
             # Strategy for selecting the trucks
-            curr_truck = self.selectNextTruck(ord_vehicles, tmp_items, self.last_truck)    
-            self.last_truck.append(str(curr_truck.id_truck))
+            curr_truck = self.selectNextTruck(ord_vehicles, tmp_items, self.unusable_trucks)    
 
             # Having selected the truck type, update its ID by appending the counter found in n_trucks
             # NOTE: the padding done in this case allows for at most 999 trucks of the same type...
@@ -108,17 +119,14 @@ class Solver22:
             curr_truck.id_truck = f"{curr_truck.id_truck}_{str(n_trucks[curr_truck.id_truck]).zfill(3)}"
 
             if DEBUG:
-                print(f"Truck ID: {curr_truck.id_truck}")
+                print(f"> Truck ID: {curr_truck.id_truck}")
 
-            # Iterate over the vehicles to pack first 'better' trucks
             # TODO: find more efficient solution for reading all rows one at a time (if possible)
-            # curr_truck = ord_vehicles.iloc[i]
-            # print(curr_truck)
 
             # Build stacks with the copied list of items 'tmp_items'
             valid_stacks_list = self.create_stack(tmp_items, curr_truck)
 
-            if DEBUG:
+            if DEBUG_MORE:
                 print(f"Total number of generated stacks: {len(valid_stacks_list)}")
 
             # Solve 2D problems to place the stacks
@@ -127,7 +135,7 @@ class Solver22:
             # Use the 2D solution to update the overall solution
             tmp_items = self.updateCurrSol(sol_2D, curr_truck, tmp_items)
 
-            i += 1
+            self.iter += 1
 
         self.curr_obj_value = self.evalObj()
 
@@ -148,19 +156,23 @@ class Solver22:
             index=False
         )
     
+    ##########################################################################
+
     def selectNextTruck(self, trucks_df, remaining_items, forbidden_trucks=[]):
         """ 
         selectNextTruck
         ---
         Choose the best truck to be selected next, depending on the amount of items left.
-
-        Introduce random behavior: TODO (maybe)
+        
+        It is possible to specify a list of truck IDs which have to be avoided, in case 
+        an attempt was already done with these trucks and no item could have been placed.
 
         ### Input parameters
         - trucks_df: dataframe containing all available trucks - it should contain the 
         column "volume" and "dim_cost_ratio".
         - remaining_items: dataframe containing the remaining items; it should contain 
         the column "volume"
+        - forbidden_trucks: list of IDs of trucks which have found to be not viable to store items
         """
         # TODO: introduce some random behavior, as the current procedure gets stuck...
 
@@ -177,17 +189,28 @@ class Solver22:
 
         if all(trucks_df.volume < tot_item_vol):
             # If the volume of all trucks is lower than the overall volume: 
-            # return truck with highest dim/cost ratio
+            # return truck with highest dim/cost ratio (first which is not in the string of forbidden trucks)
             ord_vehicles = trucks_df.sort_values(by=['dim_cost_ratio'], ascending=False)
+
+            if len(forbidden_trucks) > 0:
+                for i, row in ord_vehicles.iterrows():
+                    if str(row.id_truck) not in forbidden_trucks:
+                        return ord_vehicles.iloc[i]
+            else:
+                return ord_vehicles.iloc[0]
             
-            return ord_vehicles.iloc[0]
         else:
             # Else: return the truck with the lowest cost among the ones which are bigger than 
             # the whole volume
             valid_trucks = trucks_df[trucks_df.volume >= tot_item_vol]
             ord_vehicles = valid_trucks.sort_values(by=['cost'], ascending=True)
 
-            return ord_vehicles.iloc[0]
+            if len(forbidden_trucks) > 0:
+                for i, row in ord_vehicles.iterrows():
+                    if str(row.id_truck) not in forbidden_trucks:
+                        return ord_vehicles.iloc[i]
+            else:
+                return ord_vehicles.iloc[0]
 
     def create_stack(self, df_items, truck):
         """
@@ -200,7 +223,7 @@ class Solver22:
         - df_items: pandas Dataframe of usable items.
         - truck: pandas Series object containing the truck information.
 
-        FIXME: *Approach*
+        FIXME: *Approach is to be reviewed*
 
         Having isolated all stackability codes, iterate on all items for each code value.
         Place each item in a stack, until an item does not pass the checks for being added.
@@ -286,9 +309,6 @@ class Solver22:
             - stack: Stack object used in the solution
             - orient: flag which is 1 if the stack was rotated by 90 degrees
         """
-        if DEBUG:
-            print("Started solution in 2D")
-       
         # Create a copy, which will be modified (elem. removed)
         up_stacks = stacks.copy()
         # Solution based on the bound given by the stacks which were already placed
@@ -331,6 +351,7 @@ class Solver22:
             # TODO: understand what is the best value of x_dim to be passed to the method below
             rightmost = max([p[0] for p in bound])
             x_dim = x_truck - rightmost
+
             new_slice = self.buildSlice(up_stacks, x_dim, y_truck)
 
             assert (len(up_stacks) + len(new_slice) == curr_stacks_n), "Something went wrong! The stacks don't add up"
@@ -445,7 +466,7 @@ class Solver22:
                     # Stack is good as-is - insert it
                     new_slice.append([stacks[i], i, 0])
 
-                    if DEBUG:
+                    if DEBUG_MORE:
                         print("Stack added to slice!")
 
                     delta_y -= stacks[i].width
@@ -454,7 +475,7 @@ class Solver22:
                     # If the stack cannot be placed, try rotating it by 90 degrees, if allowed
                     new_slice.append([stacks[i], i, 1])
 
-                    if DEBUG:
+                    if DEBUG_MORE:
                         print("Stack added to slice! (2)")
                     # Rotated stack - can place it width-wise
                     delta_y -= stacks[i].length
@@ -465,11 +486,11 @@ class Solver22:
                 if j != 0:
                     # Get width (length if rotated) of 2nd to last element
                     if new_slice[-2][2] == 0:
-                        if DEBUG:
+                        if DEBUG_MORE:
                             print("Success here")
                         w_min2 = new_slice[-2][0].width
                     else:
-                        if DEBUG:
+                        if DEBUG_MORE:
                             print("Success here (2)")
                         w_min2 = new_slice[-2][0].length
                     # Add the width to the origin of the stack to get new origin
@@ -497,7 +518,7 @@ class Solver22:
 
         # Technically the indices of the stacks are not used anymore (and cannot be used...)
         
-        if DEBUG:
+        if DEBUG_MORE:
             print(f"N. stacks in new slice: {len(new_slice)}")
         
         return new_slice
@@ -667,6 +688,8 @@ class Solver22:
         # FIXME: don't know why but it works - seems a bit weak...
         for t_id in list(set(s["idx_vehicle"])):
             o_val += float(s["type_vehicle"][s["idx_vehicle"] == t_id])
+
+        return o_val
 
     ##########################################################################
     ## Utilities
