@@ -19,7 +19,7 @@ from solver.group22.stack import Stack
 DEBUG = False
 DEBUG_MORE = False
 MAX_ITER = 10000
-MAX_TRIES = 10
+MAX_TRIES = 5
 
 class Solver22:
     def __init__(self):
