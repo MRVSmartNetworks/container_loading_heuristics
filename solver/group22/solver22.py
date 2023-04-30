@@ -115,12 +115,15 @@ class Solver22:
             
             self.last_truck_was_empty = False
             # Strategy for selecting the trucks
-            curr_truck = self.selectNextTruck(ord_vehicles, tmp_items, self.unusable_trucks)    
+            curr_truck = self.selectNextTruck(ord_vehicles, tmp_items, self.unusable_trucks)
 
             # Having selected the truck type, update its ID by appending the counter found in n_trucks
             # NOTE: the padding done in this case allows for at most 999 trucks of the same type...
             n_trucks[curr_truck.id_truck] += 1
             curr_truck.id_truck = f"{curr_truck.id_truck}_{str(n_trucks[curr_truck.id_truck]).zfill(3)}"
+
+            if self.iter == 0:
+                first_truck_id = curr_truck.id_truck
 
             if DEBUG:
                 print(f"> Truck ID: {curr_truck.id_truck}")
@@ -161,7 +164,7 @@ class Solver22:
         )
 
         ### Plot results:
-        self.myStack3D(df_items, df_vehicles, df_sol, "V1_001")
+        self.myStack3D(df_items, df_vehicles, df_sol, first_truck_id)
 
         # Get last used truck
         last_truck_id = df_sol.idx_vehicle.iloc[-1]
@@ -405,17 +408,17 @@ class Solver22:
         - Price = length
         - Price = width
         - Price = perimeter
+        - Price = stack height ---- Not so good
+        - Price = total volume
 
         TODO: think of new proces to assign
-        - total volume
-        - delta height wrt truck
         - number of items
 
         The input variable 'stacks' is a list of Stack objects.
         This method updates the 'price' attribute inside each Stack object.
         """
         # Select which pricing type
-        val = random.randint(0,3)
+        val = random.randint(0,5)
 
         if val == 0:
             for i in range(len(stacks)):
@@ -429,6 +432,12 @@ class Solver22:
         elif val == 3:
             for i in range(len(stacks)):
                 stacks[i].assignPrice(stacks[i].perimeter)
+        elif val == 4:
+            for i in range(len(stacks)):
+                stacks[i].assignPrice(stacks[i].tot_height)
+        elif val == 5:
+            for i in range(len(stacks)):
+                stacks[i].assignPrice(stacks[i].tot_height * stacks[i].area)
 
     def buildSlice(self, stacks, x_dim, y_dim):
         """
