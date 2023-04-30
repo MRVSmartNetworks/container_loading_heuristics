@@ -2,5 +2,6 @@
 from .solver22 import Solver22
 
 __all__ = [
-    "Solver22"
+    "Solver22",
+    "stack"
 ]
