@@ -8,6 +8,7 @@ class Stack:
         self.items = []
         self.weight = 0
         self.height = 0
+        self.state = None
         self.n_items = len(self.items)
 
     def addItem(self, id_item):
