@@ -135,6 +135,8 @@ class Stack:
             self.tot_dens = self.tot_weight/(self.length*self.width)
             self.forced_orientation = newitem["forced_orientation"]
 
+            self.items.append(newitem)
+
             return 1
 
         return 0
@@ -211,6 +213,8 @@ class Stack:
             self.tot_weight = newitem["weight"]
             self.tot_dens = self.tot_weight/(self.length*self.width)
             self.forced_orientation = newitem["forced_orientation"]
+
+            self.items.append(newitem)
 
             return 1
         
