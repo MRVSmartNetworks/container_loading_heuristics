@@ -3,7 +3,7 @@ import itertools
 import math
 import os
 import random
-
+import time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -19,7 +19,7 @@ from solver.group22.stack import Stack
 DEBUG = False
 DEBUG_MORE = False
 MAX_ITER = 10000
-MAX_TRIES = 5
+MAX_TRIES = 1
 
 
 class Solver22:
@@ -84,6 +84,7 @@ class Solver22:
         ---
         Solution of the problem with the proposed heuristics.
         """
+        t_0 = time.time()
 
         for self.tries in range(MAX_TRIES):
             self.curr_sol = {
@@ -172,6 +173,9 @@ class Solver22:
             print(f"Current objective value: {self.curr_obj_value}")
             
             self.updateBestSol()
+
+        t_end = time.time()
+        print(f"Time for {MAX_TRIES} iteration(s): {t_end - t_0}")
 
         print(f"Optimal value: {self.best_obj_value}")
 
