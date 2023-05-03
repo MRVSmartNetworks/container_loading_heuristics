@@ -36,25 +36,18 @@ class ACO:
         Method to solve 2D bin packing problem.
         """
         n_code = (len(self.pr_move) - 1)/2  # no. of different stackability codes
-        trailMatrix = np.zeros(len(self.pr_move)-1, len(self.pr_move)-1) # initialization of the trail matrix
+        trailMatrix = np.zeros([len(self.pr_move), len(self.pr_move)]) # initialization of the trail matrix
+        antsArea = []
         #TODO: outer loop contaning a termination condition (no. of iterations, solution's goodness???)
         for iter in range(self.n_iter):
             for k in range(self.n_ants):
                 free_space = True 
                 prev_s_code = len(self.pr_move)-1 # empty vehicle state
                 # initialize solution of ant k
-                sol = {
-                "type_vehicle": [],
-                "idx_vehicle": [],
-                "id_stack": [],
-                "id_item": [],
-                "x_origin": [],
-                "y_origin": [],
-                "z_origin": [],
-                "orient": []
-                }
+                
                 x_pos = 0
                 y_pos = y_max = 0
+                totArea = 0
                 ant_k = []
                 stack_lst = self.stack_lst.copy()
                 while(free_space):  # loop until free space available in vehicle
@@ -64,14 +57,18 @@ class ACO:
                     toAddStack, x_pos, y_max = self.addStack(new_stack, x_pos, y_pos, y_max)
                     if toAddStack is not None:
                         ant_k.append(toAddStack)
+                        totArea += (toAddStack.length*toAddStack.width)
                         prev_s_code = next_s_code
                     else:
                         free_space = False
                 
                 self.ants.append(ant_k)
+                antsArea.append(totArea)
+                
             # valutare la bontà tra tutte le soluzioni -> migliore = max     peggiore = min
-            deltaTrail = self.trailUpdate()
+            deltaTrail = self.trailUpdate(antsArea)
             trailMatrix = self.evaporationCoeff*trailMatrix + deltaTrail
+                
 
     def choose_move(self, prev_s_code):
         """ 
@@ -124,7 +121,7 @@ class ACO:
                 toAddStack = None
         return toAddStack, x_pos, y_max
 
-    def trailUpdate(self):
+    def trailUpdate(self, _antsArea):
         """
         trailUpdate
         -----------
@@ -133,14 +130,17 @@ class ACO:
         The previous trail matrix is multiplied by the pheromone evaporation \n
         coefficient and is added to the trail variation derived from the sum \n
         of the contribution of all ants that used move to construct their solution.
-        """
 
-        deltaTrail = np.zeros(len(self.pr_move)-1, len(self.pr_move)-1)
-        for ant in self.ants:
+        Parameters
+        - _antsArea: list of the area of all the ants
+        """
+        vehicleArea = self.vehicle['length'] * self.vehicle['width'] 
+        deltaTrail = np.zeros([len(self.pr_move), len(self.pr_move)])
+        for i,ant in enumerate(self.ants):
             x = len(self.pr_move)-1         # the first state to start is always the empty truck for all the ants
             for stack in ant:  # x and y are the position in the state matrix
                 y = stack.state
-                deltaTrail[x,y] = ant.weigthSolution*1
+                deltaTrail[x,y] = _antsArea[i]/vehicleArea # more is the area covered, more is the quality of the solution
                 x = y
         return deltaTrail
                 

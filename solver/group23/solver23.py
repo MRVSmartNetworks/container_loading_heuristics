@@ -15,6 +15,9 @@ from sub.ACO import ACO
 # - pensare a come inizializzare pr_move in modo che piaccia a fox
 # - creare gli output in modo da avere in stampa le immagini del camion
 # - evaluate  ant.weigthSolution: trovare un  modo per valutare la bontà della soluzione
+
+#TODO: less important
+# - certi stack code potrebbero avere la stessa dimensione
 class Solver23():
     def __init__(self):
         """
@@ -100,7 +103,6 @@ class Solver23():
         - df_vehicles: dataframe containing all the different
                        types of trucks that can be choose
         """
-        #TODO: take random 200 items for less computation (random for getting different stack code)
         self.solve_single_vehicle(df_items, df_vehicles)
         
 

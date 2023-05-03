@@ -76,3 +76,5 @@ def statesCreation(code_orientation):
                
     matrix = np.full((len_matrix,len_matrix), 1./(len_matrix-code_sub)) * mult_array
     return matrix  
+
+
