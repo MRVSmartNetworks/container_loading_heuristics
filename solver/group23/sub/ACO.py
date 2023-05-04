@@ -17,7 +17,7 @@ class ACO:
         - pr_move: nxn matrix of probabilities of moves from i to j 
                     (ultimate state is related to empty vehicle)
     """
-    def __init__(self, stack_lst, vehicle, alpha=1, beta=1, n_ants=10, n_iter=10, evaporationCoeff = 0.9):
+    def __init__(self, stack_lst, vehicle, alpha=1, beta=1, n_ants=10, n_iter=10, evaporationCoeff = 1):
         self.stack_lst = stack_lst
         self.vehicle = vehicle
         self.alpha = alpha
@@ -67,7 +67,11 @@ class ACO:
                 
             # valutare la bontà tra tutte le soluzioni -> migliore = max     peggiore = min
             deltaTrail = self.trailUpdate(antsArea)
+            #if iter == 0:
             trailMatrix = self.evaporationCoeff*trailMatrix + deltaTrail
+            #else :
+            #    trailMatrix = self.evaporationCoeff*trailMatrix + deltaTrail*(1 - self.evaporationCoeff)
+        pass
                 
 
     def choose_move(self, prev_s_code):
@@ -121,6 +125,7 @@ class ACO:
                 toAddStack = None
         return toAddStack, x_pos, y_max
 
+    
     def trailUpdate(self, _antsArea):
         """
         trailUpdate
@@ -138,10 +143,12 @@ class ACO:
         deltaTrail = np.zeros([len(self.pr_move), len(self.pr_move)])
         for i,ant in enumerate(self.ants):
             x = len(self.pr_move)-1         # the first state to start is always the empty truck for all the ants
+            trailApp = np.zeros([len(self.pr_move), len(self.pr_move)])
             for stack in ant:  # x and y are the position in the state matrix
                 y = stack.state
-                deltaTrail[x,y] = _antsArea[i]/vehicleArea # more is the area covered, more is the quality of the solution
+                trailApp[x,y] += 1 # more is the area covered, more is the quality of the solution
                 x = y
+            deltaTrail += trailApp * _antsArea[i] / vehicleArea
         return deltaTrail
     
     def prMoveUpdate(self, _trailMatrix):
@@ -154,6 +161,7 @@ class ACO:
         Parameters
         - 
         """
+
                 
             
             

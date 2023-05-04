@@ -28,7 +28,7 @@ def popStack(stack_lst, code, n_code):
         - stack_lst: full list containing all the stacks created
         - code: stackability code of the selected item
         - n_code: number of different codes
-    """
+    """ 
     widthwise = False
     if code >= n_code:
         code = code - 7
