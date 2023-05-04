@@ -12,9 +12,7 @@ from sub.ACO import ACO
 # - aggiornamento pr_move (controllare che somma delle probabilite su
 #   sia uguale ad 1)
 # - creare matrice attractiveness
-# - pensare a come inizializzare pr_move in modo che piaccia a fox
 # - creare gli output in modo da avere in stampa le immagini del camion
-# - evaluate  ant.weigthSolution: trovare un  modo per valutare la bontà della soluzione
 
 #TODO: less important
 # - certi stack code potrebbero avere la stessa dimensione
@@ -41,9 +39,11 @@ class Solver23():
         
         stack_lst = self.buildStacks(vehicle)
         aco = ACO(stack_lst, vehicle)
-        aco.pr_move = statesCreation(df_items[["stackability_code",
+        aco.statesCreation(df_items[["stackability_code",
                                                "forced_orientation"]].drop_duplicates())
         aco.aco_2D_bin()
+
+        
         
 
     def buildStacks(self, vehicle):

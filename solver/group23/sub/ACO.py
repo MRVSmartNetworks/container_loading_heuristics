@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.random import choice
 from sub.utilities import *
+
 class ACO:
     """  
     Ant Colony Optimization
@@ -25,7 +26,7 @@ class ACO:
         self.n_ants = n_ants 
         self.evaporationCoeff = evaporationCoeff
         self.n_iter = n_iter
-
+        
         self.ants = []       
     
     def aco_2D_bin(self):
@@ -36,7 +37,7 @@ class ACO:
         Method to solve 2D bin packing problem.
         """
         n_code = (len(self.pr_move) - 1)/2  # no. of different stackability codes
-        trailMatrix = np.zeros([len(self.pr_move), len(self.pr_move)]) # initialization of the trail matrix
+        self.trailMatrix = np.zeros([len(self.pr_move), len(self.pr_move)]) # initialization of the trail matrix
         antsArea = []
         #TODO: outer loop contaning a termination condition (no. of iterations, solution's goodness???)
         for iter in range(self.n_iter):
@@ -68,10 +69,10 @@ class ACO:
             # valutare la bontà tra tutte le soluzioni -> migliore = max     peggiore = min
             deltaTrail = self.trailUpdate(antsArea)
             #if iter == 0:
-            trailMatrix = self.evaporationCoeff*trailMatrix + deltaTrail
+            self.trailMatrix = self.evaporationCoeff*self.trailMatrix + deltaTrail
             #else :
             #    trailMatrix = self.evaporationCoeff*trailMatrix + deltaTrail*(1 - self.evaporationCoeff)
-        pass
+        self.pr_move= self.prMoveUpdate()
                 
 
     def choose_move(self, prev_s_code):
@@ -90,6 +91,7 @@ class ACO:
         
         return next_s_code 
     
+
     def addStack(self, toAddStack, x_pos, y_pos, y_max):
         """  
         addStack
@@ -146,12 +148,12 @@ class ACO:
             trailApp = np.zeros([len(self.pr_move), len(self.pr_move)])
             for stack in ant:  # x and y are the position in the state matrix
                 y = stack.state
-                trailApp[x,y] += 1 # more is the area covered, more is the quality of the solution
+                trailApp[x,y] += 1 #NOTE: forse il +1 qua non va bene, da verificare a programma completo
                 x = y
-            deltaTrail += trailApp * _antsArea[i] / vehicleArea
+            deltaTrail += trailApp * _antsArea[i] / vehicleArea # more is the area covered, more is the quality of the solution
         return deltaTrail
     
-    def prMoveUpdate(self, _trailMatrix):
+    def prMoveUpdate(self):
         """
         prMoveUpdate
         ------------
@@ -161,8 +163,46 @@ class ACO:
         Parameters
         - 
         """
+        """ buff = self.trailMatrix * self.attractiveness
+        for i in range(len(buff)):
+            _sum = np.sum(buff[i], axis=1)
+        vect = 1./np.sum(buff, axis=1)
+        pr_move = buff*vect
+        pass      """   
 
-                
+    def statesCreation(self, code_orientation):
+        """ 
+        statesCreation
+        --------------
+        Create and initialize the probability of a move matrix
+
+        Note: 
+            - matrix[0:N_code] are lengthwise
+            - matrix[N_code:2*N_code] are widthwise
+            - matrix last state is the empty truck
             
-            
+        #### INPUT PARAMETERS:
+            - code_orientation: dataframe containing all the stackability codes
+                                and their forced orientation
+        """
+        len_matrix = 0
+        code_sub = 1
+        N_code = len(code_orientation.stackability_code)
+        len_matrix = (2*N_code) + 1     # length of the final matrix, the +1 is for adding the state of the empty truck
+        mult_array = np.zeros(len_matrix)
+        for i,code in enumerate(code_orientation.stackability_code):
+            if (code_orientation.iloc[code]["forced_orientation"]) == 'w':    # widthwise constrain
+                mult_array[i] = 0
+                mult_array[N_code + i] = 1
+                code_sub += 1
+            else:                                                             # no constrain, so 2 different orientation
+                mult_array[i] = 1
+                mult_array[N_code + i] = 1
+
+        self.pr_move = np.full((len_matrix,len_matrix), 1./(len_matrix-code_sub)) * mult_array
+        self.attractiveness = np.full((len_matrix,len_matrix), 1) * mult_array 
+        mult_array[i+1] = 1
+        self.pr_move = self.pr_move * np.transpose(mult_array)
+        self.attractiveness = self.attractiveness * np.transpose(mult_array)
+
     
