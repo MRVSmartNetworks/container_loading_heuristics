@@ -189,20 +189,15 @@ class ACO:
         code_sub = 1
         N_code = len(code_orientation.stackability_code)
         len_matrix = (2*N_code) + 1     # length of the final matrix, the +1 is for adding the state of the empty truck
-        mult_array = np.zeros(len_matrix)
+        mult_mat = np.ones((len_matrix,len_matrix))
+        mult_mat[:,len_matrix-1] = 0
         for i,code in enumerate(code_orientation.stackability_code):
             if (code_orientation.iloc[code]["forced_orientation"]) == 'w':    # widthwise constrain
-                mult_array[i] = 0
-                mult_array[N_code + i] = 1
+                mult_mat[i,:] = 0
+                mult_mat[:,i] = 0
                 code_sub += 1
-            else:                                                             # no constrain, so 2 different orientation
-                mult_array[i] = 1
-                mult_array[N_code + i] = 1
 
-        self.pr_move = np.full((len_matrix,len_matrix), 1./(len_matrix-code_sub)) * mult_array
-        self.attractiveness = np.full((len_matrix,len_matrix), 1) * mult_array 
-        mult_array[i+1] = 1
-        self.pr_move = self.pr_move * np.transpose(mult_array)
-        self.attractiveness = self.attractiveness * np.transpose(mult_array)
+        self.pr_move = np.full((len_matrix,len_matrix), 1./(len_matrix-code_sub)) * mult_mat
+        self.attractiveness = np.full((len_matrix,len_matrix), 1) * mult_mat
 
     
