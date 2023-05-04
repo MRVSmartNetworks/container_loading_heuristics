@@ -18,7 +18,7 @@ class ACO:
         - pr_move: nxn matrix of probabilities of moves from i to j 
                     (ultimate state is related to empty vehicle)
     """
-    def __init__(self, stack_lst, vehicle, alpha=1, beta=1, n_ants=10, n_iter=10, evaporationCoeff = 1):
+    def __init__(self, stack_lst, vehicle, alpha=1, beta=1, n_ants=10, n_iter=20, evaporationCoeff = 1):
         self.stack_lst = stack_lst
         self.vehicle = vehicle
         self.alpha = alpha
@@ -72,8 +72,10 @@ class ACO:
             self.trailMatrix = self.evaporationCoeff*self.trailMatrix + deltaTrail
             #else :
             #    trailMatrix = self.evaporationCoeff*trailMatrix + deltaTrail*(1 - self.evaporationCoeff)
-        self.pr_move= self.prMoveUpdate()
-                
+            self.prMoveUpdate()
+        print(max(antsArea)/(self.vehicle['length'] * self.vehicle['width']))
+        #BUG: totArea > 1
+        pass
 
     def choose_move(self, prev_s_code):
         """ 
@@ -86,6 +88,7 @@ class ACO:
         #### OUTPUT PARAMETERS:
             - next_s_code: stackability code of the next stack to be placed into the truck
         """
+        #BUG: bug probability not equal one
         row_to_choose = self.pr_move[prev_s_code][:] # select the row from the stack the ant is moving
         next_s_code = int(choice(range(len(row_to_choose)), p=row_to_choose))
         
@@ -150,6 +153,8 @@ class ACO:
                 y = stack.state
                 trailApp[x,y] += 1 #NOTE: forse il +1 qua non va bene, da verificare a programma completo
                 x = y
+                if _antsArea[i] / vehicleArea >1:
+                    print("totArea > 1")#BUG: test bug
             deltaTrail += trailApp * _antsArea[i] / vehicleArea # more is the area covered, more is the quality of the solution
         return deltaTrail
     
@@ -163,12 +168,12 @@ class ACO:
         Parameters
         - 
         """
-        """ buff = self.trailMatrix * self.attractiveness
-        for i in range(len(buff)):
-            _sum = np.sum(buff[i], axis=1)
-        vect = 1./np.sum(buff, axis=1)
-        pr_move = buff*vect
-        pass      """   
+        for i in range(len(self.trailMatrix)):
+            mul = self.trailMatrix[i, :] * self.attractiveness[i, :]
+            _sum = sum(mul)
+            if _sum == 0:
+                _sum = 1
+            self.pr_move[i, :] = mul/_sum
 
     def statesCreation(self, code_orientation):
         """ 
