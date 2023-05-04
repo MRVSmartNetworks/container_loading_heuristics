@@ -39,6 +39,7 @@ def popStack(stack_lst, code, n_code):
             stack = stack_lst.pop(i)
             stack.state = code
             if widthwise:
+                stack.state += 7
                 stack.orient = 'w'
                 stack.length, stack.width = stack.width, stack.length
             return stack, stack_lst

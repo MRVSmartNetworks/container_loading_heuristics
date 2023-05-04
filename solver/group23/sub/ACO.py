@@ -143,6 +143,17 @@ class ACO:
                 deltaTrail[x,y] = _antsArea[i]/vehicleArea # more is the area covered, more is the quality of the solution
                 x = y
         return deltaTrail
+    
+    def prMoveUpdate(self, _trailMatrix):
+        """
+        prMoveUpdate
+        ------------
+
+        Method used to update the probability to move matrix.
+
+        Parameters
+        - 
+        """
                 
             
             
