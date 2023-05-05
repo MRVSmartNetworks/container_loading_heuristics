@@ -10,10 +10,10 @@ import matplotlib.pyplot as plt
 from matplotlib import collections
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-from solver.group22.utilities import cuboid_data
+from solver.group22.utilities import cuboid_data, set_axes_equal
 from solver.group22.stack import Stack
 
-# TODO: remove full list of items from stack attributes, only store the item ID, which can be used
+# TODO (maybe): remove full list of items from stack attributes, only store the item ID, which can be used
 # in the dataframe to locate the correct row (supposing NO DUPLICATES).
 
 DEBUG = False
@@ -52,7 +52,6 @@ class Solver22:
         self.curr_obj_value = 0
 
         # Current best solution (so far)
-        # TODO: method to update it - at each complete iteration
         self.curr_best_sol = {
             "type_vehicle": [],
             "idx_vehicle": [],
@@ -207,7 +206,7 @@ class Solver22:
         the column "volume"
         - forbidden_trucks: list of IDs of trucks which have found to be not viable to store items
         """
-        # TODO: introduce some random behavior, as the current procedure gets stuck...
+        # TODO (maybe): introduce some random behavior, as the current procedure may get stuck...
 
         if "volume" not in remaining_items.columns:
             remaining_items["volume"] = remaining_items["length"]*remaining_items["width"]*remaining_items["height"]
@@ -369,8 +368,6 @@ class Solver22:
         ########### Initialize bound
         bound = [[0,0],[0,y_truck]]
 
-        # TODO: add iteration
-
         space_left = True
 
         while space_left:
@@ -381,7 +378,6 @@ class Solver22:
 
             # 2. Build slices - choose stacks according to highest price
             # Brute force
-            # TODO: understand what is the best value of x_dim to be passed to the method below
             rightmost = max([p[0] for p in bound])
             x_dim = x_truck - rightmost
 
@@ -400,7 +396,7 @@ class Solver22:
 
             else:
                 # If the new slice is empty, close the bin
-                # Maybe can also check for big spaces to fill with arbitrary slices
+                # TODO: check for big spaces to fill with arbitrary slices
                 # but tricky (buildSlice can be used for arbitrary dimensions)
                 if len(sol_2D['x_sol']) == 0:
                     print("Cannot fit any item in this truck!")
@@ -699,7 +695,10 @@ class Solver22:
                 self.curr_sol["x_origin"].append(sol_2D["x_sol"][i])
                 self.curr_sol["y_origin"].append(sol_2D["y_sol"][i])
                 self.curr_sol["z_origin"].append(z_lst[j])
-                self.curr_sol["orient"].append(sol_2D["orient"][i])
+                if sol_2D["orient"][i] == 1:
+                    self.curr_sol["orient"].append('w')
+                else:
+                    self.curr_sol["orient"].append('n')
                 j += 1
 
                 # Remove used items from the items DF
@@ -904,21 +903,23 @@ class Solver22:
 
         # ax.set_aspect('equal')
 
-        def set_aspect_equal_3d(ax):
-            x_mean = np.mean(x_lim)
-            y_mean = np.mean(y_lim)
-            z_mean = np.mean(z_lim)
+        # def set_aspect_equal_3d(ax):
+        #     x_mean = np.mean(x_lim)
+        #     y_mean = np.mean(y_lim)
+        #     z_mean = np.mean(z_lim)
 
-            plot_radius = max([abs(lim - mean_)
-                            for lims, mean_ in ((x_lim, x_mean),
-                                                (y_lim, y_mean),
-                                                (z_lim, z_mean))
-                            for lim in lims])
+        #     plot_radius = max([abs(lim - mean_)
+        #                     for lims, mean_ in ((x_lim, x_mean),
+        #                                         (y_lim, y_mean),
+        #                                         (z_lim, z_mean))
+        #                     for lim in lims])
 
-            ax.set_xlim3d([0, x_mean + plot_radius])
-            ax.set_ylim3d([0, y_mean + plot_radius])
-            ax.set_zlim3d([0, z_mean + plot_radius])
+        #     ax.set_xlim3d([0, x_mean + plot_radius])
+        #     ax.set_ylim3d([0, y_mean + plot_radius])
+        #     ax.set_zlim3d([0, z_mean + plot_radius])
 
-        set_aspect_equal_3d(ax)
+        #set_aspect_equal_3d(ax)
+
+        set_axes_equal(ax)
 
         plt.show()
