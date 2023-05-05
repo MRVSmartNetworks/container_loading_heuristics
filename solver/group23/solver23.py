@@ -6,6 +6,7 @@ import numpy as np
 from sub.stack import Stack
 from sub.utilities import *
 from sub.ACO import ACO
+from sub.projection import *
 #TODO:
 # - in popStack pensare a cosa fare se non ci sono più stack con quel
 #   stack_code
@@ -42,6 +43,12 @@ class Solver23():
         aco.statesCreation(df_items[["stackability_code",
                                                "forced_orientation"]].drop_duplicates())
         aco.aco_2D_bin()
+
+        df_sol = pd.DataFrame.from_dict(aco.sol)
+        df_sol.to_csv(
+            os.path.join('results', f'{self.name}_sol.csv'),
+            index=False
+        )
 
         
         
@@ -128,3 +135,8 @@ if __name__ == "__main__":
     df_sol = pd.read_csv(
         os.path.join('results', f'{tmp.name}_sol.csv'),
     )
+
+    orthogonal_plane(df_items, df_vehicles, df_sol)
+
+    stack_3D(df_items, df_vehicles, df_sol)
+    pass
