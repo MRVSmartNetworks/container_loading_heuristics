@@ -18,7 +18,7 @@ class ACO:
         - pr_move: nxn matrix of probabilities of moves from i to j 
                     (ultimate state is related to empty vehicle)
     """
-    def __init__(self, stack_lst, vehicle, alpha=1, beta=1, n_ants=500, n_iter=50, evaporationCoeff = 0.6):
+    def __init__(self, stack_lst, vehicle, alpha=1, beta=1, n_ants=20, n_iter=5, evaporationCoeff = 0.6):
         self.stack_lst = stack_lst
         self.vehicle = vehicle
         self.alpha = alpha
@@ -66,7 +66,6 @@ class ACO:
                 stack_lst = self.stack_lst.copy()
                 while(free_space):  # loop until free space available in vehicle
                     next_s_code = self.choose_move(prev_s_code) 
-                    # ants[ant_k].append()
                     new_stack, stack_lst = popStack(stack_lst, next_s_code, n_code) #TODO: what if no more stacks with this stack code??
                     toAddStack, x_pos, y_pos, y_max = self.addStack(new_stack, x_pos, y_pos, y_max)
                     if toAddStack is not None:
@@ -78,7 +77,7 @@ class ACO:
                     else:
                         free_space = False
                 
-                self.ants.append(ant_k)
+                self.ants.append(ant_k.copy())
                 antsArea.append(totArea)
                 
             # valutare la bontà tra tutte le soluzioni -> migliore = max     peggiore = min
@@ -234,7 +233,7 @@ class ACO:
                 self.sol['id_item'].append(idItem)
                 self.sol['x_origin'].append(stack.x_origin)
                 self.sol['y_origin'].append(stack.y_origin)
-                self.sol['z_origin'].append(stack.height) #nedd to change it
+                self.sol['z_origin'].append(0) #nedd to change it
                 self.sol['orient'].append(stack.orient)
        
 

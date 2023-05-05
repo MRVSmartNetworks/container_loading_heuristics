@@ -38,16 +38,17 @@ def popStack(stack_lst, code, n_code):
     for i,stack in enumerate(stack_lst):
         if stack.stack_code == code:
             stack = stack_lst.pop(i)
-            stack.state = code
+            stack_copy = deepcopy(stack)
+            stack_copy.state = code
             if widthwise:
-                stack.state += 7
-                stack.orient = 'w'
-                stack.length, stack.width = stack.width, stack.length
+                stack_copy.state += 7
+                stack_copy.orient = 'w'
+                stack_copy.length, stack_copy.width = stack_copy.width, stack_copy.length
             else:
-                stack.orient = 'l'
-            toReturn = deepcopy(stack)
+                stack_copy.orient = 'l'
+            
             #NOTE: cerca una soluzione migliore
-            return toReturn, stack_lst
+            return stack_copy, stack_lst
     raise Exception("No more stacks with specified code")
 
 
