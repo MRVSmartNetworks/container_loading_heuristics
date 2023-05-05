@@ -18,7 +18,7 @@ class ACO:
         - pr_move: nxn matrix of probabilities of moves from i to j 
                     (ultimate state is related to empty vehicle)
     """
-    def __init__(self, stack_lst, vehicle, alpha=1, beta=1, n_ants=20, n_iter=5, evaporationCoeff = 0.6):
+    def __init__(self, stack_lst, vehicle, alpha=1, beta=1, n_ants=100, n_iter=40, evaporationCoeff = 0.6):
         self.stack_lst = stack_lst
         self.vehicle = vehicle
         self.alpha = alpha
@@ -222,6 +222,10 @@ class ACO:
 
         self.pr_move = np.full((len_matrix,len_matrix), 1./(len_matrix-code_sub)) * mult_mat
         self.attractiveness = np.full((len_matrix,len_matrix), 1) * mult_mat
+        #NOTE: prova a cambiare acctractivness
+        self.attractiveness[:,:7] = self.attractiveness[:,:7]*2
+        
+        
 
     def solCreation(self, _antsArea):
         bestAnt = self.ants[np.argmax(_antsArea)]
