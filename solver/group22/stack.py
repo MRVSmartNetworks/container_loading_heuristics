@@ -261,6 +261,6 @@ class Stack:
         """
         assignID
         ---
-        Method used to assign the 
+        Method used to assign the ID to the stack.
         """
         self.id = f"S{str(id_int).zfill(N_DIGITS)}"
