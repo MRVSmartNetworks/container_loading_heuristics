@@ -18,7 +18,7 @@ class ACO:
         - pr_move: nxn matrix of probabilities of moves from i to j 
                     (ultimate state is related to empty vehicle)
     """
-    def __init__(self, stack_lst, vehicle, alpha=1, beta=1, n_ants=100, n_iter=50, evaporationCoeff = 0.1):
+    def __init__(self, stack_lst, vehicle, alpha=1, beta=1, n_ants=500, n_iter=50, evaporationCoeff = 0.6):
         self.stack_lst = stack_lst
         self.vehicle = vehicle
         self.alpha = alpha
@@ -49,9 +49,11 @@ class ACO:
 
         n_code = (len(self.pr_move) - 1)/2  # no. of different stackability codes
         self.trailMatrix = np.zeros([len(self.pr_move), len(self.pr_move)]) # initialization of the trail matrix
-        antsArea = []
+        
 
         for iter in range(self.n_iter):
+            self.ants = []
+            antsArea = []
             for k in range(self.n_ants):
                 free_space = True 
                 prev_s_code = len(self.pr_move)-1 # empty vehicle state
@@ -233,9 +235,7 @@ class ACO:
                 self.sol['x_origin'].append(stack.x_origin)
                 self.sol['y_origin'].append(stack.y_origin)
                 self.sol['z_origin'].append(stack.height) #nedd to change it
-                if stack.state <= 6:
-                    self.sol['orient'].append('l')
-                else:
-                    self.sol['orient'].append('w')
+                self.sol['orient'].append(stack.orient)
+       
 
 
