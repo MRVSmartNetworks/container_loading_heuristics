@@ -18,7 +18,7 @@ class ACO:
         - pr_move: nxn matrix of probabilities of moves from i to j 
                     (ultimate state is related to empty vehicle)
     """
-    def __init__(self, stack_lst, vehicle, alpha=1, beta=1, n_ants=10, n_iter=20, evaporationCoeff = 1):
+    def __init__(self, stack_lst, vehicle, alpha=1, beta=1, n_ants=100, n_iter=50, evaporationCoeff = 0.1):
         self.stack_lst = stack_lst
         self.vehicle = vehicle
         self.alpha = alpha
@@ -39,7 +39,7 @@ class ACO:
         n_code = (len(self.pr_move) - 1)/2  # no. of different stackability codes
         self.trailMatrix = np.zeros([len(self.pr_move), len(self.pr_move)]) # initialization of the trail matrix
         antsArea = []
-        #TODO: outer loop contaning a termination condition (no. of iterations, solution's goodness???)
+
         for iter in range(self.n_iter):
             for k in range(self.n_ants):
                 free_space = True 
@@ -55,10 +55,12 @@ class ACO:
                     next_s_code = self.choose_move(prev_s_code) 
                     # ants[ant_k].append()
                     new_stack, stack_lst = popStack(stack_lst, next_s_code, n_code) #TODO: what if no more stacks with this stack code??
-                    toAddStack, x_pos, y_max = self.addStack(new_stack, x_pos, y_pos, y_max)
+                    toAddStack, x_pos, y_pos, y_max = self.addStack(new_stack, x_pos, y_pos, y_max)
                     if toAddStack is not None:
                         ant_k.append(toAddStack)
                         totArea += (toAddStack.length*toAddStack.width)
+                        if totArea /(self.vehicle['length'] * self.vehicle['width']) >1:
+                            print("totArea > 1")#BUG: test bug
                         prev_s_code = next_s_code
                     else:
                         free_space = False
@@ -111,14 +113,14 @@ class ACO:
         - y_max: the max width of a stack in a row in order to build the next
                 row staring from y_max
         """
-        if x_pos + toAddStack.length < self.vehicle['length']:
+        if x_pos + toAddStack.length <= self.vehicle['length'] and y_pos + toAddStack.width <= self.vehicle['width']:
             toAddStack.position(x_pos, y_pos)
             x_pos += toAddStack.length
             if toAddStack.width > y_max:
                 y_max = toAddStack.width
         else:
             x_pos = 0
-            y_pos = y_max
+            y_pos = y_max + y_pos
             y_max = 0
             if y_pos + toAddStack.width < self.vehicle['width']:
                 toAddStack.position(x_pos, y_pos)
@@ -128,7 +130,8 @@ class ACO:
             else:
                 # no more space in vehicle
                 toAddStack = None
-        return toAddStack, x_pos, y_max
+                #BUG: toAddStack non deve essere rimosso da stack_lst
+        return toAddStack, x_pos, y_pos, y_max
 
     
     def trailUpdate(self, _antsArea):
@@ -153,8 +156,7 @@ class ACO:
                 y = stack.state
                 trailApp[x,y] += 1 #NOTE: forse il +1 qua non va bene, da verificare a programma completo
                 x = y
-                if _antsArea[i] / vehicleArea >1:
-                    print("totArea > 1")#BUG: test bug
+                
             deltaTrail += trailApp * _antsArea[i] / vehicleArea # more is the area covered, more is the quality of the solution
         return deltaTrail
     
@@ -168,6 +170,7 @@ class ACO:
         Parameters
         - 
         """
+        #TODO: add alpha and beta
         for i in range(len(self.trailMatrix)):
             mul = self.trailMatrix[i, :] * self.attractiveness[i, :]
             _sum = sum(mul)
