@@ -36,6 +36,17 @@ class ACO:
 
         Method to solve 2D bin packing problem.
         """
+        self.sol = {
+            "type_vehicle": [],
+            "idx_vehicle": [],
+            "id_stack": [],
+            "id_item": [],
+            "x_origin": [],
+            "y_origin": [],
+            "z_origin": [],
+            "orient": []
+        }
+
         n_code = (len(self.pr_move) - 1)/2  # no. of different stackability codes
         self.trailMatrix = np.zeros([len(self.pr_move), len(self.pr_move)]) # initialization of the trail matrix
         antsArea = []
@@ -74,6 +85,9 @@ class ACO:
             #    trailMatrix = self.evaporationCoeff*trailMatrix + deltaTrail*(1 - self.evaporationCoeff)
             self.prMoveUpdate()
         print(max(antsArea)/(self.vehicle['length'] * self.vehicle['width']))
+
+        self.solCreation(antsArea)
+
         #BUG: totArea > 1
         pass
 
@@ -205,4 +219,20 @@ class ACO:
         self.pr_move = np.full((len_matrix,len_matrix), 1./(len_matrix-code_sub)) * mult_mat
         self.attractiveness = np.full((len_matrix,len_matrix), 1) * mult_mat
 
-    
+    def solCreation(self, _antsArea):
+        bestAnt = self.ants[np.argmax(_antsArea)]
+        for i,stack in enumerate(bestAnt):
+            for idItem in stack.items:
+                self.sol['type_vehicle'].append(self.vehicle['id_truck'])
+                self.sol['idx_vehicle'].append(0) #TODO: need a way to update the number of that vehicle
+                self.sol['id_stack'].append(f"S{i}")
+                self.sol['id_item'].append(idItem)
+                self.sol['x_origin'].append(stack.x_origin)
+                self.sol['y_origin'].append(stack.y_origin)
+                self.sol['z_origin'].append(stack.height) #nedd to change it
+                if stack.state <= 6:
+                    self.sol['orient'].append('l')
+                else:
+                    self.sol['orient'].append('w')
+
+
