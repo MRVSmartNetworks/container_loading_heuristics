@@ -96,9 +96,13 @@ Choice of trucks: evaluate the *volume/cost* ratio for each truck and choose tru
 In general, maximize the amount of 'y' dimension occupied, e.g., when choosing the objects, evaluate all the possible stacking options and choose the one which minimizes the difference between $W_i$ (truck width) and the total width of the stacks.
 Possible optimizations of this require the widest elements to be placed first (left, looking in the direction $-\textbf{x}$) in each slice.
 
+Optimal stacks can be created in the same way as the cutting stock problem - this way it is possible to minimize the number of stacks by reducing the z dimension left from the ceiling.
+See [here](https://developers.google.com/optimization/pack/knapsack).
+
 ## Useful links
 
 - [3D bin packing heuristics](https://github.com/bchaiks/3D_Bin_Packing_Heuristics) - useful for solution representation in python
 - [Peak Filling Sices Push](~/Documents/Politecnico/A.A.2022_2023/II-semester/operational-research/project/a-new-heuristic-algorithm-for-the-3d-bin-packing-problem.pdf) - found online (similar idea I had)
 - [HBP heuristics for 2D/3D bin packing](~/Documents/Politecnico/A.A.2022_2023/II-semester/operational-research/project/5-BPP-4OR-Part-II.pdf) - suggested by professor
 - [OR tools website discussion of 3D bin packing](https://developers.google.com/optimization/pack/bin_packing?hl=en) - could be a good starting point either just for the program structure or for some subproblems
+- [OR tools discussion - 1D bin packing](https://developers.google.com/optimization/pack/knapsack) - good strategy for creating stacks
