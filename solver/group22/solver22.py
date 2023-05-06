@@ -20,7 +20,7 @@ from solver.group22.stack_creation_heur import create_stack_cs
 DEBUG = False
 DEBUG_MORE = False
 MAX_ITER = 10000
-MAX_TRIES = 1
+MAX_TRIES = 5
 
 
 class Solver22:
@@ -164,7 +164,7 @@ class Solver22:
                 # TODO: find more efficient solution for reading all rows one at a time (if possible)
 
                 # Build stacks with the copied list of items 'tmp_items'
-                valid_stacks_list = create_stack_cs(tmp_items, curr_truck)
+                valid_stacks_list = self.create_stack(tmp_items, curr_truck)
 
                 if DEBUG_MORE:
                     print(f"Total number of generated stacks: {len(valid_stacks_list)}")
