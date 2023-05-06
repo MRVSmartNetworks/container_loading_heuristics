@@ -105,3 +105,4 @@ See [here](https://developers.google.com/optimization/pack/knapsack).
 - [Peak Filling Sices Push](~/Documents/Politecnico/A.A.2022_2023/II-semester/operational-research/project/a-new-heuristic-algorithm-for-the-3d-bin-packing-problem.pdf) - found online (similar idea I had)
 - [HBP heuristics for 2D/3D bin packing](~/Documents/Politecnico/A.A.2022_2023/II-semester/operational-research/project/5-BPP-4OR-Part-II.pdf) - suggested by professor
 - [OR tools website discussion of 3D bin packing](https://developers.google.com/optimization/pack/bin_packing?hl=en) - could be a good starting point either just for the program structure or for some subproblems
+- [OR tools discussion - 1D bin packing](https://developers.google.com/optimization/pack/knapsack) - good strategy for creating stacks

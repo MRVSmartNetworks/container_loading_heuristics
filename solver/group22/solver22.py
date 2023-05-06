@@ -12,6 +12,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from solver.group22.utilities import cuboid_data, set_axes_equal
 from solver.group22.stack import Stack
+from solver.group22.stack_creation_cs_gurobi import create_stack_cs
 
 # TODO (maybe): remove full list of items from stack attributes, only store the item ID, which can be used
 # in the dataframe to locate the correct row (supposing NO DUPLICATES).
@@ -19,7 +20,7 @@ from solver.group22.stack import Stack
 DEBUG = False
 DEBUG_MORE = False
 MAX_ITER = 10000
-MAX_TRIES = 5
+MAX_TRIES = 1
 
 class Solver22:
     def __init__(self):
@@ -106,12 +107,13 @@ class Solver22:
             tmp_items['surface'] = tmp_items['width']*tmp_items['length']
             tmp_items['volume'] = tmp_items['surface']*tmp_items['height']
 
-            # Order according to dimensions/cost ratio
-            if "dim_cost_ratio" not in tmp_vehicles.columns:
+            # Order according to dimensions * weight / cost ratio
+            if "dim_cost_ratio" not in tmp_vehicles.columns and "dim_wt_cost_ratio" not in tmp_vehicles.columns:
                 tmp_vehicles["volume"] = tmp_vehicles['width']*tmp_vehicles['length']*tmp_vehicles['height']
                 tmp_vehicles["dim_cost_ratio"] = tmp_vehicles['volume']/tmp_vehicles['cost']
+                tmp_vehicles["dim_wt_cost_ratio"] = tmp_vehicles["dim_cost_ratio"] * tmp_vehicles["max_weight"]
 
-            ord_vehicles = tmp_vehicles.sort_values(by=['dim_cost_ratio'], ascending=False)
+            ord_vehicles = tmp_vehicles.sort_values(by=['dim_wt_cost_ratio'], ascending=False)
             
             # Used to track the different types of used vehicles and assign unique IDs:
             n_trucks = {}
@@ -145,7 +147,7 @@ class Solver22:
                 # TODO: find more efficient solution for reading all rows one at a time (if possible)
 
                 # Build stacks with the copied list of items 'tmp_items'
-                valid_stacks_list = self.create_stack(tmp_items, curr_truck)
+                valid_stacks_list = create_stack_cs(tmp_items, curr_truck)
 
                 if DEBUG_MORE:
                     print(f"Total number of generated stacks: {len(valid_stacks_list)}")
@@ -348,7 +350,7 @@ class Solver22:
         x_truck = truck["length"]
         y_truck = truck["width"]
         # No need for height (we are solving 2D currently)
-        max_weight = truck["max_weight"]
+        max_weight = truck["max_weight"]        ## TODO: use it!!!!
 
         # This solution simply consists of a 2D bin packing with no constraint but the 
         # dimensions of the bin and max_weight: it is assumed the stacks have been built 
@@ -411,7 +413,7 @@ class Solver22:
         
         return sol_2D
 
-    def priceStack(self, stacks):
+    def priceStack(self, stacks, override=None):
         """
         pricesStack
         ---
@@ -428,12 +430,25 @@ class Solver22:
 
         TODO: think of new proces to assign
         - number of items
+        - density of stack - may be useful to fulfill weight constraint
 
         The input variable 'stacks' is a list of Stack objects.
         This method updates the 'price' attribute inside each Stack object.
+
+        Via the parameter 'override', it is possible to force the choice 
+        on one or more cost types.
+        This parameter can be either a list of ints or a single int value,
+        specifying the price strategy.
         """
         # Select which pricing type
-        val = random.randint(0,5)
+        if override is None:
+            val = random.randint(0,5)
+        elif isinstance(override, int):
+            val = override
+        elif isinstance(override, list):
+            val = override[random.randint(0, len(override)-1)]
+        else:
+            raise ValueError("Parameter 'override' should be of type int (or None)!")
 
         if val == 0:
             for i in range(len(stacks)):

@@ -24,7 +24,7 @@ def main():
         return
 
     # Variables
-    # x[i, j] = 1 if item i is packed in bin j.
+    # x[i, j] = 1 if item i is packed in bin j
     x = {}
     for i in data['items']:
         for j in data['bins']:
@@ -36,17 +36,17 @@ def main():
         y[j] = solver.IntVar(0, 1, 'y[%i]' % j)
 
     # Constraints
-    # Each item must be in exactly one bin.
+    # Each item must be in exactly one bin
     for i in data['items']:
         solver.Add(sum(x[i, j] for j in data['bins']) == 1)
 
-    # The amount packed in each bin cannot exceed its capacity.
+    # The amount packed in each bin cannot exceed its capacity
     for j in data['bins']:
         solver.Add(
             sum(x[(i, j)] * data['weights'][i] for i in data['items']) <= y[j] *
             data['bin_capacity'])
 
-    # Objective: minimize the number of bins used.
+    # Objective: minimize the number of bins used
     solver.Minimize(solver.Sum([y[j] for j in data['bins']]))
 
     status = solver.Solve()
