@@ -12,7 +12,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from solver.group22.utilities import cuboid_data, set_axes_equal
 from solver.group22.stack import Stack
-from solver.group22.stack_creation_cs_gurobi import create_stack_cs
+from solver.group22.stack_creation_heur import create_stack_cs
 
 # TODO (maybe): remove full list of items from stack attributes, only store the item ID, which can be used
 # in the dataframe to locate the correct row (supposing NO DUPLICATES).
@@ -20,7 +20,7 @@ from solver.group22.stack_creation_cs_gurobi import create_stack_cs
 DEBUG = False
 DEBUG_MORE = False
 MAX_ITER = 10000
-MAX_TRIES = 1
+MAX_TRIES = 5
 
 class Solver22:
     def __init__(self):
@@ -273,8 +273,6 @@ class Solver22:
         stacks_list = []        # Outcome of this function
         
         for code in stack_codes:
-            tot_high = 0
-            tot_weight = 0
             new_stack_needed = False
             other_constraints = {           # Enforce constraints on the 
                 "max_height": truck["height"],
@@ -371,8 +369,9 @@ class Solver22:
         bound = [[0,0],[0,y_truck]]
 
         space_left = True
+        weight_left = max_weight
 
-        while space_left:
+        while space_left and weight_left > 0:
             # 1. Assign prices to each stack:
             self.priceStack(up_stacks)
 
@@ -383,15 +382,19 @@ class Solver22:
             rightmost = max([p[0] for p in bound])
             x_dim = x_truck - rightmost
 
-            new_slice = self.buildSlice(up_stacks, x_dim, y_truck)
+            new_slice = self.buildSlice(up_stacks, x_dim, y_truck, weight_left)
 
             assert (len(up_stacks) + len(new_slice) == curr_stacks_n), "Something went wrong! The stacks don't add up"
 
             if len(new_slice) > 0:
                 # Having built the slice:
-                # 'Push' stack towards bottom
+                # Update weight_left (NOTE: check is done at slice creation):
+                weight_added = 0
+                for el in new_slice:
+                    weight_added += el[0].tot_weight
+                weight_left = weight_left - weight_added
 
-                # TODO: create 'pushSlice' method
+                # 'Push' stack towards bottom
                 sol_2D, bound = self.pushSlice(bound, new_slice, sol_2D)
 
                 assert (bound[-1][1] == truck["width"]), "Bound was built wrong!"
@@ -427,6 +430,7 @@ class Solver22:
         - Price = perimeter
         - Price = stack height ---- Not so good
         - Price = total volume
+        - Price = -1*density
 
         TODO: think of new proces to assign
         - number of items
@@ -442,7 +446,7 @@ class Solver22:
         """
         # Select which pricing type
         if override is None:
-            val = random.randint(0,5)
+            val = random.randint(0,3)
         elif isinstance(override, int):
             val = override
         elif isinstance(override, list):
@@ -468,8 +472,14 @@ class Solver22:
         elif val == 5:
             for i in range(len(stacks)):
                 stacks[i].assignPrice(stacks[i].tot_height * stacks[i].area)
+        elif val == 6:
+            for i in range(len(stacks)):
+                stacks[i].assignPrice(-1 * stacks[i].tot_weight / stacks[i].area)
+        elif val == 7:
+            for i in range(len(stacks)):
+                stacks[i].assignPrice(-1 * stacks[i].tot_height * stacks[i].tot_weight / stacks[i].area)
 
-    def buildSlice(self, stacks, x_dim, y_dim):
+    def buildSlice(self, stacks, x_dim, y_dim, max_weight):
         """
         buildSlice
         ---
@@ -495,9 +505,10 @@ class Solver22:
         This method contains the main procedure used to fill the truck. 
         To change strategy, just change this function.
         """
+        weight_left = max_weight
         new_slice = []
 
-        # Sort the stacks according to price
+        # Sort the stacks according to decreasing price
         stacks.sort(key=lambda x: x.price, reverse=True)
         
         i = 0       # i tracks the index of the stack list
@@ -507,12 +518,13 @@ class Solver22:
         # NOTE: this can be improved in the future, e.g., by finding optimal slice at each
         # iteration, in terms of minimum delta_y left
         # For now, I will keep this approach as it follows what explained in the paper...
+        # NOTE: also the check of the weight is done here!
         while i < len(stacks):
             # if DEBUG:
             #     print(f"Analyzing stack {i}")
             stack_added = False
             if len(stacks[i].items) > 0:        # (Don't know why) but sometimes stacks are created empty...
-                if delta_y >= stacks[i].width and x_dim >= stacks[i].length:
+                if delta_y >= stacks[i].width and x_dim >= stacks[i].length and weight_left > stacks[i].tot_weight:
                     # Stack is good as-is - insert it
                     new_slice.append([stacks[i], i, 0])
 
@@ -521,7 +533,7 @@ class Solver22:
 
                     delta_y -= stacks[i].width
                     stack_added = True
-                elif stacks[i].forced_orientation == "n" and delta_y >= stacks[i].length and x_dim >= stacks[i].width:
+                elif stacks[i].forced_orientation == "n" and delta_y >= stacks[i].length and x_dim >= stacks[i].width and weight_left > stacks[i].tot_weight:
                     # If the stack cannot be placed, try rotating it by 90 degrees, if allowed
                     new_slice.append([stacks[i], i, 1])
 
@@ -532,6 +544,9 @@ class Solver22:
                     stack_added = True
 
             if stack_added:
+                # Update weight_left - remove the weight of the current stack
+                weight_left -= new_slice[-1][0].tot_weight
+
                 # Update origin y coordinate
                 if j != 0:
                     # Get width (length if rotated) of 2nd to last element
@@ -612,7 +627,7 @@ class Solver22:
             
             # Find lower bound starting from 0
             ind_bound = 0
-            while bound[ind_bound][1] < y_i:
+            while bound[ind_bound][1] <= y_i:
                 ind_bound += 1
 
             if bound[ind_bound][1] == y_i:
@@ -622,7 +637,7 @@ class Solver22:
             
             # Search for valid points
             ind_top = ind_bound + 0             # Needed to prevent to just copy the reference and update both indices...
-            while bound[ind_top][1] < y_i+w_i:
+            while bound[ind_top][1] <= y_i+w_i:
                 ind_top += 1
             # When the loop finishes, the element bound[ind_top] contains the upper end 
             
