@@ -102,7 +102,7 @@ def create_stack_cs(df_items, truck):
                                     # Else: keep on iterating
                                 # TODO: try to iterate in a 'smart' way - avoid '+= 1' and try adding more 
                                 # if many elements in 'possib_elem'
-                                k += 1
+                                k += max(1, round(np.log(len(valid_df.index))))
                         j += 1
 
                 elif was_added == -2 or was_added == -3:
@@ -131,7 +131,7 @@ def create_stack_cs(df_items, truck):
                                         j = len(all_weights)
                                         k = len(valid_df.index)
                                     # Else: keep on iterating (on both weight values and items)
-                                k += 1
+                                k += max(1, round(np.log(len(valid_df.index))))
                         j += 1
    
                 elif was_added == 0:

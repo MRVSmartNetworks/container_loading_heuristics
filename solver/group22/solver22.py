@@ -20,7 +20,7 @@ from solver.group22.stack_creation_heur import create_stack_cs
 DEBUG = True
 DEBUG_MORE = False
 MAX_ITER = 10000
-MAX_TRIES = 1
+MAX_TRIES = 5
 
 class Solver22:
     def __init__(self):
@@ -74,7 +74,8 @@ class Solver22:
         self.iter = 0           # Iterator for single solution
         self.tries = 0          # Iterator used for looping between different solution attempts
 
-        self.random_choice_factor = 0  # Probability of random behavior will be e^{random_choice_factor * iter}
+        self.random_choice_factor = 0   # Probability of random behavior will be e^{random_choice_factor * iter}
+        self.truck_score_bound = 0.1    # Deviation from optimal truck score in selection
 
     ##########################################################################
     ## Solver
@@ -112,8 +113,9 @@ class Solver22:
             # Order according to dimensions * weight / cost ratio
             if "dim_cost_ratio" not in tmp_vehicles.columns and "dim_wt_cost_ratio" not in tmp_vehicles.columns:
                 tmp_vehicles["volume"] = tmp_vehicles['width']*tmp_vehicles['length']*tmp_vehicles['height']
+                tmp_vehicles["section"] = tmp_vehicles['width']*tmp_vehicles['height']
                 tmp_vehicles["dim_cost_ratio"] = tmp_vehicles['volume']/tmp_vehicles['cost']
-                tmp_vehicles["dim_wt_cost_ratio"] = tmp_vehicles["dim_cost_ratio"] * tmp_vehicles["max_weight"]
+                tmp_vehicles["dim_wt_cost_ratio"] = tmp_vehicles["dim_cost_ratio"] * tmp_vehicles["max_weight"] * tmp_vehicles["max_weight_stack"]
 
             ord_vehicles = tmp_vehicles.sort_values(by=['dim_wt_cost_ratio'], ascending=False)
             
@@ -231,26 +233,31 @@ class Solver22:
             trucks_df["dim_cost_ratio"] = trucks_df["volume"]/trucks_df["cost"]
 
         if "dim_wt_cost_ratio" not in trucks_df.columns:
-            trucks_df["dim_wt_cost_ratio"] = trucks_df["dim_cost_ratio"] * trucks_df["max_weight"]
+            trucks_df["dim_wt_cost_ratio"] = trucks_df["dim_cost_ratio"] * trucks_df["max_weight"] * trucks_df["max_weigth_stack"]
 
         if all(trucks_df.volume < tot_item_vol):
             # Introduce possibility to choose truck randomly which increases with iteration number
-            choice = random.random()
-            if choice < np.exp(self.random_choice_factor * self.iter):
-                # If the volume of all trucks is lower than the overall volume: 
-                # return truck with highest dim/cost ratio (first which is not in the string of forbidden trucks)
-                ord_vehicles = trucks_df.sort_values(by=['dim_wt_cost_ratio'], ascending=False)
+            # If the volume of all trucks is lower than the overall volume: 
+            # return truck with highest dim/cost ratio (first which is not in the string of forbidden trucks)
+            ord_vehicles = trucks_df.sort_values(by=['dim_wt_cost_ratio'], ascending=False)
 
-                if len(forbidden_trucks) > 0:
-                    for i, row in ord_vehicles.iterrows():
-                        if str(row.id_truck) not in forbidden_trucks:
-                            return ord_vehicles.iloc[i]
-                else:
-                    return ord_vehicles.iloc[0]
+            best_val = float(ord_vehicles.dim_wt_cost_ratio.iloc[0])
+            bound_from_best = best_val - self.truck_score_bound*best_val
+            similar_trucks = ord_vehicles[ord_vehicles.dim_wt_cost_ratio >= bound_from_best]
+
+            choice = random.random()
+
+            if len(forbidden_trucks) > 0:
+                for i, row in ord_vehicles.iterrows():
+                    if str(row.id_truck) not in forbidden_trucks:
+                        return ord_vehicles.iloc[i]
+            
+            elif choice < np.exp(self.random_choice_factor * self.iter):
+                return ord_vehicles.iloc[0]
+            
             else:
-                n_trucks = len(trucks_df.index)
-                new_truck = trucks_df.copy()
-                return new_truck.iloc[random.randint(0, n_trucks-1)]
+                n_trucks = len(similar_trucks.index)
+                return similar_trucks.iloc[random.randint(0, n_trucks-1)]
             
         else:
             # Else: return the truck with the lowest cost among the ones which are bigger than 
