@@ -23,7 +23,7 @@ MAX_ITER = 10000
 MAX_TRIES = 5
 
 class Solver22:
-    def __init__(self):
+    def __init__(self, df_items, df_vehicles):
         """
         Solver22
         ---------------------------------------------------------------
@@ -37,6 +37,9 @@ class Solver22:
         ---------------------------------------------------------------
         """
         self.name = "solver22"
+
+        self.df_items = df_items
+        self.df_vehicles = df_vehicles
 
         # Current solution
         self.curr_sol = {
@@ -80,7 +83,7 @@ class Solver22:
     ##########################################################################
     ## Solver
 
-    def solve(self, df_items, df_vehicles):
+    def solve(self):
         """
         solve
         ---
@@ -100,8 +103,8 @@ class Solver22:
             }
             self.curr_obj_value = 0
 
-            tmp_items = pd.DataFrame.copy(df_items)
-            tmp_vehicles = pd.DataFrame.copy(df_vehicles)
+            tmp_items = pd.DataFrame.copy(self.df_items)
+            tmp_vehicles = pd.DataFrame.copy(self.df_vehicles)
 
             # TODO: review lower bound evaluation
             # min_cost, min_n_trucks = self.getLowerBound(tmp_items, tmp_vehicles)
@@ -131,12 +134,13 @@ class Solver22:
                     print(f"> Items left: {len(tmp_items.index)}")
 
                 if self.last_truck_was_empty:
-                    self.unusable_trucks.append(str(curr_truck.id_truck))
+                    self.unusable_trucks.append(str(curr_truck.id_truck[:2]))
                 
                 self.last_truck_was_empty = False
+
                 # Strategy for selecting the trucks
                 curr_truck = self.selectNextTruck(ord_vehicles, tmp_items, self.unusable_trucks)
-
+                
                 # Having selected the truck type, update its ID by appending the counter found in n_trucks
                 # NOTE: the padding done in this case allows for at most 999 trucks of the same type...
                 n_trucks[curr_truck.id_truck] += 1
@@ -150,6 +154,9 @@ class Solver22:
 
                 # TODO: find more efficient solution for reading all rows one at a time (if possible)
 
+                if self.iter == 170:
+                    print("")
+
                 # Build stacks with the copied list of items 'tmp_items'
                 valid_stacks_list = create_stack_cs(tmp_items, curr_truck)
                 # valid_stacks_list = self.create_stack(tmp_items, curr_truck)
@@ -158,7 +165,7 @@ class Solver22:
                     print(f"Total number of generated stacks: {len(valid_stacks_list)}")
 
                 # Solve 2D problems to place the stacks
-                sol_2D = self.solve2D(valid_stacks_list, curr_truck, df_items)
+                sol_2D = self.solve2D(valid_stacks_list, curr_truck, self.df_items)
 
                 # Use the 2D solution to update the overall solution
                 tmp_items = self.updateCurrSol(sol_2D, curr_truck, tmp_items)
@@ -169,6 +176,9 @@ class Solver22:
             used_trucks = 0
             for t in n_trucks.keys():
                 used_trucks += n_trucks[t]
+
+            self.unusable_trucks = []
+            self.last_truck_was_empty = False
 
             if DEBUG:
                 print(f"Number of trucks analyzed: {used_trucks}")
@@ -195,11 +205,11 @@ class Solver22:
         )
 
         ### Plot results:
-        self.myStack3D(df_items, df_vehicles, df_sol, first_truck_id)
+        self.myStack3D(self.df_items, self.df_vehicles, df_sol, first_truck_id)
 
         # Get last used truck
         last_truck_id = df_sol.idx_vehicle.iloc[-1]
-        self.myStack3D(df_items, df_vehicles, df_sol, last_truck_id)
+        self.myStack3D(self.df_items, self.df_vehicles, df_sol, last_truck_id)
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -268,7 +278,7 @@ class Solver22:
             if len(forbidden_trucks) > 0:
                 for i, row in ord_vehicles.iterrows():
                     if str(row.id_truck) not in forbidden_trucks:
-                        return ord_vehicles.iloc[i]
+                        return row
             else:
                 return ord_vehicles.iloc[0]
 
@@ -472,7 +482,7 @@ class Solver22:
         """
         # Select which pricing type
         if override is None:
-            val = random.randint(0,3)
+            val = random.randint(0, 7)
         elif isinstance(override, int):
             val = override
         elif isinstance(override, list):
@@ -482,28 +492,36 @@ class Solver22:
 
         if val == 0:
             for i in range(len(stacks)):
+                # Area
                 stacks[i].assignPrice(stacks[i].area)
         elif val == 1:
             for i in range(len(stacks)):
+                # Length
                 stacks[i].assignPrice(stacks[i].length)
         elif val == 2:
             for i in range(len(stacks)):
+                # Width
                 stacks[i].assignPrice(stacks[i].width)
         elif val == 3:
             for i in range(len(stacks)):
+                # Perimeter
                 stacks[i].assignPrice(stacks[i].perimeter)
         elif val == 4:
             for i in range(len(stacks)):
+                # Stack height
                 stacks[i].assignPrice(stacks[i].tot_height)
         elif val == 5:
             for i in range(len(stacks)):
+                # Volume
                 stacks[i].assignPrice(stacks[i].tot_height * stacks[i].area)
         elif val == 6:
             for i in range(len(stacks)):
-                stacks[i].assignPrice(-1 * stacks[i].tot_weight / stacks[i].area)
+                # Area / weight
+                stacks[i].assignPrice(stacks[i].area / stacks[i].tot_weight)
         elif val == 7:
             for i in range(len(stacks)):
-                stacks[i].assignPrice(-1 * stacks[i].tot_height * stacks[i].tot_weight / stacks[i].area)
+                # Height / weight
+                stacks[i].assignPrice(stacks[i].tot_height / stacks[i].tot_weight)
 
     def buildSlice(self, stacks, x_dim, y_dim, max_weight):
         """

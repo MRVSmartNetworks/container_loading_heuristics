@@ -85,7 +85,7 @@ In order to solve it, the approach was the following:
   - Build a slice
   - Push each stack in the slice towards the $-x$ direction (as much as possible)
 
-Stack creation is done following a simple heuristic algorithm.
+Stack creation is done following a simple heuristic algorithm, which solves the Cutting Stock problem.
 
 <img src="./img_md/perimeter_sol_represent.jpeg" alt="Definition of the perimeter" style="width: 500px"/>
 

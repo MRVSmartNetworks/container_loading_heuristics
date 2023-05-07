@@ -146,16 +146,19 @@ def create_stack_cs(df_items, truck):
 
                 # if a new stack is needed (unable to add elements):
                 if new_stack_needed:
-                    stacks_list.append(new_stack)
+                    if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
+                        stacks_list.append(new_stack)
                     # Open new stack (with current element as first)
                     new_stack = Stack(row, other_constraints)
                     new_stack_needed = False
         
         # Need to add last stack to the list (if not empty)
-        if len(new_stack.items) > 0:
+        if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
             stacks_list.append(new_stack)
     
     for i in range(len(stacks_list)):
         stacks_list[i].assignID(i)
+
+    assert all([s.tot_weight for s in stacks_list]) > 0
 
     return stacks_list
