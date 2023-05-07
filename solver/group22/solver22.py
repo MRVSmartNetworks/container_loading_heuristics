@@ -20,7 +20,7 @@ from solver.group22.stack_creation_heur import create_stack_cs
 DEBUG = False
 DEBUG_MORE = False
 MAX_ITER = 10000
-MAX_TRIES = 5
+MAX_TRIES = 1
 
 class Solver22:
     def __init__(self):
@@ -148,6 +148,7 @@ class Solver22:
 
                 # Build stacks with the copied list of items 'tmp_items'
                 valid_stacks_list = create_stack_cs(tmp_items, curr_truck)
+                # valid_stacks_list = self.create_stack(tmp_items, curr_truck)
 
                 if DEBUG_MORE:
                     print(f"Total number of generated stacks: {len(valid_stacks_list)}")
@@ -290,7 +291,7 @@ class Solver22:
                 # 0: cannot add item as it won't satisfy constraint (weight, height, density, stackability)
                 # 1: success
                 # NOT HERE - {-1: cannot add item since it would lock the orientation property}
-                if was_added == 0:
+                if was_added != 1:
                     new_stack_needed = True
                     # In all other cases can still try to add elements to the stack
                     # FIXME: it may happen that one element cannot be added because too tall/heavy
