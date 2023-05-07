@@ -3,6 +3,7 @@ import math
 import pandas as pd
 import numpy as np
 
+DEBUG = False
 N_DIGITS = 10
 
 class Stack:
@@ -49,7 +50,7 @@ class Stack:
             # Can already check for 
             self.add_item_override(item, other_constraints)
 
-
+    # TODO: maybe remove...
     def add_item(self, newitem, other_constraints=None):
         """
         add_item
@@ -154,11 +155,21 @@ class Stack:
         It is also possible to add further constraints to be checked here, e.g., 
         max_weight, max_height, max_density.
 
-        Inputs:
+        ### Input parameters
         - newitem: Pandas Series containing the item
         - other_constraints (default None): dict containing the additional 
         constraints, which may be ''max_weight', 'max_height' and 'max_dens'
+
+        ### Return values (ordered)
+        - 0: stackability code exceeded - cannot add any more elements to this stack
+        - -1: adding item would exceed max height
+        - -2: adding item would exceed max weight
+        - -3: adding item would exceed max density
+        - 1: success
         """
+        if self.isMaxStack():
+            return 0
+        
         if other_constraints is not None:
             # Check other constraints - look for valid keys
             if isinstance(other_constraints, dict):
@@ -166,12 +177,16 @@ class Stack:
                 if "max_height" in list(other_constraints.keys()):
                     tmp_new_h = self.tot_height + newitem["height"] - self.next_nesting
                     if tmp_new_h > other_constraints["max_height"]:
-                        return 0
+                        if DEBUG:
+                            print("Max_height violated!")
+                        return -1
                 
                 if "max_weight" in list(other_constraints.keys()):
                     tmp_new_w = self.tot_weight + newitem["weight"]
                     if tmp_new_w > other_constraints["max_weight"]:
-                        return 0
+                        if DEBUG:
+                            print("Max_weight_stack violated!")
+                        return -2
                 
                 if "max_dens" in list(other_constraints.keys()):
                     if len(self.items) > 0:
@@ -180,7 +195,9 @@ class Stack:
                         tmp_new_w = self.tot_weight + newitem["weight"]
                         tmp_new_d = tmp_new_w/(self.area)
                         if tmp_new_d > other_constraints["max_dens"]:
-                            return 0
+                            if DEBUG:
+                                print("Max_density violated!")
+                            return -3
 
         # Check stack_code, max_stack and previous flag
         if newitem["stackability_code"] == self.stack_code and len(self.items)+1 <= self.max_stack:
@@ -261,6 +278,15 @@ class Stack:
         """
         assignID
         ---
-        Method used to assign the 
+        Method used to assign the ID to the stack.
         """
         self.id = f"S{str(id_int).zfill(N_DIGITS)}"
+
+    def isMaxStack(self):
+        """
+        isMaxStack
+        ---
+        Used to check whether a stack has reached max stackability or not.
+        It returns True if it has.
+        """
+        return (len(self.items) == self.max_stack)

@@ -69,10 +69,10 @@ The approach is based on what reported in [Peak Filling Sices Push](https://link
 The fundamental approach consists of the following steps:
 
 - Choose the current best truck
-  - If the total items volume is bigger than any truck's volume, choose the truck with the best volume/cost ratio, i.e., the truck with the lowest cost per unit volume.
+  - If the total items volume is bigger than any truck's volume, choose the truck with the best (volume * max_weight)/cost factor value, i.e., the truck with the lowest cost per unit volume-height.
   - Else, choose the cheapest truck among the ones which would be able to fit all the remaining objects.
 - From the remaining items, create stacks which respect the constraints imposed by the chosen truck (height, weight, density) and by the maximum stackability of each object.
-- Solve the problem in 2D, i.e., place the stacks in the best possible way, without concerning about their height (as constraints have been enforced at the creation)
+- Solve the problem in 2D, i.e., place the stacks in the best possible way, without concerning about their height (as constraints have been enforced at the creation) - only check maximum truck weight
 - Update the solution by adding the used stacks (and the contained items) to the current bin
 
 It is evident, from this description, how 2D bin packing is a subproblem of the solution.
@@ -85,6 +85,7 @@ In order to solve it, the approach was the following:
   - Build a slice
   - Push each stack in the slice towards the $-x$ direction (as much as possible)
 
+Stack creation is done following a simple heuristic algorithm.
 
 <img src="./img_md/perimeter_sol_represent.jpeg" alt="Definition of the perimeter" style="width: 500px"/>
 
@@ -96,9 +97,13 @@ Choice of trucks: evaluate the *volume/cost* ratio for each truck and choose tru
 In general, maximize the amount of 'y' dimension occupied, e.g., when choosing the objects, evaluate all the possible stacking options and choose the one which minimizes the difference between $W_i$ (truck width) and the total width of the stacks.
 Possible optimizations of this require the widest elements to be placed first (left, looking in the direction $-\textbf{x}$) in each slice.
 
+Optimal stacks can be created in the same way as the cutting stock problem - this way it is possible to minimize the number of stacks by reducing the z dimension left from the ceiling.
+See [here](https://developers.google.com/optimization/pack/knapsack).
+
 ## Useful links
 
 - [3D bin packing heuristics](https://github.com/bchaiks/3D_Bin_Packing_Heuristics) - useful for solution representation in python
 - [Peak Filling Sices Push](~/Documents/Politecnico/A.A.2022_2023/II-semester/operational-research/project/a-new-heuristic-algorithm-for-the-3d-bin-packing-problem.pdf) - found online (similar idea I had)
 - [HBP heuristics for 2D/3D bin packing](~/Documents/Politecnico/A.A.2022_2023/II-semester/operational-research/project/5-BPP-4OR-Part-II.pdf) - suggested by professor
 - [OR tools website discussion of 3D bin packing](https://developers.google.com/optimization/pack/bin_packing?hl=en) - could be a good starting point either just for the program structure or for some subproblems
+- [OR tools discussion - 1D bin packing](https://developers.google.com/optimization/pack/knapsack) - good strategy for creating stacks
