@@ -315,7 +315,7 @@ class Solver22:
                 # 0: cannot add item as it won't satisfy constraint (weight, height, density, stackability)
                 # 1: success
                 # NOT HERE - {-1: cannot add item since it would lock the orientation property}
-                if was_added == 0:
+                if was_added != 1:
                     new_stack_needed = True
                     # In all other cases can still try to add elements to the stack
                     # FIXME: it may happen that one element cannot be added because too tall/heavy
