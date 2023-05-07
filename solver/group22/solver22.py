@@ -17,7 +17,7 @@ from solver.group22.stack_creation_heur import create_stack_cs
 # TODO (maybe): remove full list of items from stack attributes, only store the item ID, which can be used
 # in the dataframe to locate the correct row (supposing NO DUPLICATES).
 
-DEBUG = False
+DEBUG = True
 DEBUG_MORE = False
 MAX_ITER = 10000
 MAX_TRIES = 1
@@ -73,6 +73,8 @@ class Solver22:
 
         self.iter = 0           # Iterator for single solution
         self.tries = 0          # Iterator used for looping between different solution attempts
+
+        self.random_choice_factor = 0  # Probability of random behavior will be e^{random_choice_factor * iter}
 
     ##########################################################################
     ## Solver
@@ -171,10 +173,16 @@ class Solver22:
                 print(f"Actual number of used trucks: {len(list(set(self.curr_sol['idx_vehicle'])))}")
 
             print(f"Current objective value: {self.curr_obj_value}")
+
+            assert len(tmp_items.index) == 0, "Not all items have been used in current solution!"
             
             self.updateBestSol()
 
-        print(f"Optimal value: {self.best_obj_value}")
+        print(f"Optimal initial value: {self.best_obj_value}")
+
+        # TODO: solution improvement from best solution so far
+        # Approach: start from the last truck which was filled, try to extract items 
+        # and place them in other trucks
 
         # Append best solution for current truck
         # Need to make sure the items left have been updated
@@ -222,17 +230,27 @@ class Solver22:
         if "dim_cost_ratio" not in trucks_df.columns:
             trucks_df["dim_cost_ratio"] = trucks_df["volume"]/trucks_df["cost"]
 
-        if all(trucks_df.volume < tot_item_vol):
-            # If the volume of all trucks is lower than the overall volume: 
-            # return truck with highest dim/cost ratio (first which is not in the string of forbidden trucks)
-            ord_vehicles = trucks_df.sort_values(by=['dim_cost_ratio'], ascending=False)
+        if "dim_wt_cost_ratio" not in trucks_df.columns:
+            trucks_df["dim_wt_cost_ratio"] = trucks_df["dim_cost_ratio"] * trucks_df["max_weight"]
 
-            if len(forbidden_trucks) > 0:
-                for i, row in ord_vehicles.iterrows():
-                    if str(row.id_truck) not in forbidden_trucks:
-                        return ord_vehicles.iloc[i]
+        if all(trucks_df.volume < tot_item_vol):
+            # Introduce possibility to choose truck randomly which increases with iteration number
+            choice = random.random()
+            if choice < np.exp(self.random_choice_factor * self.iter):
+                # If the volume of all trucks is lower than the overall volume: 
+                # return truck with highest dim/cost ratio (first which is not in the string of forbidden trucks)
+                ord_vehicles = trucks_df.sort_values(by=['dim_wt_cost_ratio'], ascending=False)
+
+                if len(forbidden_trucks) > 0:
+                    for i, row in ord_vehicles.iterrows():
+                        if str(row.id_truck) not in forbidden_trucks:
+                            return ord_vehicles.iloc[i]
+                else:
+                    return ord_vehicles.iloc[0]
             else:
-                return ord_vehicles.iloc[0]
+                n_trucks = len(trucks_df.index)
+                new_truck = trucks_df.copy()
+                return new_truck.iloc[random.randint(0, n_trucks-1)]
             
         else:
             # Else: return the truck with the lowest cost among the ones which are bigger than 
@@ -628,7 +646,7 @@ class Solver22:
             
             # Find lower bound starting from 0
             ind_bound = 0
-            while bound[ind_bound][1] <= y_i:
+            while ind_bound < len(bound) and bound[ind_bound][1] <= y_i:
                 ind_bound += 1
 
             if bound[ind_bound][1] == y_i:
@@ -638,7 +656,7 @@ class Solver22:
             
             # Search for valid points
             ind_top = ind_bound + 0             # Needed to prevent to just copy the reference and update both indices...
-            while bound[ind_top][1] <= y_i+w_i:
+            while ind_top < len(bound) and bound[ind_top][1] <= y_i+w_i:
                 ind_top += 1
             # When the loop finishes, the element bound[ind_top] contains the upper end 
             
@@ -759,6 +777,9 @@ class Solver22:
             o_val += float(s["type_vehicle"][s["idx_vehicle"] == t_id])
 
         return o_val
+
+    def improveSolution(self, sol, df_items, df_trucks):
+        pass
 
     ##########################################################################
     ## Utilities

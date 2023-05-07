@@ -3,6 +3,7 @@ import math
 import pandas as pd
 import numpy as np
 
+DEBUG = False
 N_DIGITS = 10
 
 class Stack:
@@ -176,11 +177,15 @@ class Stack:
                 if "max_height" in list(other_constraints.keys()):
                     tmp_new_h = self.tot_height + newitem["height"] - self.next_nesting
                     if tmp_new_h > other_constraints["max_height"]:
+                        if DEBUG:
+                            print("Max_height violated!")
                         return -1
                 
                 if "max_weight" in list(other_constraints.keys()):
                     tmp_new_w = self.tot_weight + newitem["weight"]
                     if tmp_new_w > other_constraints["max_weight"]:
+                        if DEBUG:
+                            print("Max_weight_stack violated!")
                         return -2
                 
                 if "max_dens" in list(other_constraints.keys()):
@@ -190,6 +195,8 @@ class Stack:
                         tmp_new_w = self.tot_weight + newitem["weight"]
                         tmp_new_d = tmp_new_w/(self.area)
                         if tmp_new_d > other_constraints["max_dens"]:
+                            if DEBUG:
+                                print("Max_density violated!")
                             return -3
 
         # Check stack_code, max_stack and previous flag
