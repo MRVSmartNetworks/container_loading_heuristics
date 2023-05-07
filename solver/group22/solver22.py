@@ -20,7 +20,7 @@ from solver.group22.stack_creation_heur import create_stack_cs
 DEBUG = False
 DEBUG_MORE = False
 MAX_ITER = 10000
-MAX_TRIES = 5
+MAX_TRIES = 1
 
 
 class Solver22:
