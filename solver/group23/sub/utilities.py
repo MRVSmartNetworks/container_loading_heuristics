@@ -17,7 +17,7 @@ def getStackFeatures(df_items, code):
             item.max_stackability,
             item.forced_orientation] 
 
-def popStack(stack_lst, code, n_code):
+def popStack(stack_lst, stack_quantity, code, n_code):
     """ 
     popStack
     --------
@@ -32,12 +32,13 @@ def popStack(stack_lst, code, n_code):
     """ 
     widthwise = False
     if code >= n_code:
-        code = code - 7
+        code = code - n_code
         widthwise = True
 
     for i,stack in enumerate(stack_lst):
         if stack.stack_code == code:
             stack = stack_lst.pop(i)
+            stack_quantity[code] -= 1
             stack_copy = deepcopy(stack)
             stack_copy.state = code
             if widthwise:
@@ -48,7 +49,7 @@ def popStack(stack_lst, code, n_code):
                 stack_copy.orient = 'l'
             
             #NOTE: cerca una soluzione migliore
-            return stack_copy, stack_lst
+            return stack_copy, stack_lst, stack_quantity
     raise Exception("No more stacks with specified code")
 
 
