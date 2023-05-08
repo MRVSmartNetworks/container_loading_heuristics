@@ -5,8 +5,8 @@ class aco_bin_packing(ACO):
     
     
     def __init__(
-            self, alpha=1, beta=1, n_ants=40, n_iter=20, 
-            evaporationCoeff=0.5, stack_lst=None, vehicle = None
+            self, stack_lst, vehicle, alpha=1, beta=1, 
+            n_ants=40, n_iter=20, evaporationCoeff=0.5
             ):
         self.stack_lst = stack_lst
         self.vehicle = vehicle
@@ -172,11 +172,11 @@ class aco_bin_packing(ACO):
             for item in stack.items:
                 self.sol['type_vehicle'].append(self.vehicle['id_truck'])
                 self.sol['idx_vehicle'].append(0) #TODO: need a way to update the number of that vehicle
-                self.sol['id_stack'].append(f"S{i}")
+                self.sol['id_stack'].append(f"S{i}")    #BUG: doing so the id overwrite
                 self.sol['id_item'].append(item[0])
                 self.sol['x_origin'].append(stack.x_origin)
                 self.sol['y_origin'].append(stack.y_origin)
                 self.sol['z_origin'].append(z_origin)
                 self.sol['orient'].append(stack.orient)
                 z_origin += item[1]
-       
+            #TODO: return sol without calling aco.sol (fox disapproves)
