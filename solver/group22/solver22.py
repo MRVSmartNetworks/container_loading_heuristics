@@ -567,8 +567,8 @@ class Solver22:
             # if DEBUG:
             #     print(f"Analyzing stack {i}")
             stack_added = False
-            if len(stacks[i].items) > 0:        # (Don't know why) but sometimes stacks are created empty...
-                if delta_y >= stacks[i].width and x_dim >= stacks[i].length and weight_left > stacks[i].tot_weight:
+            if len(stacks[i].items) > 0 and weight_left >= stacks[i].tot_weight:        # (Don't know why) but sometimes stacks are created empty...
+                if delta_y >= stacks[i].width and x_dim >= stacks[i].length:
                     # Stack is good as-is - insert it
                     new_slice.append([stacks[i], i, 0])
 
@@ -577,7 +577,7 @@ class Solver22:
 
                     delta_y -= stacks[i].width
                     stack_added = True
-                elif stacks[i].forced_orientation == "n" and delta_y >= stacks[i].length and x_dim >= stacks[i].width and weight_left > stacks[i].tot_weight:
+                elif stacks[i].forced_orientation == "n" and delta_y >= stacks[i].length and x_dim >= stacks[i].width:
                     # If the stack cannot be placed, try rotating it by 90 degrees, if allowed
                     new_slice.append([stacks[i], i, 1])
 
@@ -586,6 +586,10 @@ class Solver22:
                     # Rotated stack - can place it width-wise
                     delta_y -= stacks[i].length
                     stack_added = True
+            
+            elif len(stacks[i].items) > 0 and weight_left < stacks[i].tot_weight:
+                # TODO
+                pass
 
             if stack_added:
                 # Update weight_left - remove the weight of the current stack
