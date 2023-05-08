@@ -74,8 +74,7 @@ class Solver23():
             
             stack = Stack(code, stack_feat[0], 
                           stack_feat[1], stack_feat[2], stack_feat[3])
-            tot_high = 0
-            tot_weight = 0
+
             new_stack_needed = False
             for i, row in self.df_items[self.df_items.stackability_code == code].iterrows():
                 stack.updateHeight(row.height - row.nesting_height)
@@ -91,13 +90,13 @@ class Solver23():
                     stack_lst.append(stack)
                     stack = Stack(code, stack_feat[0], 
                           stack_feat[1], stack_feat[2], stack_feat[3])
-                    stack.addItem(row.id_item, row.height)
-                    tot_high = row.height
-                    tot_weight = row.weight
+                    stack.addItem(row.id_item, row.height - row.nesting_height)
+                    stack.updateHeight(row.height - row.nesting_height)
+                    stack.updateWeight(row.weight)
                     new_stack_needed = False
                 else:
                     # else add the item
-                    stack.addItem(row.id_item, row.height)
+                    stack.addItem(row.id_item, row.height - row.nesting_height)
                     
         return stack_lst
         

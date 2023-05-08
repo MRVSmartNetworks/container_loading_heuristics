@@ -63,15 +63,12 @@ def stack_3D(df_items, df_vehicles, df_sol, idx_vehicle=0):
     Input variables:
     - df_items: dataframe containing all the items
     - df_vehicles: dataframe representing the vehicles (bins)
-    - df_ sol: dataframe representing the solution (TODO: what is the structure?)
+    - df_sol: dataframe representing the solution
     - ids_vehicle: (default 0) it is the vehicle index for the current plot
-    ---
-    Procedure:
-    TODO
     """
     idx_stacks = df_sol.id_stack.unique()                   # Distinct elements in the 'id_stack' column of the solution
     n_stacks = len(df_sol.id_stack.unique())                # Number of distinct elements in the 'id_stack' column
-    coordinates = np.zeros((n_stacks, 3))                   # Initialize coordinates of the elements (x,y,z) (TODO: coords of WHAT?)
+    coordinates = np.zeros((n_stacks, 3))                   # Initialize coordinates of the elements (x,y,z)
     sizes = np.zeros((n_stacks, 3))                         # Initialize the sides of the elements (h,w,d)
     i = 0
     for ele in idx_stacks:
@@ -93,7 +90,7 @@ def stack_3D(df_items, df_vehicles, df_sol, idx_vehicle=0):
         else:
             sizes[i, 0] = data_item.length
             sizes[i, 1] = data_item.width
-        sizes[i, 2] = data_item.height                      # Store the height
+        
         i += 1
 
     def cuboid_data(o, size=(1, 1, 1)):
