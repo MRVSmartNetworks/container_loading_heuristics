@@ -11,8 +11,9 @@ class Stack:
         self.state = None
         self.n_items = len(self.items)
 
-    def addItem(self, id_item):
-        self.items.append(id_item)
+    def addItem(self, id_item, h_item):
+        # each item is a tuple with ID and item's height
+        self.items.append((id_item, h_item))
         self.n_items += 1
     
     def updateWeight(self, item_weight):

@@ -13,7 +13,7 @@ from sub.projection import *
 # - aggiornamento pr_move (controllare che somma delle probabilite su
 #   sia uguale ad 1)
 # - creare matrice attractiveness
-# - creare gli output in modo da avere in stampa le immagini del camion
+
 
 #TODO: less important
 # - certi stack code potrebbero avere la stessa dimensione
@@ -90,13 +90,13 @@ class Solver23():
                     stack_lst.append(stack)
                     stack = Stack(code, stack_feat[0], 
                           stack_feat[1], stack_feat[2], stack_feat[3])
-                    stack.addItem(row.id_item)
+                    stack.addItem(row.id_item, row.height)
                     tot_high = row.height
                     tot_weight = row.weight
                     new_stack_needed = False
                 else:
                     # else add the item
-                    stack.addItem(row.id_item)
+                    stack.addItem(row.id_item, row.height)
                     
         return stack_lst
         

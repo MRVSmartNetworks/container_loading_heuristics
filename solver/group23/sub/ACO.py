@@ -18,7 +18,7 @@ class ACO:
         - pr_move: nxn matrix of probabilities of moves from i to j 
                     (ultimate state is related to empty vehicle)
     """
-    def __init__(self, stack_lst, vehicle, alpha=1, beta=1, n_ants=100, n_iter=40, evaporationCoeff = 0.6):
+    def __init__(self, stack_lst, vehicle, alpha=1, beta=1, n_ants=20, n_iter=30, evaporationCoeff = 0.7):
         self.stack_lst = stack_lst
         self.vehicle = vehicle
         self.alpha = alpha
@@ -50,7 +50,6 @@ class ACO:
         n_code = (len(self.pr_move) - 1)/2  # no. of different stackability codes
         self.trailMatrix = np.zeros([len(self.pr_move), len(self.pr_move)]) # initialization of the trail matrix
         
-
         for iter in range(self.n_iter):
             self.ants = []
             antsArea = []
@@ -71,8 +70,6 @@ class ACO:
                     if toAddStack is not None:
                         ant_k.append(toAddStack)
                         totArea += (toAddStack.length*toAddStack.width)
-                        if totArea /(self.vehicle['length'] * self.vehicle['width']) >1:
-                            print("totArea > 1")#BUG: test bug
                         prev_s_code = next_s_code
                     else:
                         free_space = False
@@ -91,7 +88,6 @@ class ACO:
 
         self.solCreation(antsArea)
 
-        #BUG: totArea > 1
         pass
 
     def choose_move(self, prev_s_code):
@@ -187,10 +183,10 @@ class ACO:
         """
         #TODO: add alpha and beta
         for i in range(len(self.trailMatrix)):
-            mul = self.trailMatrix[i, :] * self.attractiveness[i, :]
+            mul = np.power(self.trailMatrix[i, :], self.alpha) * np.power(self.attractiveness[i, :], self.beta)
             _sum = sum(mul)
-            if _sum == 0:
-                _sum = 1
+            if _sum == 0:   
+                _sum = 1    # to not divide by zero
             self.pr_move[i, :] = mul/_sum
 
     def statesCreation(self, code_orientation):
@@ -230,15 +226,17 @@ class ACO:
     def solCreation(self, _antsArea):
         bestAnt = self.ants[np.argmax(_antsArea)]
         for i,stack in enumerate(bestAnt):
-            for idItem in stack.items:
+            z_origin = 0
+            for item in stack.items:
                 self.sol['type_vehicle'].append(self.vehicle['id_truck'])
                 self.sol['idx_vehicle'].append(0) #TODO: need a way to update the number of that vehicle
                 self.sol['id_stack'].append(f"S{i}")
-                self.sol['id_item'].append(idItem)
+                self.sol['id_item'].append(item[0])
                 self.sol['x_origin'].append(stack.x_origin)
                 self.sol['y_origin'].append(stack.y_origin)
-                self.sol['z_origin'].append(0) #nedd to change it
+                self.sol['z_origin'].append(z_origin)
                 self.sol['orient'].append(stack.orient)
+                z_origin += item[1]
        
 
 
