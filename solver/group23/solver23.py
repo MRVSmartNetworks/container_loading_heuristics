@@ -39,8 +39,8 @@ class Solver23():
         # work on single truck
         vehicle = self.df_vehicles.iloc[0] # vehicle type V0
         
-        stack_lst = self.buildStacks(vehicle)
-        aco = aco_bin_packing(stack_lst=stack_lst, vehicle=vehicle)
+        stack_lst, stack_quantity = self.buildStacks(vehicle)
+        aco = aco_bin_packing(stack_lst=stack_lst, stack_quantity=stack_quantity, vehicle=vehicle)
         aco.statesCreation(df_items[["stackability_code",
                                                "forced_orientation"]].drop_duplicates())
         aco.aco_2D_bin()
@@ -69,12 +69,14 @@ class Solver23():
         #TODO: controllo max density
         stackability_codes = self.df_items.stackability_code.unique()
         stack_lst = []
+        stack_quantity = []
         for code in stackability_codes:
             stack_feat = getStackFeatures(self.df_items, code)
             
             stack = Stack(code, stack_feat[0], 
                           stack_feat[1], stack_feat[2], stack_feat[3])
-
+            
+            stack_quantity.append(0) # start with 0 stack with this stackability code
             new_stack_needed = False
             for i, row in self.df_items[self.df_items.stackability_code == code].iterrows():
                 stack.updateHeight(row.height - row.nesting_height)
@@ -88,6 +90,7 @@ class Solver23():
                 # if a new stack is needed:
                 if new_stack_needed:
                     stack_lst.append(stack)
+                    stack_quantity[code] += 1 # number of the stack with this precise stackability code
                     stack = Stack(code, stack_feat[0], 
                           stack_feat[1], stack_feat[2], stack_feat[3])
                     stack.addItem(row.id_item, row.height - row.nesting_height)
@@ -98,7 +101,7 @@ class Solver23():
                     # else add the item
                     stack.addItem(row.id_item, row.height - row.nesting_height)
                     
-        return stack_lst
+        return stack_lst, stack_quantity
         
                 
     def solve(self, df_items, df_vehicles):

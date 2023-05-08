@@ -5,10 +5,11 @@ class aco_bin_packing(ACO):
     
     
     def __init__(
-            self, alpha=1, beta=1, n_ants=40, n_iter=20, 
-            evaporationCoeff=0.5, stack_lst=None, vehicle = None
+            self, alpha=1, beta=1, n_ants=40, n_iter=20, evaporationCoeff=0.5,
+            stack_lst=None, stack_quantity=None, vehicle = None
             ):
         self.stack_lst = stack_lst
+        self.stack_quantity = stack_quantity
         self.vehicle = vehicle
         super().__init__(alpha, beta, n_ants, n_iter, evaporationCoeff)
      
@@ -30,9 +31,10 @@ class aco_bin_packing(ACO):
             "orient": []
         }
 
-        n_code = (len(self.pr_move) - 1)/2  # no. of different stackability codes
+        n_code = int((len(self.pr_move) - 1)/2)  # no. of different stackability codes
         self.trailMatrix = np.zeros([len(self.pr_move), len(self.pr_move)]) # initialization of the trail matrix
         
+        bestArea = 0
         for _ in range(self.n_iter):
             self.ants = []
             antsArea = []
@@ -46,9 +48,19 @@ class aco_bin_packing(ACO):
                 totArea = 0
                 ant_k = []
                 stack_lst = self.stack_lst.copy()
+                stack_quantity = self.stack_quantity.copy()
                 while(free_space):  # loop until free space available in vehicle
-                    next_s_code = self.choose_move(prev_s_code) 
-                    new_stack, stack_lst = popStack(stack_lst, next_s_code, n_code) #TODO: what if no more stacks with this stack code??
+                    next_s_code = self.choose_move(prev_s_code)
+                    code = next_s_code 
+                    new_stack, stack_lst, stack_quantity = popStack(stack_lst, stack_quantity, next_s_code, n_code) #TODO: what if no more stacks with this stack code??
+                    
+                    if next_s_code >= n_code:
+                        code = code - n_code
+
+                    if stack_quantity[code] == 0: # when the stack with this stackability code are 0 the probability to move 
+                        self.pr_move[next_s_code,:] = 0  # to this state will become also equal to 0
+                        self.pr_move[:,next_s_code] = 0
+
                     toAddStack, x_pos, y_pos, y_max = self.addStack(new_stack, x_pos, y_pos, y_max)
                     if toAddStack is not None:
                         ant_k.append(toAddStack)
@@ -59,17 +71,20 @@ class aco_bin_packing(ACO):
                 
                 self.ants.append(ant_k.copy())
                 antsArea.append(totArea)
+
+                if totArea > bestArea:
+                    bestArea = totArea
+                    best_sol = stack_lst.copy()
+                    best_quantity = stack_quantity.copy()
                 
             # valutare la bontà tra tutte le soluzioni -> migliore = max     peggiore = min
             deltaTrail = self.trailUpdate(antsArea)
-            #if iter == 0:
             self.trailMatrix = self.evaporationCoeff*self.trailMatrix + deltaTrail
-            #else :
-            #    trailMatrix = self.evaporationCoeff*trailMatrix + deltaTrail*(1 - self.evaporationCoeff)
             self.prMoveUpdate()
         print(max(antsArea)/(self.vehicle['length'] * self.vehicle['width']))
 
         self.solCreation(antsArea)
+        return best_sol, best_quantity 
     
     def addStack(self, toAddStack, x_pos, y_pos, y_max):
         """  
