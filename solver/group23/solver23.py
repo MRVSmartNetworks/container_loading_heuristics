@@ -6,6 +6,7 @@ import numpy as np
 from sub.stack import Stack
 from sub.utilities import *
 from sub.ACO import ACO
+from sub.aco_bin_packing import aco_bin_packing
 from sub.projection import *
 #TODO:
 # - in popStack pensare a cosa fare se non ci sono più stack con quel
@@ -39,7 +40,7 @@ class Solver23():
         vehicle = self.df_vehicles.iloc[0] # vehicle type V0
         
         stack_lst = self.buildStacks(vehicle)
-        aco = ACO(stack_lst, vehicle)
+        aco = aco_bin_packing(stack_lst=stack_lst, vehicle=vehicle)
         aco.statesCreation(df_items[["stackability_code",
                                                "forced_orientation"]].drop_duplicates())
         aco.aco_2D_bin()
