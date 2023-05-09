@@ -6,7 +6,7 @@ class aco_bin_packing(ACO):
     
     def __init__(
             self, stack_lst, vehicle, stack_quantity, alpha=1, beta=1, 
-            n_ants=40, n_iter=20, evaporationCoeff=0.5
+            n_ants=10, n_iter=5, evaporationCoeff=0.5
             ):
         self.stack_lst = stack_lst
         self.stack_quantity = stack_quantity
@@ -122,6 +122,7 @@ class aco_bin_packing(ACO):
                 #BUG: toAddStack non deve essere rimosso da stack_lst
         return toAddStack, x_pos, y_pos, y_max
 
+
     def statesCreation(self, code_orientation):
         """ 
         statesCreation
@@ -154,33 +155,41 @@ class aco_bin_packing(ACO):
         #NOTE: prova a cambiare acctractivness
         self.attractiveness[:,:7] = self.attractiveness[:,:7]*2
 
-    def trailUpdate(self, _antsArea):
-        """
-        trailUpdate
-        -----------
 
-        Method used to update the trail matrix. \n
-        The previous trail matrix is multiplied by the pheromone evaporation \n
-        coefficient and is added to the trail variation derived from the sum \n
-        of the contribution of all ants that used move to construct their solution.
+    def updateRule(self, ant, antsArea, i):
+        """  
+        updateRule
+        ----------
+
+        Update rule used to create the delta trail matrix
 
         Parameters
-        - _antsArea: list of the area of all the ants
+        - ant: solution of the current ant
+        - antsArea: area covered by the ants
+        - i: index of the ant in consideration
         """
+        x = len(self.pr_move)-1         # the first state to start is always the empty truck for all the ants
         vehicleArea = self.vehicle['length'] * self.vehicle['width'] 
-        deltaTrail = np.zeros([len(self.pr_move), len(self.pr_move)])
-        for i,ant in enumerate(self.ants):
-            x = len(self.pr_move)-1         # the first state to start is always the empty truck for all the ants
-            trailApp = np.zeros([len(self.pr_move), len(self.pr_move)])
-            for stack in ant:  # x and y are the position in the state matrix
-                y = stack.state
-                trailApp[x,y] += 1 #NOTE: forse il +1 qua non va bene, da verificare a programma completo
-                x = y
+        trailApp = np.zeros([len(self.pr_move), len(self.pr_move)])
+        for stack in ant:  # x and y are the position in the state matrix
+            y = stack.state
+            trailApp[x,y] += 1 #NOTE: forse il +1 qua non va bene, da verificare a programma completo
+            x = y
                 
-            deltaTrail += trailApp * _antsArea[i] / vehicleArea # more is the area covered, more is the quality of the solution
+        deltaTrail = trailApp * antsArea[i] / vehicleArea # more is the area covered, more is the quality of the solution
         return deltaTrail
     
+
     def solCreation(self, _antsArea):
+        """  
+        solCreation
+        -----------
+
+        Method used to create the solution for the graphical representation
+
+        Parameters
+        - _antsArea: area covered by the ants
+        """
         bestAnt = self.ants[np.argmax(_antsArea)]
         for i,stack in enumerate(bestAnt):
             z_origin = 0

@@ -52,17 +52,34 @@ class ACO:
 
         Method used to update the probability to move matrix.
 
-        Parameters
-        - 
         """
-        #TODO: add alpha and beta
+        
         for i in range(len(self.trailMatrix)):
             mul = np.power(self.trailMatrix[i, :], self.alpha) * np.power(self.attractiveness[i, :], self.beta)
             _sum = sum(mul)
             if _sum == 0:   
                 _sum = 1    # to not divide by zero
             self.pr_move[i, :] = mul/_sum
+        pass
         
+    def trailUpdate(self, antsArea):
+        """
+        trailUpdate
+        -----------
 
+        Method used to update the trail matrix. \n
+        The previous trail matrix is multiplied by the pheromone evaporation \n
+        coefficient and is added to the trail variation derived from the sum \n
+        of the contribution of all ants that used move to construct their solution.
+
+        Parameters
+        - _antsArea: list of the quality level of all the ants
+        """
+        
+        deltaTrail = np.zeros([len(self.pr_move), len(self.pr_move)])
+        for i,ant in enumerate(self.ants):
+            deltaTrail += self.updateRule(ant, antsArea, i)
+
+        return deltaTrail
 
 

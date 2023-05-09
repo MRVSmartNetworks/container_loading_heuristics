@@ -139,7 +139,7 @@ if __name__ == "__main__":
         os.path.join('results', f'{tmp.name}_sol.csv'),
     )
 
-    orthogonal_plane(df_items, df_vehicles, df_sol)
+    #orthogonal_plane(df_items, df_vehicles, df_sol)
 
-    stack_3D(df_items, df_vehicles, df_sol)
+    #stack_3D(df_items, df_vehicles, df_sol)
     pass

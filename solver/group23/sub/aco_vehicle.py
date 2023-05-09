@@ -26,3 +26,27 @@ class aco_vehicle(ACO):
                     stack_lst, stack_quantity = aco.aco_2D_bin()
                     if not stack_lst:
                         pass
+
+        def updateRule(self, ant, antsArea, i):
+            """  
+            updateRule
+            ----------
+
+            Update rule used to create the delta trail matrix
+
+            Parameters
+            - ant: solution of the current ant
+            - antsArea: total cost of the single solution
+            - i: index of the ant in consideration
+            """
+            x = 0  #NOTE: qual'è il primo valore di x? il primo camion testato da ogni formica?
+            # vehicleArea = self.vehicle['length'] * self.vehicle['width'] 
+            trailApp = np.zeros([len(self.pr_move), len(self.pr_move)])
+            for id_truck in ant:  # x and y are the position in the state matrix
+                y = id_truck
+                trailApp[x,y] += 1 #NOTE: forse il +1 qua non va bene, da verificare a programma completo
+                x = y
+                    
+            deltaTrail = trailApp / antsArea[i] # less is the cost, more is the quality of the solution 
+            #NOTE: facendo in questo modo vengono numeri davvero piccoli...
+            return deltaTrail
