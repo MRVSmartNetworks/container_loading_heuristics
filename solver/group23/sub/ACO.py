@@ -28,7 +28,7 @@ class ACO:
         self.ants = []               
 
 
-    def choose_move(self, prev_state):
+    def choose_move(self, prev_state, pr_move=None):
         """ 
         choose_move
         -----------
@@ -40,8 +40,12 @@ class ACO:
             - next_state: stackability code of the next stack to be placed into the truck
         """
         #BUG: bug probability not equal one
-        row_to_choose = self.pr_move[prev_state][:] # select the row from the stack the ant is moving
-        next_state = int(choice(range(len(row_to_choose)), p=row_to_choose))
+        if pr_move is None: # to run on local pr_move inside aco_bin_packing 
+            pr_move = self.pr_move
+        row_to_choose = pr_move[prev_state][:] # select the row from the stack the ant is moving
+        if sum(row_to_choose) < 0.95 or sum(row_to_choose) > 1.05:
+            pass
+        next_state = int(choice(range(len(row_to_choose)), p=row_to_choose))#BUG:probability do not sum to 1
         
         return next_state 
     
@@ -62,6 +66,7 @@ class ACO:
             if _sum == 0:   
                 _sum = 1    # to not divide by zero
             self.pr_move[i, :] = mul/_sum
+        
         
 
 

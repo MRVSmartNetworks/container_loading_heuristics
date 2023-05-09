@@ -1,16 +1,18 @@
 from sub.ACO import ACO
 from sub.utilities import *
+from sub.stack import Stack
+
 
 class aco_bin_packing(ACO):
     
     
     def __init__(
-            self, stack_lst, vehicle, stack_quantity, alpha=1, beta=1, 
-            n_ants=40, n_iter=20, evaporationCoeff=0.5
+            self, alpha=1, beta=1, 
+            n_ants=5, n_iter=3, evaporationCoeff=0.5
             ):
-        self.stack_lst = stack_lst
-        self.stack_quantity = stack_quantity
-        self.vehicle = vehicle
+        self.vehicle = None
+        self.stack_lst = []
+        self.stack_quantity = [] #TODO: cercare miglior modo di inizializzare (guarda in build stacks)
         super().__init__(alpha, beta, n_ants, n_iter, evaporationCoeff)
      
     def aco_2D_bin(self):
@@ -47,44 +49,60 @@ class aco_bin_packing(ACO):
                 y_pos = y_max = 0
                 totArea = 0
                 ant_k = []
-                stack_lst = self.stack_lst.copy()
-                stack_quantity = self.stack_quantity.copy()
+                stack_lst_ant = self.stack_lst.copy()
+                stack_quantity_ant = self.stack_quantity.copy()
+                pr_move = self.pr_move.copy()
                 while(free_space):  # loop until free space available in vehicle
-                    next_s_code = self.choose_move(prev_s_code)
+                    next_s_code = self.choose_move(prev_s_code, pr_move)
                     code = next_s_code 
-                    new_stack, stack_lst, stack_quantity = popStack(stack_lst, stack_quantity, next_s_code, n_code) #TODO: what if no more stacks with this stack code??
+                    new_stack, stack_lst_ant, stack_quantity_ant = popStack(stack_lst_ant, stack_quantity_ant, next_s_code, n_code) #TODO: what if no more stacks with this stack code??
                     
                     if next_s_code >= n_code:
                         code = code - n_code
 
-                    if stack_quantity[code] == 0: # when the stack with this stackability code are 0 the probability to move 
-                        self.pr_move[next_s_code,:] = 0  # to this state will become also equal to 0
-                        self.pr_move[:,next_s_code] = 0
+                    if stack_quantity_ant[code] == 0: # when the stack with this stackability code are 0 the probability to move 
+                        #self.pr_move[next_s_code,:] = 0  # to this state will become also equal to 0
+                
+                        if next_s_code >= n_code: #TODO: redistribuire le probabilità che si cancellano sulle altre ancora esistenti.
+                            prob_to_distr = pr_move[:,next_s_code] + pr_move[:,next_s_code-n_code]
+                            pr_move[:,next_s_code] = 0
+                            pr_move[:,next_s_code-n_code] = 0
+                            prob_to_distr = prob_to_distr/pr_move[:, pr_move.any(0)].shape[1]
+                            pr_move[:, pr_move.any(0)] +=  prob_to_distr.reshape(-1,1)
+                            
+                        else:
+                            prob_to_distr = pr_move[:,next_s_code] + pr_move[:,next_s_code+n_code]
+                            pr_move[:,next_s_code] = 0
+                            pr_move[:,next_s_code+n_code] = 0
+                            prob_to_distr = prob_to_distr/pr_move[:, pr_move.any(0)].shape[1]
+                            pr_move[:, pr_move.any(0)] +=  prob_to_distr.reshape(-1,1)
 
                     toAddStack, x_pos, y_pos, y_max = self.addStack(new_stack, x_pos, y_pos, y_max)
                     if toAddStack is not None:
                         ant_k.append(toAddStack)
                         totArea += (toAddStack.length*toAddStack.width)
                         prev_s_code = next_s_code
-                    else:
+                    if toAddStack is None or sum(stack_quantity_ant) == 0:
                         free_space = False
                 
-                self.ants.append(ant_k.copy())
+                self.ants.append(ant_k.copy())#NOTE: copy non dovrebbe servire fare check
                 antsArea.append(totArea)
 
-                if totArea > bestArea:
+                """ if totArea > bestArea:
                     bestArea = totArea
-                    best_sol = stack_lst.copy()
-                    best_quantity = stack_quantity.copy()
+                    self.pr_move = pr_move.copy() """
                 
             # valutare la bontà tra tutte le soluzioni -> migliore = max     peggiore = min
             deltaTrail = self.trailUpdate(antsArea)
+            #zero_indexes =  np.where(~self.pr_move.any(0))[0]
             self.trailMatrix = self.evaporationCoeff*self.trailMatrix + deltaTrail
+            #self.trailMatrix[:,zero_indexes] = 0
             self.prMoveUpdate()
+        
         print(max(antsArea)/(self.vehicle['length'] * self.vehicle['width']))
 
         self.solCreation(antsArea)
-        return best_sol, best_quantity 
+        return self.sol
     
     def addStack(self, toAddStack, x_pos, y_pos, y_max):
         """  
@@ -144,10 +162,14 @@ class aco_bin_packing(ACO):
         mult_mat = np.ones((len_matrix,len_matrix))
         mult_mat[:,len_matrix-1] = 0
         for i,code in enumerate(code_orientation.stackability_code):
-            if (code_orientation.iloc[code]["forced_orientation"]) == 'w':    # widthwise constrain
+            if (code_orientation.iloc[code]["forced_orientation"]) == 'w' or self.stack_quantity[code] == 0:    # widthwise constrain
                 mult_mat[i,:] = 0
                 mult_mat[:,i] = 0
                 code_sub += 1
+                if self.stack_quantity[code] == 0:
+                    mult_mat[i+N_code,:] = 0
+                    mult_mat[:,i+N_code] = 0
+                    code_sub += 1
 
         self.pr_move = np.full((len_matrix,len_matrix), 1./(len_matrix-code_sub)) * mult_mat
         self.attractiveness = np.full((len_matrix,len_matrix), 1) * mult_mat
@@ -168,7 +190,7 @@ class aco_bin_packing(ACO):
         - _antsArea: list of the area of all the ants
         """
         vehicleArea = self.vehicle['length'] * self.vehicle['width'] 
-        deltaTrail = np.zeros([len(self.pr_move), len(self.pr_move)])
+        deltaTrail = np.full((len(self.pr_move), len(self.pr_move)), 0.01)
         for i,ant in enumerate(self.ants):
             x = len(self.pr_move)-1         # the first state to start is always the empty truck for all the ants
             trailApp = np.zeros([len(self.pr_move), len(self.pr_move)])
@@ -179,6 +201,57 @@ class aco_bin_packing(ACO):
                 
             deltaTrail += trailApp * _antsArea[i] / vehicleArea # more is the area covered, more is the quality of the solution
         return deltaTrail
+    
+    def changeVehicle(self, vehicle):
+        self.vehicle = vehicle
+    
+    def buildStacks(self, vehicle, df_items):
+        """"
+        buildStacks
+        -----------
+
+        - vehicle: vehicle type, needed to check the height for
+                   creating the stacks for this specific truck
+        """
+        
+        # stack creation: adesso è fatta in modo molto stupido ma dato che item con lo stesso
+        # stackability code possono avere diverse altezze probabilmente si può ottimizzare molto 
+        # date le diverse altezze dei trucks
+        #TODO: controllo max density
+        self.vehicle = vehicle
+        stackability_codes = df_items.stackability_code.unique()
+        self.stack_lst = []
+        self.stack_quantity = [0] * len(stackability_codes)
+        for code in stackability_codes:
+            stack_feat = getStackFeatures(df_items, code)
+            
+            stack = Stack(code, stack_feat[0], 
+                          stack_feat[1], stack_feat[2], stack_feat[3])
+            
+            new_stack_needed = False
+            for i, row in df_items[df_items.stackability_code == code].iterrows():
+                stack.updateHeight(row.height - row.nesting_height)
+                stack.updateWeight(row.weight)
+                if stack.height > vehicle['height']:
+                    new_stack_needed = True
+                if stack.weight > vehicle['max_weight_stack']:
+                    new_stack_needed = True
+                if stack.n_items == row.max_stackability:
+                    new_stack_needed = True
+                # if a new stack is needed:
+                if new_stack_needed:
+                    self.stack_lst.append(stack)
+                    self.stack_quantity[code] += 1 # number of the stack with this precise stackability code
+                    stack = Stack(code, stack_feat[0], 
+                          stack_feat[1], stack_feat[2], stack_feat[3])
+                    stack.addItem(row.id_item, row.height - row.nesting_height)
+                    stack.updateHeight(row.height - row.nesting_height)
+                    stack.updateWeight(row.weight)
+                    new_stack_needed = False
+                else:
+                    # else add the item
+                    stack.addItem(row.id_item, row.height - row.nesting_height)
+                    
     
     def solCreation(self, _antsArea):
         bestAnt = self.ants[np.argmax(_antsArea)]

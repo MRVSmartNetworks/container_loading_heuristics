@@ -7,7 +7,9 @@ from sub.stack import Stack
 from sub.utilities import *
 from sub.ACO import ACO
 from sub.aco_bin_packing import aco_bin_packing
+from sub.aco_vehicle import aco_vehicle
 from sub.projection import *
+
 #TODO:
 # - in popStack pensare a cosa fare se non ci sono più stack con quel
 #   stack_code
@@ -52,57 +54,6 @@ class Solver23():
         )
 
         
-        
-
-    def buildStacks(self, vehicle):
-        """"
-        buildStacks
-        -----------
-
-        - vehicle: vehicle type, needed to check the height for
-                   creating the stacks for this specific truck
-        """
-        
-        # stack creation: adesso è fatta in modo molto stupido ma dato che item con lo stesso
-        # stackability code possono avere diverse altezze probabilmente si può ottimizzare molto 
-        # date le diverse altezze dei trucks
-        #TODO: controllo max density
-        stackability_codes = self.df_items.stackability_code.unique()
-        stack_lst = []
-        stack_quantity = []
-        for code in stackability_codes:
-            stack_feat = getStackFeatures(self.df_items, code)
-            
-            stack = Stack(code, stack_feat[0], 
-                          stack_feat[1], stack_feat[2], stack_feat[3])
-            
-            stack_quantity.append(0) # start with 0 stack with this stackability code
-            new_stack_needed = False
-            for i, row in self.df_items[self.df_items.stackability_code == code].iterrows():
-                stack.updateHeight(row.height - row.nesting_height)
-                stack.updateWeight(row.weight)
-                if stack.height > vehicle['height']:
-                    new_stack_needed = True
-                if stack.weight > vehicle['max_weight_stack']:
-                    new_stack_needed = True
-                if stack.n_items == row.max_stackability:
-                    new_stack_needed = True
-                # if a new stack is needed:
-                if new_stack_needed:
-                    stack_lst.append(stack)
-                    stack_quantity[code] += 1 # number of the stack with this precise stackability code
-                    stack = Stack(code, stack_feat[0], 
-                          stack_feat[1], stack_feat[2], stack_feat[3])
-                    stack.addItem(row.id_item, row.height - row.nesting_height)
-                    stack.updateHeight(row.height - row.nesting_height)
-                    stack.updateWeight(row.weight)
-                    new_stack_needed = False
-                else:
-                    # else add the item
-                    stack.addItem(row.id_item, row.height - row.nesting_height)
-                    
-        return stack_lst, stack_quantity
-        
                 
     def solve(self, df_items, df_vehicles):
         """ 
@@ -113,7 +64,9 @@ class Solver23():
         - df_vehicles: dataframe containing all the different
                        types of trucks that can be choose
         """
-        self.solve_single_vehicle(df_items, df_vehicles)
+        aco_sol = aco_vehicle(df_items, df_vehicles)
+        
+        aco_sol.aco_vehicle_sol()
         
 
 
