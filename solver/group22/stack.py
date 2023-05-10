@@ -269,8 +269,8 @@ class Stack:
         z_lst = [0]
         
         if len(self.items) > 1:
-            for it in self.items[1:]:
-                z_lst.append(z_lst[-1] + it["height"])
+            for i in range(1, len(self.items)):
+                z_lst.append(z_lst[-1] + self.items[i]["height"] - self.items[i-1]["nesting_height"])
         
         return z_lst
     
@@ -305,40 +305,34 @@ class Stack:
 
         The removed element is returned as Series object.
         """
-        wt_vec = [it.weight for it in self.items]
+        if len(self.items) > 0:
+            wt_vec = [it["weight"] for it in self.items]
 
-        ind_max_wt = np.armax(wt_vec)
-        rem_elem = self.items[ind_max_wt]
+            assert len(wt_vec) == len(self.items), f"The vector of weights has a wrong length ({len(len(wt_vec))} vs {len(self.items)})"
 
-        """
-        self.length = 0
-        self.width = 0
-        self.area = 0
-        self.perimeter = 0
-        self.stack_code = -1
-        self.max_stack = 100000
+            ind_max_wt = np.argmax(wt_vec)
+            rem_elem = self.items[ind_max_wt]
 
-        self.next_nesting = 0
-        self.tot_height = 0
-        self.tot_weight = 0
-        self.tot_dens = 0
-        self.forced_orientation = "n"
-        """
+            if ind_max_wt == len(wt_vec) - 1 and ind_max_wt > 0:
+                self.next_nesting = self.items[ind_max_wt - 1]["nesting_height"]
+                self.tot_height = self.tot_height - rem_elem.height + self.next_nesting
+            else:
+                self.tot_height = self.tot_height - rem_elem.height + rem_elem.nesting_height
 
-        if ind_max_wt == len(wt_vec) - 1 and ind_max_wt > 0:
-            self.next_nesting = self.items[ind_max_wt - 1]
-            self.tot_height = self.tot_height - rem_elem.height + self.next_nesting
-        elif ind_max_wt == 0:
-            self.tot_height = self.tot_height - rem_elem.height + rem_elem.nesting_height
+            self.tot_weight = self.tot_weight - rem_elem.weight
+            self.tot_dens = self.tot_weight / self.area
+
+            old_n = len(self.items)
+
+            del self.items[ind_max_wt]
+
+            new_n = len(self.items)
+            assert new_n + 1 == old_n, "Item was not removed from stack"
+
+            if all([it.forced_orientation for it in self.items]) == "n":
+                self.forced_orientation = "n"
+
+            return rem_elem
+        
         else:
-            self.tot_height = self.tot_height - rem_elem.height + rem_elem.nesting_height - self.items[ind_max_wt - 1].nesting_height
-
-        self.tot_weight = self.tot_weight - rem_elem.weight
-        self.tot_dens = self.tot_weight / self.area
-
-        self.items.remove(rem_elem)
-
-        if all([it.forced_orientation for it in self.items]) == "n":
-            self.forced_orientation = "n"
-
-        return rem_elem
+            raise ValueError("Cannot remove element - stack is empty!")

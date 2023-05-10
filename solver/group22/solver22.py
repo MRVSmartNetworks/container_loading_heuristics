@@ -80,6 +80,8 @@ class Solver22:
         self.random_choice_factor = 0   # Probability of random behavior will be e^{random_choice_factor * iter}
         self.truck_score_bound = 0.1    # Deviation from optimal truck score in selection
 
+        self.count_broken = 0
+
     ##########################################################################
     ## Solver
 
@@ -185,6 +187,7 @@ class Solver22:
                 print(f"Actual number of used trucks: {len(list(set(self.curr_sol['idx_vehicle'])))}")
 
             print(f"Current objective value: {self.curr_obj_value}")
+            print(f"Broken Stacks: {self.count_broken}")
 
             assert len(tmp_items.index) == 0, "Not all items have been used in current solution!"
             
@@ -420,7 +423,7 @@ class Solver22:
 
             new_slice = self.buildSlice(up_stacks, x_dim, y_truck, weight_left)
 
-            assert (len(up_stacks) + len(new_slice) == curr_stacks_n), "Something went wrong! The stacks don't add up"
+            # assert (len(up_stacks) + len(new_slice) == curr_stacks_n), "Something went wrong! The stacks don't add up"
 
             if len(new_slice) > 0:
                 # Having built the slice:
@@ -433,7 +436,10 @@ class Solver22:
                 # 'Push' stack towards bottom
                 sol_2D, bound = self.pushSlice(bound, new_slice, sol_2D)
 
-                assert (bound[-1][1] == truck["width"]), "Bound was built wrong!"
+                if bound[-1][1] != truck["width"]:
+                    print("Error!")
+
+                assert (bound[-1][1] == truck["width"]), f"Bound was built wrong! last: {bound[-1][1]}, width: {truck['width']}"
 
             else:
                 # If the new slice is empty, close the bin
@@ -588,8 +594,53 @@ class Solver22:
                     stack_added = True
             
             elif len(stacks[i].items) > 0 and weight_left < stacks[i].tot_weight:
-                # TODO
-                pass
+                if delta_y >= stacks[i].width and x_dim >= stacks[i].length:
+                    # TODO: add possibility to break stacks - this will definitely solve the 
+                    # problem of last trucks being empty
+                    new_stack = Stack()
+                    while weight_left < stacks[i].tot_weight and len(stacks[i].items) > 0:
+                        # No need to store removed items as the items list is updated once 
+                        # the solution is 'official'
+                        rem_item = stacks[i].removeHeaviestItem()
+
+                        # Create new stack with removed item
+                        new_stack.add_item_override(rem_item)
+                    
+                    if len(stacks[i].items) > 0:
+                        new_slice.append([stacks[i], i, 0])
+                        delta_y -= stacks[i].width
+                        stack_added = True
+
+                        self.count_broken += 1
+
+                        new_stack.assignID(len(stacks) + 1)
+                        if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
+                            stacks.append(new_stack)
+                    else:
+                        del stacks[i]
+                        i -= 1          # Needed to prevent skipping an element
+
+                elif stacks[i].forced_orientation == "n" and delta_y >= stacks[i].length and x_dim >= stacks[i].width:
+                    new_stack = Stack()
+                    while weight_left < stacks[i].tot_weight and len(stacks[i].items) > 0:
+                        rem_item = stacks[i].removeHeaviestItem()
+
+                        # Create new stack with removed item
+                        new_stack.add_item_override(rem_item)
+                    
+                    if len(stacks[i].items) > 0:
+                        new_slice.append([stacks[i], i, 1])
+                        delta_y -= stacks[i].width
+                        stack_added = True
+
+                        self.count_broken += 1
+                        
+                        new_stack.assignID(len(stacks) + 1)
+                        if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
+                            stacks.append(new_stack)
+                    else:
+                        del stacks[i]
+                        i -= 1          # Needed to prevent skipping an element
 
             if stack_added:
                 # Update weight_left - remove the weight of the current stack
@@ -616,10 +667,7 @@ class Solver22:
                 j += 1
 
             i += 1
-        # When out of the loop, the slice has been built 
-        # NOTE: this is not the optimal slice in terms of delta_y left! 
-        # This is the best stack in terms of maximum price, but we are sure 
-        # that in the delta_y left no other item can be placed!
+        # When out of the loop, the slice has been built
 
         # TODO: its possible to think of a way to solve the slice filling sub-problem with
         #  other approaches (e.g., Gurobi/OR tools)
@@ -678,10 +726,11 @@ class Solver22:
             while ind_bound < len(bound) and bound[ind_bound][1] <= y_i:
                 ind_bound += 1
 
-            if bound[ind_bound][1] == y_i:
-                pass
-            else:
-                ind_bound -= 1
+            if ind_bound < len(bound):
+                if bound[ind_bound][1] == y_i:
+                    pass
+                else:
+                    ind_bound -= 1
             
             # Search for valid points
             ind_top = ind_bound + 0             # Needed to prevent to just copy the reference and update both indices...
@@ -728,7 +777,7 @@ class Solver22:
             # Increase the index from 0 until the element of the old bound is bigger
             ind_extra = 0
 
-            while bound[ind_extra][1] < new_bound[-1][1]:
+            while bound[ind_extra][1] < new_bound[-1][1] and ind_extra < len(bound):
                 ind_extra += 1
 
             # ind_extra locates the 1st corner in the old bound which has y bigger 
@@ -737,10 +786,21 @@ class Solver22:
             # Add adjustment point:
             # x is the one of the old bound
             # y is the same as the last element in the current bound
-            new_bound.append([bound[ind_extra][0], new_bound[-1][1]])
+            if ind_extra < len(bound):
+                new_bound.append([bound[ind_extra][0], new_bound[-1][1]])
 
-            for p in bound[ind_extra:]:
-                new_bound.append(p)
+                for p in bound[ind_extra:]:
+                    new_bound.append(p)
+
+                assert (bound[-1][1] == new_bound[-1][1]), f"The last y of the bound does not match - {bound[ind_extra - 1][1]} (old) vs. {new_bound[-1][1]}"
+
+            elif bound[ind_extra - 1][1] < new_bound[-1][1]:
+                raise ValueError("The last point of the bound was lost!")
+            
+            else:
+                # Ind_extra == len(bound)
+                assert (bound[ind_extra - 1][1] == new_bound[-1][1]), f"The last y of the bound should have been {bound[ind_extra - 1][1]}, it is instead {new_bound[-1][1]}"
+
 
         return curr_sol_2D, new_bound
             
