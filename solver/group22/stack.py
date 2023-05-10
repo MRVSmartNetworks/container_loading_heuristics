@@ -269,8 +269,8 @@ class Stack:
         z_lst = [0]
         
         if len(self.items) > 1:
-            for it in self.items[1:]:
-                z_lst.append(z_lst[-1] + it["height"])
+            for i in range(1, len(self.items)):
+                z_lst.append(z_lst[-1] + self.items[i]["height"] - self.items[i-1]["nesting_height"])
         
         return z_lst
     
@@ -290,3 +290,49 @@ class Stack:
         It returns True if it has.
         """
         return (len(self.items) == self.max_stack)
+
+    def removeTopItem(self):
+        pass
+
+    def removeBottomItem(self):
+        pass
+
+    def removeHeaviestItem(self):
+        """
+        removeHeaviestItem
+        ---
+        Remove the heaviest element in the stack.
+
+        The removed element is returned as Series object.
+        """
+        if len(self.items) > 0:
+            wt_vec = [it["weight"] for it in self.items]
+
+            assert len(wt_vec) == len(self.items), f"The vector of weights has a wrong length ({len(len(wt_vec))} vs {len(self.items)})"
+
+            ind_max_wt = np.argmax(wt_vec)
+            rem_elem = self.items[ind_max_wt]
+
+            if ind_max_wt == len(wt_vec) - 1 and ind_max_wt > 0:
+                self.next_nesting = self.items[ind_max_wt - 1]["nesting_height"]
+                self.tot_height = self.tot_height - rem_elem.height + self.next_nesting
+            else:
+                self.tot_height = self.tot_height - rem_elem.height + rem_elem.nesting_height
+
+            self.tot_weight = self.tot_weight - rem_elem.weight
+            self.tot_dens = self.tot_weight / self.area
+
+            old_n = len(self.items)
+
+            del self.items[ind_max_wt]
+
+            new_n = len(self.items)
+            assert new_n + 1 == old_n, "Item was not removed from stack"
+
+            if all([it.forced_orientation for it in self.items]) == "n":
+                self.forced_orientation = "n"
+
+            return rem_elem
+        
+        else:
+            raise ValueError("Cannot remove element - stack is empty!")
