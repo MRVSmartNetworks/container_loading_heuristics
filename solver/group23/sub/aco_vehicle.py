@@ -7,7 +7,7 @@ import time
 
 class aco_vehicle(ACO):
     def __init__(self, df_items, df_vehicles, alpha=1, beta=1, 
-                 n_ants=40, n_iter=20, evaporationCoeff=0.5):
+                 n_ants=1, n_iter=1, evaporationCoeff=0.5):
         super().__init__(alpha, beta, n_ants, n_iter, evaporationCoeff)
         self.df_items = df_items
         self.df_vehicles = df_vehicles
@@ -45,7 +45,9 @@ class aco_vehicle(ACO):
                         prev_vehicle = next_vehicle
                     else:
                         more_items = False
-                print("\nTime:", st_time - time.time())
+                print("\nTime:", time.time() - st_time)
+                print("\nN trucks = ", len(ant_k))
+                break
                 self.ants.append(ant_k)
                 antsCost.append(totCost)
     

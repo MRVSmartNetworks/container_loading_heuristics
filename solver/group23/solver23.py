@@ -41,8 +41,8 @@ class Solver23():
         # work on single truck
         vehicle = self.df_vehicles.iloc[0] # vehicle type V0
         
-        stack_lst, stack_quantity = self.buildStacks(vehicle)
-        aco = aco_bin_packing(stack_lst=stack_lst, stack_quantity=stack_quantity, vehicle=vehicle)
+        aco = aco_bin_packing()
+        aco.buildStacks(vehicle, df_items)
         aco.statesCreation(df_items[["stackability_code",
                                                "forced_orientation"]].drop_duplicates())
         aco.aco_2D_bin()
@@ -65,8 +65,8 @@ class Solver23():
                        types of trucks that can be choose
         """
         aco_sol = aco_vehicle(df_items, df_vehicles)
-        
         aco_sol.aco_vehicle_sol()
+        #self.solve_single_vehicle(df_items, df_vehicles)
         
 
 

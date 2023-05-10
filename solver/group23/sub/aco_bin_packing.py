@@ -8,7 +8,7 @@ class aco_bin_packing(ACO):
     
     def __init__(
             self, alpha=1, beta=1, 
-            n_ants=5, n_iter=3, evaporationCoeff=0.5
+            n_ants=100, n_iter=20, evaporationCoeff=0.6
             ):
         self.vehicle = None
         self.stack_lst = []
@@ -37,7 +37,7 @@ class aco_bin_packing(ACO):
         self.trailMatrix = np.zeros([len(self.pr_move), len(self.pr_move)]) # initialization of the trail matrix
         
         bestArea = 0
-        for _ in range(self.n_iter):
+        for iter in range(self.n_iter):
             self.ants = []
             antsArea = []
             for _ in range(self.n_ants):
@@ -88,18 +88,21 @@ class aco_bin_packing(ACO):
                 self.ants.append(ant_k.copy())#NOTE: copy non dovrebbe servire fare check
                 antsArea.append(totArea)
 
-                """ if totArea > bestArea:
-                    bestArea = totArea
-                    self.pr_move = pr_move.copy() """
-                
             # valutare la bontà tra tutte le soluzioni -> migliore = max     peggiore = min
             deltaTrail = self.trailUpdate(antsArea)
             #zero_indexes =  np.where(~self.pr_move.any(0))[0]
             self.trailMatrix = self.evaporationCoeff*self.trailMatrix + deltaTrail
             #self.trailMatrix[:,zero_indexes] = 0
             self.prMoveUpdate()
+
+            area_ratio = max(antsArea)/(self.vehicle['length'] * self.vehicle['width'])
+            if area_ratio >= 0.9 and iter >= 3:
+                break
         
-        print(max(antsArea)/(self.vehicle['length'] * self.vehicle['width']))
+        area_ratio = max(antsArea)/(self.vehicle['length'] * self.vehicle['width'])
+        print(area_ratio)
+        if area_ratio < 0.7:
+            print("#########", self.vehicle['id_truck'])
 
         self.solCreation(antsArea)
         return self.sol
@@ -174,7 +177,7 @@ class aco_bin_packing(ACO):
         self.pr_move = np.full((len_matrix,len_matrix), 1./(len_matrix-code_sub)) * mult_mat
         self.attractiveness = np.full((len_matrix,len_matrix), 1) * mult_mat
         #NOTE: prova a cambiare acctractivness
-        self.attractiveness[:,:7] = self.attractiveness[:,:7]*2
+        self.attractiveness[:,:7] = self.attractiveness[:,:7]*4
 
     def trailUpdate(self, _antsArea):
         """
@@ -229,7 +232,8 @@ class aco_bin_packing(ACO):
                           stack_feat[1], stack_feat[2], stack_feat[3])
             
             new_stack_needed = False
-            for i, row in df_items[df_items.stackability_code == code].iterrows():
+            iter_items = df_items[df_items.stackability_code == code].head(100)
+            for i, row in iter_items.iterrows():
                 stack.updateHeight(row.height - row.nesting_height)
                 stack.updateWeight(row.weight)
                 if stack.height > vehicle['height']:
