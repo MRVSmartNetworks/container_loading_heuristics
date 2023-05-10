@@ -14,8 +14,6 @@ from solver.group22.utilities import cuboid_data, set_axes_equal
 from solver.group22.stack import Stack
 from solver.group22.stack_creation_heur import create_stack_cs
 
-# TODO (maybe): remove full list of items from stack attributes, only store the item ID, which can be used
-# in the dataframe to locate the correct row (supposing NO DUPLICATES).
 
 DEBUG = True
 DEBUG_MORE = False
@@ -138,6 +136,10 @@ class Solver22:
                     * tmp_vehicles["max_weight"]
                     * tmp_vehicles["max_weight_stack"]
                 )
+
+            ord_vehicles = tmp_vehicles.sort_values(
+                by=["dim_wt_cost_ratio"], ascending=False
+            )
 
             # Used to track the different types of used vehicles and assign unique IDs:
             n_trucks = {}
@@ -317,7 +319,7 @@ class Solver22:
             else:
                 return ord_vehicles.iloc[0]
 
-    def create_stack(self, df_items, truck):
+    def create_stack(self, df_items, truck):  # NOT USED!
         """
         create_stack
         ---
@@ -438,7 +440,7 @@ class Solver22:
 
         while space_left and weight_left > 0:
             # 1. Assign prices to each stack:
-            self.priceStack(up_stacks)
+            self.priceStack(up_stacks, override=[0, 1, 2, 3])
 
             curr_stacks_n = len(up_stacks)
 
@@ -447,7 +449,9 @@ class Solver22:
             rightmost = max([p[0] for p in bound])
             x_dim = x_truck - rightmost
 
-            new_slice = self.buildSlice(up_stacks, x_dim, y_truck, weight_left)
+            new_slice, up_stacks = self.buildSlice(
+                up_stacks, x_dim, y_truck, weight_left
+            )
 
             # assert (len(up_stacks) + len(new_slice) == curr_stacks_n), "Something went wrong! The stacks don't add up"
 
@@ -494,17 +498,14 @@ class Solver22:
         one to place first when solving the 2D bin packing problem.
 
         There are 4 different rules to assign the price, chosen randomly:
-        - Price = Area
+        - Price = area
         - Price = length
         - Price = width
         - Price = perimeter
         - Price = stack height ---- Not so good
         - Price = total volume
-        - Price = -1*density
-
-        TODO: think of new proces to assign
-        - number of items
-        - density of stack - may be useful to fulfill weight constraint
+        - Price = 1 / density - as defined by the specs (weight / area)
+        - Price = height / weight
 
         The input variable 'stacks' is a list of Stack objects.
         This method updates the 'price' attribute inside each Stack object.
@@ -564,6 +565,16 @@ class Solver22:
         This method is used to populate slices of the trailer to be filled.
         This is done by choosing first slices with higher 'price'.
 
+        The ordered list is then read sequentially and stacks which fit (fulfilling
+        constraints) are placed. Used stacks are removed from the list.
+
+        Once all stacks have been placed, if the truck allows space, the remaining
+        stacks are analyzed and it is tried to add them by 'breaking' them, i.e.,
+        by removing the heaviest elements in the stacks to try and fit them in the
+        new slice.
+
+        [O(n^2)]
+
         ### Input parameters:
         - stacks: list of Stack object, need price to be initialized already.
         - x_dim: available space in the x direction (length)
@@ -573,7 +584,7 @@ class Solver22:
         ### Output variables:
         - new_slice: list of sublists; each sublist contains:
           - Stack object
-          - Index of the stack in the initial list (TODO: check if needed)
+          - Index of the stack in the initial list
           - Rotation - 0 if not rotated, 1 if rotated
           - y coordinate of the origin
 
@@ -588,6 +599,8 @@ class Solver22:
 
         # Sort the stacks according to decreasing price
         stacks.sort(key=lambda x: x.price, reverse=True)
+        # stack_added_flags = np.zeros((len(stacks)))
+
         i = 0  # i tracks the index of the stack list
         j = 0  # j tracks the number of stacks in the current slice
         delta_y = y_dim
@@ -612,6 +625,9 @@ class Solver22:
 
                     delta_y -= stacks[i].width
                     stack_added = True
+                    del stacks[i]
+                    i -= 1
+
                 elif (
                     stacks[i].forced_orientation == "n"
                     and delta_y >= stacks[i].length
@@ -625,66 +641,15 @@ class Solver22:
                     # Rotated stack - can place it width-wise
                     delta_y -= stacks[i].length
                     stack_added = True
-
-            elif len(stacks[i].items) > 0 and weight_left < stacks[i].tot_weight:
-                if delta_y >= stacks[i].width and x_dim >= stacks[i].length:
-                    # TODO: add possibility to break stacks - this will definitely solve the
-                    # problem of last trucks being empty
-                    new_stack = Stack()
-                    while (
-                        weight_left < stacks[i].tot_weight and len(stacks[i].items) > 0
-                    ):
-                        # No need to store removed items as the items list is updated once
-                        # the solution is 'official'
-                        rem_item = stacks[i].removeHeaviestItem()
-
-                        # Create new stack with removed item
-                        new_stack.add_item_override(rem_item)
-
-                    if len(stacks[i].items) > 0:
-                        new_slice.append([stacks[i], i, 0])
-                        delta_y -= stacks[i].width
-                        stack_added = True
-
-                        self.count_broken += 1
-
-                        new_stack.assignID(len(stacks) + 1)
-                        if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
-                            stacks.append(new_stack)
-                    else:
-                        del stacks[i]
-                        i -= 1  # Needed to prevent skipping an element
-
-                elif (
-                    stacks[i].forced_orientation == "n"
-                    and delta_y >= stacks[i].length
-                    and x_dim >= stacks[i].width
-                ):
-                    new_stack = Stack()
-                    while (
-                        weight_left < stacks[i].tot_weight and len(stacks[i].items) > 0
-                    ):
-                        rem_item = stacks[i].removeHeaviestItem()
-
-                        # Create new stack with removed item
-                        new_stack.add_item_override(rem_item)
-
-                    if len(stacks[i].items) > 0:
-                        new_slice.append([stacks[i], i, 1])
-                        delta_y -= stacks[i].width
-                        stack_added = True
-
-                        self.count_broken += 1
-
-                        new_stack.assignID(len(stacks) + 1)
-                        if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
-                            stacks.append(new_stack)
-                    else:
-                        del stacks[i]
-                        i -= 1  # Needed to prevent skipping an element
+                    del stacks[i]
+                    i -= 1
 
             if stack_added:
-                # Update weight_left - remove the weight of the current stack
+                assert (
+                    j == len(new_slice) - 1
+                ), f"Wrong j = {j}, but slice contains {len(new_slice)} items"
+
+                # Update weight_left - remove the weight of the last added stack
                 weight_left -= new_slice[-1][0].tot_weight
 
                 # Update origin y coordinate
@@ -693,37 +658,140 @@ class Solver22:
                     if new_slice[-2][2] == 0:
                         if DEBUG_MORE:
                             print("Success here")
-                        w_min2 = new_slice[-2][0].width
+                        w_min2 = new_slice[j - 1][0].width
                     else:
                         if DEBUG_MORE:
                             print("Success here (2)")
-                        w_min2 = new_slice[-2][0].length
+                        w_min2 = new_slice[j - 1][0].length
                     # Add the width to the origin of the stack to get new origin
                     # This ensures no space is left
-                    new_slice[-1].append(new_slice[-2][-1] + w_min2)
+                    new_slice[j].append(new_slice[-2][-1] + w_min2)
                 else:
                     # Stack is placed at y = 0
-                    new_slice[-1].append(0)
-
+                    new_slice[j].append(0)
                 j += 1
 
             i += 1
         # When out of the loop, the slice has been built
 
-        # TODO: its possible to think of a way to solve the slice filling sub-problem with
-        #  other approaches (e.g., Gurobi/OR tools)
+        number_old_stacks = i + 0
 
+        if weight_left > 0 and len(stacks) > 0:
+            i = 0
+            # Review the possibility to add pieces of remaining stacks
+            while i < len(stacks):
+                stack_added = False
+                # Iterate over the remaining stack
+
+                if len(stacks[i].items) > 0 and weight_left < stacks[i].tot_weight:
+                    # If there is still space in the current slice:
+                    if delta_y >= stacks[i].width and x_dim >= stacks[i].length:
+                        # Initialize extra stack for discarded items
+                        new_stack = Stack()
+
+                        # Try removing elements from the stack (heaviest first) until it
+                        # is (possibly) light enough to be placed
+                        while (
+                            weight_left < stacks[i].tot_weight
+                            and len(stacks[i].items) > 0
+                        ):
+                            # Keep the removed item and add it to the extra stack
+                            rem_item = stacks[i].removeHeaviestItem()
+
+                            # Create new stack with removed item
+                            new_stack.add_item_override(rem_item)
+
+                        # If the current stack still contains elements, it means that it can
+                        # be added (loop was broken because stack weight became < available weight)
+                        if len(stacks[i].items) > 0:
+                            new_slice.append([stacks[i], i, 0])
+                            # Updated y dimension left
+                            delta_y -= stacks[i].width
+                            stack_added = True
+
+                            self.count_broken += 1
+
+                            # Add the new stack to the 'stacks' list
+                            new_stack.assignID(number_old_stacks)
+                            number_old_stacks += 1
+                            if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
+                                stacks.append(new_stack)
+                        else:
+                            # Remove the element from the stack list - will not be able
+                            # to place any of these items in the current truck
+                            del stacks[i]
+                            i -= 1  # Needed to prevent skipping an element
+
+                    elif (
+                        stacks[i].forced_orientation == "n"
+                        and delta_y >= stacks[i].length
+                        and x_dim >= stacks[i].width
+                    ):
+                        new_stack = Stack()
+                        while (
+                            weight_left < stacks[i].tot_weight
+                            and len(stacks[i].items) > 0
+                        ):
+                            rem_item = stacks[i].removeHeaviestItem()
+
+                            # Create new stack with removed item
+                            new_stack.add_item_override(rem_item)
+
+                        if len(stacks[i].items) > 0:
+                            new_slice.append([stacks[i], i, 1])
+                            delta_y -= stacks[i].width
+                            stack_added = True
+
+                            self.count_broken += 1
+
+                            new_stack.assignID(number_old_stacks)
+                            number_old_stacks += 1
+                            if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
+                                stacks.append(new_stack)
+                        else:
+                            del stacks[i]
+                            i -= 1  # Needed to prevent skipping an element
+
+                    if stack_added:
+                        assert (
+                            j == len(new_slice) - 1
+                        ), f"Wrong j = {j}, but slice contains {len(new_slice)} items"
+                        # Update weight_left - remove the weight of the current stack
+                        weight_left -= new_slice[-1][0].tot_weight
+
+                        # Update origin y coordinate
+                        if j > 0:
+                            # Get width (length if rotated) of 2nd to last element
+                            if new_slice[j - 1][2] == 0:
+                                if DEBUG_MORE:
+                                    print("Success here")
+                                w_min2 = new_slice[j - 1][0].width
+                            else:
+                                if DEBUG_MORE:
+                                    print("Success here (2)")
+                                w_min2 = new_slice[j - 1][0].length
+                            # Add the width to the origin of the stack to get new origin
+                            # This ensures no space is left
+                            new_slice[j].append(new_slice[j - 1][-1] + w_min2)
+                        else:
+                            # Stack is placed at y = 0
+                            new_slice[j].append(0)
+                        j += 1
+
+                i += 1
+
+        # TODO: check this
         # Remove used stacks from the initial list
         # This modifies the 'stacks' list which is passed to the function
-        for i in [x[1] for x in new_slice[::-1]]:
-            del stacks[i]
+        # for i in [x[1] for x in new_slice[::-1]]:
+        #     del stacks[i]
 
         # Technically the indices of the stacks are not used anymore (and cannot be used...)
 
         if DEBUG_MORE:
             print(f"N. stacks in new slice: {len(new_slice)}")
 
-        return new_slice
+        return new_slice, stacks
 
     def pushSlice(self, bound, new_slice, curr_sol_2D):
         """
@@ -750,7 +818,11 @@ class Solver22:
           isolated points
 
         ### Updating the bound
-        TODO
+        The new boundary is obtained by determining the vertices of all elements which have been
+        placed in last slice.
+        Since by definition the boundary has to have as last item a point having as y coordinate
+        the truck width, to prevent missing points, a check is performed to possibly add points
+        to the new bound to fill the gap.
         """
         new_bound = []
 
