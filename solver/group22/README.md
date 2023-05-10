@@ -69,10 +69,10 @@ The approach is based on what reported in [Peak Filling Sices Push](https://link
 The fundamental approach consists of the following steps:
 
 - Choose the current best truck
-  - If the total items volume is bigger than any truck's volume, choose the truck with the best volume/cost ratio, i.e., the truck with the lowest cost per unit volume.
+  - If the total items volume is bigger than any truck's volume, choose the truck with the best (volume * max_weight)/cost factor value, i.e., the truck with the lowest cost per unit volume-height.
   - Else, choose the cheapest truck among the ones which would be able to fit all the remaining objects.
 - From the remaining items, create stacks which respect the constraints imposed by the chosen truck (height, weight, density) and by the maximum stackability of each object.
-- Solve the problem in 2D, i.e., place the stacks in the best possible way, without concerning about their height (as constraints have been enforced at the creation)
+- Solve the problem in 2D, i.e., place the stacks in the best possible way, without concerning about their height (as constraints have been enforced at the creation) - only check maximum truck weight
 - Update the solution by adding the used stacks (and the contained items) to the current bin
 
 It is evident, from this description, how 2D bin packing is a subproblem of the solution.
@@ -85,6 +85,7 @@ In order to solve it, the approach was the following:
   - Build a slice
   - Push each stack in the slice towards the $-x$ direction (as much as possible)
 
+Stack creation is done following a simple heuristic algorithm, which solves the Cutting Stock problem.
 
 <img src="./img_md/perimeter_sol_represent.jpeg" alt="Definition of the perimeter" style="width: 500px"/>
 

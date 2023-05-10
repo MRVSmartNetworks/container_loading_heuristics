@@ -18,16 +18,27 @@ def create_stack_cs(df_items, truck):
     - stacks_list: list containing the created stack objects
 
     ---
-    
-    FIXME: *Approach is to be reviewed*
+    The creation of the stack follows what is called the 'Cutting Stock' problem.
+    This function implements an heuristic approach to the solution of this problem.
 
     Having isolated all stackability codes, iterate on all items for each code value.
     Place each item in a stack, until an item does not pass the checks for being added.
-    Once this happens, close current stack and add it to the list of stacks, then 
-    start a new stack by placing the current item in a new one.
+    Once this happens, depending on the reason why the item was not added, choose how 
+    proceed:
 
-    This method makes use of the Stack class and its method(s) 'add_item' (and 
-    'add_item_override').
+    - If the item violated the max height constraint of the truck, look for the biggest
+    valid height in the list containing all the unique height values of the items. 
+    Having found the viable height, try to add items of this height to the stack, else
+    iterate on smaller height values, until either all items are analyzed or a valid 
+    item was found. If no items were added, the stack needs to be closed and a new one 
+    is started
+    - If the item violated max weight stack, do the same as for max height, but 
+    considering the items weight
+    - If the item violated max density, find the value of the weight associated with 
+    the max density (given the stack surface) and treat the event as a max weight 
+    violation
+    - If max stackability was violated, it is not possible to add any more items.
+    The stack is then closed and a new one is started.
 
     Stacks can be created only for items with the same stackability code.
     """
@@ -91,7 +102,7 @@ def create_stack_cs(df_items, truck):
                                     # Else: keep on iterating
                                 # TODO: try to iterate in a 'smart' way - avoid '+= 1' and try adding more 
                                 # if many elements in 'possib_elem'
-                                k += 1
+                                k += max(1, round(np.log(len(valid_df.index))))
                         j += 1
 
                 elif was_added == -2 or was_added == -3:
@@ -103,24 +114,24 @@ def create_stack_cs(df_items, truck):
                         remaining_weight = other_constraints['max_dens'] * new_stack.area - new_stack.tot_weight
 
                     j = 0
+                    new_stack_needed = True
                     while j < len(all_weights):
                         if all_weights[j] <= remaining_weight:
                             valid_df = curr_items_code[curr_items_code.weight == all_weights[j]]
                             
-                            new_stack_needed = True
                             k = 0
                             while k < len(valid_df.index):
                                 possib_elem = valid_df.iloc[k]
                                 if possib_elem.used_flag == 0:
                                     # Try adding it
                                     if new_stack.add_item_override(possib_elem, other_constraints) == 1:
-                                        curr_items_code[curr_items_code.id_item == possib_elem.id_item, "used_flag"] = 1
+                                        curr_items_code.loc[curr_items_code.id_item == possib_elem.id_item, "used_flag"] = 1
                                         new_stack_needed = False
                                         # If success, break cycle
                                         j = len(all_weights)
                                         k = len(valid_df.index)
-                                    # Else: keep on iterating
-                                k += 1
+                                    # Else: keep on iterating (on both weight values and items)
+                                k += max(1, round(np.log(len(valid_df.index))))
                         j += 1
    
                 elif was_added == 0:
@@ -135,16 +146,19 @@ def create_stack_cs(df_items, truck):
 
                 # if a new stack is needed (unable to add elements):
                 if new_stack_needed:
-                    stacks_list.append(new_stack)
+                    if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
+                        stacks_list.append(new_stack)
                     # Open new stack (with current element as first)
                     new_stack = Stack(row, other_constraints)
                     new_stack_needed = False
         
         # Need to add last stack to the list (if not empty)
-        if len(new_stack.items) > 0:
+        if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
             stacks_list.append(new_stack)
     
     for i in range(len(stacks_list)):
         stacks_list[i].assignID(i)
+
+    assert all([s.tot_weight for s in stacks_list]) > 0
 
     return stacks_list
