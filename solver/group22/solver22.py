@@ -10,19 +10,20 @@ import matplotlib.pyplot as plt
 from matplotlib import collections
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-from solver.group22.utilities import cuboid_data
+from solver.group22.utilities import cuboid_data, set_axes_equal
 from solver.group22.stack import Stack
+from solver.group22.stack_creation_heur import create_stack_cs
 
-# TODO: remove full list of items from stack attributes, only store the item ID, which can be used
+# TODO (maybe): remove full list of items from stack attributes, only store the item ID, which can be used
 # in the dataframe to locate the correct row (supposing NO DUPLICATES).
 
-DEBUG = False
+DEBUG = True
 DEBUG_MORE = False
 MAX_ITER = 10000
 MAX_TRIES = 5
 
 class Solver22:
-    def __init__(self):
+    def __init__(self, df_items, df_vehicles):
         """
         Solver22
         ---------------------------------------------------------------
@@ -36,6 +37,9 @@ class Solver22:
         ---------------------------------------------------------------
         """
         self.name = "solver22"
+
+        self.df_items = df_items
+        self.df_vehicles = df_vehicles
 
         # Current solution
         self.curr_sol = {
@@ -52,7 +56,6 @@ class Solver22:
         self.curr_obj_value = 0
 
         # Current best solution (so far)
-        # TODO: method to update it - at each complete iteration
         self.curr_best_sol = {
             "type_vehicle": [],
             "idx_vehicle": [],
@@ -74,10 +77,13 @@ class Solver22:
         self.iter = 0           # Iterator for single solution
         self.tries = 0          # Iterator used for looping between different solution attempts
 
+        self.random_choice_factor = 0   # Probability of random behavior will be e^{random_choice_factor * iter}
+        self.truck_score_bound = 0.1    # Deviation from optimal truck score in selection
+
     ##########################################################################
     ## Solver
 
-    def solve(self, df_items, df_vehicles):
+    def solve(self):
         """
         solve
         ---
@@ -97,8 +103,8 @@ class Solver22:
             }
             self.curr_obj_value = 0
 
-            tmp_items = pd.DataFrame.copy(df_items)
-            tmp_vehicles = pd.DataFrame.copy(df_vehicles)
+            tmp_items = pd.DataFrame.copy(self.df_items)
+            tmp_vehicles = pd.DataFrame.copy(self.df_vehicles)
 
             # TODO: review lower bound evaluation
             # min_cost, min_n_trucks = self.getLowerBound(tmp_items, tmp_vehicles)
@@ -107,12 +113,14 @@ class Solver22:
             tmp_items['surface'] = tmp_items['width']*tmp_items['length']
             tmp_items['volume'] = tmp_items['surface']*tmp_items['height']
 
-            # Order according to dimensions/cost ratio
-            if "dim_cost_ratio" not in tmp_vehicles.columns:
+            # Order according to dimensions * weight / cost ratio
+            if "dim_cost_ratio" not in tmp_vehicles.columns and "dim_wt_cost_ratio" not in tmp_vehicles.columns:
                 tmp_vehicles["volume"] = tmp_vehicles['width']*tmp_vehicles['length']*tmp_vehicles['height']
+                tmp_vehicles["section"] = tmp_vehicles['width']*tmp_vehicles['height']
                 tmp_vehicles["dim_cost_ratio"] = tmp_vehicles['volume']/tmp_vehicles['cost']
+                tmp_vehicles["dim_wt_cost_ratio"] = tmp_vehicles["dim_cost_ratio"] * tmp_vehicles["max_weight"] * tmp_vehicles["max_weight_stack"]
 
-            ord_vehicles = tmp_vehicles.sort_values(by=['dim_cost_ratio'], ascending=False)
+            ord_vehicles = tmp_vehicles.sort_values(by=['dim_wt_cost_ratio'], ascending=False)
             
             # Used to track the different types of used vehicles and assign unique IDs:
             n_trucks = {}
@@ -126,12 +134,13 @@ class Solver22:
                     print(f"> Items left: {len(tmp_items.index)}")
 
                 if self.last_truck_was_empty:
-                    self.unusable_trucks.append(str(curr_truck.id_truck))
+                    self.unusable_trucks.append(str(curr_truck.id_truck[:2]))
                 
                 self.last_truck_was_empty = False
+
                 # Strategy for selecting the trucks
                 curr_truck = self.selectNextTruck(ord_vehicles, tmp_items, self.unusable_trucks)
-
+                
                 # Having selected the truck type, update its ID by appending the counter found in n_trucks
                 # NOTE: the padding done in this case allows for at most 999 trucks of the same type...
                 n_trucks[curr_truck.id_truck] += 1
@@ -145,14 +154,18 @@ class Solver22:
 
                 # TODO: find more efficient solution for reading all rows one at a time (if possible)
 
+                if self.iter == 170:
+                    print("")
+
                 # Build stacks with the copied list of items 'tmp_items'
-                valid_stacks_list = self.create_stack(tmp_items, curr_truck)
+                valid_stacks_list = create_stack_cs(tmp_items, curr_truck)
+                # valid_stacks_list = self.create_stack(tmp_items, curr_truck)
 
                 if DEBUG_MORE:
                     print(f"Total number of generated stacks: {len(valid_stacks_list)}")
 
                 # Solve 2D problems to place the stacks
-                sol_2D = self.solve2D(valid_stacks_list, curr_truck, df_items)
+                sol_2D = self.solve2D(valid_stacks_list, curr_truck, self.df_items)
 
                 # Use the 2D solution to update the overall solution
                 tmp_items = self.updateCurrSol(sol_2D, curr_truck, tmp_items)
@@ -164,15 +177,24 @@ class Solver22:
             for t in n_trucks.keys():
                 used_trucks += n_trucks[t]
 
+            self.unusable_trucks = []
+            self.last_truck_was_empty = False
+
             if DEBUG:
                 print(f"Number of trucks analyzed: {used_trucks}")
                 print(f"Actual number of used trucks: {len(list(set(self.curr_sol['idx_vehicle'])))}")
 
             print(f"Current objective value: {self.curr_obj_value}")
+
+            assert len(tmp_items.index) == 0, "Not all items have been used in current solution!"
             
             self.updateBestSol()
 
-        print(f"Optimal value: {self.best_obj_value}")
+        print(f"Optimal initial value: {self.best_obj_value}")
+
+        # TODO: solution improvement from best solution so far
+        # Approach: start from the last truck which was filled, try to extract items 
+        # and place them in other trucks
 
         # Append best solution for current truck
         # Need to make sure the items left have been updated
@@ -183,11 +205,11 @@ class Solver22:
         )
 
         ### Plot results:
-        self.myStack3D(df_items, df_vehicles, df_sol, first_truck_id)
+        self.myStack3D(self.df_items, self.df_vehicles, df_sol, first_truck_id)
 
         # Get last used truck
         last_truck_id = df_sol.idx_vehicle.iloc[-1]
-        self.myStack3D(df_items, df_vehicles, df_sol, last_truck_id)
+        self.myStack3D(self.df_items, self.df_vehicles, df_sol, last_truck_id)
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -207,7 +229,7 @@ class Solver22:
         the column "volume"
         - forbidden_trucks: list of IDs of trucks which have found to be not viable to store items
         """
-        # TODO: introduce some random behavior, as the current procedure gets stuck...
+        # TODO (maybe): introduce some random behavior, as the current procedure may get stuck...
 
         if "volume" not in remaining_items.columns:
             remaining_items["volume"] = remaining_items["length"]*remaining_items["width"]*remaining_items["height"]
@@ -220,17 +242,32 @@ class Solver22:
         if "dim_cost_ratio" not in trucks_df.columns:
             trucks_df["dim_cost_ratio"] = trucks_df["volume"]/trucks_df["cost"]
 
+        if "dim_wt_cost_ratio" not in trucks_df.columns:
+            trucks_df["dim_wt_cost_ratio"] = trucks_df["dim_cost_ratio"] * trucks_df["max_weight"] * trucks_df["max_weigth_stack"]
+
         if all(trucks_df.volume < tot_item_vol):
+            # Introduce possibility to choose truck randomly which increases with iteration number
             # If the volume of all trucks is lower than the overall volume: 
             # return truck with highest dim/cost ratio (first which is not in the string of forbidden trucks)
-            ord_vehicles = trucks_df.sort_values(by=['dim_cost_ratio'], ascending=False)
+            ord_vehicles = trucks_df.sort_values(by=['dim_wt_cost_ratio'], ascending=False)
+
+            best_val = float(ord_vehicles.dim_wt_cost_ratio.iloc[0])
+            bound_from_best = best_val - self.truck_score_bound*best_val
+            similar_trucks = ord_vehicles[ord_vehicles.dim_wt_cost_ratio >= bound_from_best]
+
+            choice = random.random()
 
             if len(forbidden_trucks) > 0:
                 for i, row in ord_vehicles.iterrows():
                     if str(row.id_truck) not in forbidden_trucks:
                         return ord_vehicles.iloc[i]
-            else:
+            
+            elif choice < np.exp(self.random_choice_factor * self.iter):
                 return ord_vehicles.iloc[0]
+            
+            else:
+                n_trucks = len(similar_trucks.index)
+                return similar_trucks.iloc[random.randint(0, n_trucks-1)]
             
         else:
             # Else: return the truck with the lowest cost among the ones which are bigger than 
@@ -241,7 +278,7 @@ class Solver22:
             if len(forbidden_trucks) > 0:
                 for i, row in ord_vehicles.iterrows():
                     if str(row.id_truck) not in forbidden_trucks:
-                        return ord_vehicles.iloc[i]
+                        return row
             else:
                 return ord_vehicles.iloc[0]
 
@@ -272,8 +309,6 @@ class Solver22:
         stacks_list = []        # Outcome of this function
         
         for code in stack_codes:
-            tot_high = 0
-            tot_weight = 0
             new_stack_needed = False
             other_constraints = {           # Enforce constraints on the 
                 "max_height": truck["height"],
@@ -291,7 +326,7 @@ class Solver22:
                 # 0: cannot add item as it won't satisfy constraint (weight, height, density, stackability)
                 # 1: success
                 # NOT HERE - {-1: cannot add item since it would lock the orientation property}
-                if was_added == 0:
+                if was_added != 1:
                     new_stack_needed = True
                     # In all other cases can still try to add elements to the stack
                     # FIXME: it may happen that one element cannot be added because too tall/heavy
@@ -349,7 +384,7 @@ class Solver22:
         x_truck = truck["length"]
         y_truck = truck["width"]
         # No need for height (we are solving 2D currently)
-        max_weight = truck["max_weight"]
+        max_weight = truck["max_weight"]        ## TODO: use it!!!!
 
         # This solution simply consists of a 2D bin packing with no constraint but the 
         # dimensions of the bin and max_weight: it is assumed the stacks have been built 
@@ -369,11 +404,10 @@ class Solver22:
         ########### Initialize bound
         bound = [[0,0],[0,y_truck]]
 
-        # TODO: add iteration
-
         space_left = True
+        weight_left = max_weight
 
-        while space_left:
+        while space_left and weight_left > 0:
             # 1. Assign prices to each stack:
             self.priceStack(up_stacks)
 
@@ -381,26 +415,29 @@ class Solver22:
 
             # 2. Build slices - choose stacks according to highest price
             # Brute force
-            # TODO: understand what is the best value of x_dim to be passed to the method below
             rightmost = max([p[0] for p in bound])
             x_dim = x_truck - rightmost
 
-            new_slice = self.buildSlice(up_stacks, x_dim, y_truck)
+            new_slice = self.buildSlice(up_stacks, x_dim, y_truck, weight_left)
 
             assert (len(up_stacks) + len(new_slice) == curr_stacks_n), "Something went wrong! The stacks don't add up"
 
             if len(new_slice) > 0:
                 # Having built the slice:
-                # 'Push' stack towards bottom
+                # Update weight_left (NOTE: check is done at slice creation):
+                weight_added = 0
+                for el in new_slice:
+                    weight_added += el[0].tot_weight
+                weight_left = weight_left - weight_added
 
-                # TODO: create 'pushSlice' method
+                # 'Push' stack towards bottom
                 sol_2D, bound = self.pushSlice(bound, new_slice, sol_2D)
 
                 assert (bound[-1][1] == truck["width"]), "Bound was built wrong!"
 
             else:
                 # If the new slice is empty, close the bin
-                # Maybe can also check for big spaces to fill with arbitrary slices
+                # TODO: check for big spaces to fill with arbitrary slices
                 # but tricky (buildSlice can be used for arbitrary dimensions)
                 if len(sol_2D['x_sol']) == 0:
                     print("Cannot fit any item in this truck!")
@@ -415,7 +452,7 @@ class Solver22:
         
         return sol_2D
 
-    def priceStack(self, stacks):
+    def priceStack(self, stacks, override=None):
         """
         pricesStack
         ---
@@ -429,36 +466,64 @@ class Solver22:
         - Price = perimeter
         - Price = stack height ---- Not so good
         - Price = total volume
+        - Price = -1*density
 
         TODO: think of new proces to assign
         - number of items
+        - density of stack - may be useful to fulfill weight constraint
 
         The input variable 'stacks' is a list of Stack objects.
         This method updates the 'price' attribute inside each Stack object.
+
+        Via the parameter 'override', it is possible to force the choice 
+        on one or more cost types.
+        This parameter can be either a list of ints or a single int value,
+        specifying the price strategy.
         """
         # Select which pricing type
-        val = random.randint(0,5)
+        if override is None:
+            val = random.randint(0, 7)
+        elif isinstance(override, int):
+            val = override
+        elif isinstance(override, list):
+            val = override[random.randint(0, len(override)-1)]
+        else:
+            raise ValueError("Parameter 'override' should be of type int (or None)!")
 
         if val == 0:
             for i in range(len(stacks)):
+                # Area
                 stacks[i].assignPrice(stacks[i].area)
         elif val == 1:
             for i in range(len(stacks)):
+                # Length
                 stacks[i].assignPrice(stacks[i].length)
         elif val == 2:
             for i in range(len(stacks)):
+                # Width
                 stacks[i].assignPrice(stacks[i].width)
         elif val == 3:
             for i in range(len(stacks)):
+                # Perimeter
                 stacks[i].assignPrice(stacks[i].perimeter)
         elif val == 4:
             for i in range(len(stacks)):
+                # Stack height
                 stacks[i].assignPrice(stacks[i].tot_height)
         elif val == 5:
             for i in range(len(stacks)):
+                # Volume
                 stacks[i].assignPrice(stacks[i].tot_height * stacks[i].area)
+        elif val == 6:
+            for i in range(len(stacks)):
+                # Area / weight
+                stacks[i].assignPrice(stacks[i].area / stacks[i].tot_weight)
+        elif val == 7:
+            for i in range(len(stacks)):
+                # Height / weight
+                stacks[i].assignPrice(stacks[i].tot_height / stacks[i].tot_weight)
 
-    def buildSlice(self, stacks, x_dim, y_dim):
+    def buildSlice(self, stacks, x_dim, y_dim, max_weight):
         """
         buildSlice
         ---
@@ -484,9 +549,10 @@ class Solver22:
         This method contains the main procedure used to fill the truck. 
         To change strategy, just change this function.
         """
+        weight_left = max_weight
         new_slice = []
 
-        # Sort the stacks according to price
+        # Sort the stacks according to decreasing price
         stacks.sort(key=lambda x: x.price, reverse=True)
         
         i = 0       # i tracks the index of the stack list
@@ -496,12 +562,13 @@ class Solver22:
         # NOTE: this can be improved in the future, e.g., by finding optimal slice at each
         # iteration, in terms of minimum delta_y left
         # For now, I will keep this approach as it follows what explained in the paper...
+        # NOTE: also the check of the weight is done here!
         while i < len(stacks):
             # if DEBUG:
             #     print(f"Analyzing stack {i}")
             stack_added = False
             if len(stacks[i].items) > 0:        # (Don't know why) but sometimes stacks are created empty...
-                if delta_y >= stacks[i].width and x_dim >= stacks[i].length:
+                if delta_y >= stacks[i].width and x_dim >= stacks[i].length and weight_left > stacks[i].tot_weight:
                     # Stack is good as-is - insert it
                     new_slice.append([stacks[i], i, 0])
 
@@ -510,7 +577,7 @@ class Solver22:
 
                     delta_y -= stacks[i].width
                     stack_added = True
-                elif stacks[i].forced_orientation == "n" and delta_y >= stacks[i].length and x_dim >= stacks[i].width:
+                elif stacks[i].forced_orientation == "n" and delta_y >= stacks[i].length and x_dim >= stacks[i].width and weight_left > stacks[i].tot_weight:
                     # If the stack cannot be placed, try rotating it by 90 degrees, if allowed
                     new_slice.append([stacks[i], i, 1])
 
@@ -521,6 +588,9 @@ class Solver22:
                     stack_added = True
 
             if stack_added:
+                # Update weight_left - remove the weight of the current stack
+                weight_left -= new_slice[-1][0].tot_weight
+
                 # Update origin y coordinate
                 if j != 0:
                     # Get width (length if rotated) of 2nd to last element
@@ -601,7 +671,7 @@ class Solver22:
             
             # Find lower bound starting from 0
             ind_bound = 0
-            while bound[ind_bound][1] < y_i:
+            while ind_bound < len(bound) and bound[ind_bound][1] <= y_i:
                 ind_bound += 1
 
             if bound[ind_bound][1] == y_i:
@@ -611,7 +681,7 @@ class Solver22:
             
             # Search for valid points
             ind_top = ind_bound + 0             # Needed to prevent to just copy the reference and update both indices...
-            while bound[ind_top][1] < y_i+w_i:
+            while ind_top < len(bound) and bound[ind_top][1] <= y_i+w_i:
                 ind_top += 1
             # When the loop finishes, the element bound[ind_top] contains the upper end 
             
@@ -699,7 +769,10 @@ class Solver22:
                 self.curr_sol["x_origin"].append(sol_2D["x_sol"][i])
                 self.curr_sol["y_origin"].append(sol_2D["y_sol"][i])
                 self.curr_sol["z_origin"].append(z_lst[j])
-                self.curr_sol["orient"].append(sol_2D["orient"][i])
+                if sol_2D["orient"][i] == 1:
+                    self.curr_sol["orient"].append('w')
+                else:
+                    self.curr_sol["orient"].append('n')
                 j += 1
 
                 # Remove used items from the items DF
@@ -729,6 +802,9 @@ class Solver22:
             o_val += float(s["type_vehicle"][s["idx_vehicle"] == t_id])
 
         return o_val
+
+    def improveSolution(self, sol, df_items, df_trucks):
+        pass
 
     ##########################################################################
     ## Utilities
@@ -797,7 +873,6 @@ class Solver22:
             return 1
         else:
             return 0
-
 
     ##########################################################################
     ## Displaying the solution
@@ -904,21 +979,23 @@ class Solver22:
 
         # ax.set_aspect('equal')
 
-        def set_aspect_equal_3d(ax):
-            x_mean = np.mean(x_lim)
-            y_mean = np.mean(y_lim)
-            z_mean = np.mean(z_lim)
+        # def set_aspect_equal_3d(ax):
+        #     x_mean = np.mean(x_lim)
+        #     y_mean = np.mean(y_lim)
+        #     z_mean = np.mean(z_lim)
 
-            plot_radius = max([abs(lim - mean_)
-                            for lims, mean_ in ((x_lim, x_mean),
-                                                (y_lim, y_mean),
-                                                (z_lim, z_mean))
-                            for lim in lims])
+        #     plot_radius = max([abs(lim - mean_)
+        #                     for lims, mean_ in ((x_lim, x_mean),
+        #                                         (y_lim, y_mean),
+        #                                         (z_lim, z_mean))
+        #                     for lim in lims])
 
-            ax.set_xlim3d([0, x_mean + plot_radius])
-            ax.set_ylim3d([0, y_mean + plot_radius])
-            ax.set_zlim3d([0, z_mean + plot_radius])
+        #     ax.set_xlim3d([0, x_mean + plot_radius])
+        #     ax.set_ylim3d([0, y_mean + plot_radius])
+        #     ax.set_zlim3d([0, z_mean + plot_radius])
 
-        set_aspect_equal_3d(ax)
+        #set_aspect_equal_3d(ax)
+
+        set_axes_equal(ax)
 
         plt.show()
