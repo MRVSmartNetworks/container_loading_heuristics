@@ -36,7 +36,7 @@ class aco_bin_packing(ACO):
 
         n_code = int((len(self.pr_move) - 1)/2)  # no. of different stackability codes
         self.trailMatrix = np.zeros([len(self.pr_move), len(self.pr_move)]) # initialization of the trail matrix
-        
+        vehicleArea = self.vehicle['length'] * self.vehicle['width']
         bestArea = 0
         good_sol = False
         _iter = 0
@@ -90,13 +90,13 @@ class aco_bin_packing(ACO):
                 antsArea.append(totArea)
             
             # Evaluate the trail update  
-            deltaTrail = self.trailUpdate(antsArea)
+            deltaTrail = self.trailUpdate(antsArea, vehicleArea)
             self.trailMatrix = self.evaporationCoeff*self.trailMatrix + deltaTrail
             # Update moves probabilities 
             self.prMoveUpdate()
 
             # Find the best solution in terms of area ratio with vehicle size
-            area_ratio = max(antsArea)/(self.vehicle['length'] * self.vehicle['width'])
+            area_ratio = max(antsArea)/vehicleArea
             if area_ratio > bestArea:   # best solution during all the iteration
                 bestAnt = self.ants[np.argmax(antsArea)]
                 bestArea = area_ratio
@@ -247,7 +247,7 @@ class aco_bin_packing(ACO):
         
         
 
-    def trailUpdate(self, _antsArea):
+    def trailUpdate(self, _antsArea, vehicleArea):
         """
         trailUpdate
         -----------
@@ -260,7 +260,6 @@ class aco_bin_packing(ACO):
         Parameters
         - _antsArea: list of the area of all the ants
         """
-        vehicleArea = self.vehicle['length'] * self.vehicle['width'] 
         deltaTrail = np.full((len(self.pr_move), len(self.pr_move)), 0.01)
         for i,ant in enumerate(self.ants):
             x = len(self.pr_move)-1         # the first state to start is always the empty truck for all the ants
