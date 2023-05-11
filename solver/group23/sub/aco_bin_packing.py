@@ -8,14 +8,14 @@ class aco_bin_packing(ACO):
     
     def __init__(
             self, alpha=1, beta=1, 
-            n_ants=100, n_iter=20, evaporationCoeff=0.6
+            n_ants=100, n_iter=20, evaporationCoeff=0.2
             ):
         self.vehicle = None
         self.stack_lst = []
         self.stack_quantity = [] #TODO: cercare miglior modo di inizializzare (guarda in build stacks)
         super().__init__(alpha, beta, n_ants, n_iter, evaporationCoeff)
      
-    def aco_2D_bin(self):
+    def aco_2D_bin(self): #################################################### NON PRENDE LA SOLUZIONE MIGLIOREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
         """ 
         aco_2D_bin
         ----------
@@ -85,7 +85,7 @@ class aco_bin_packing(ACO):
                     if toAddStack is None or sum(stack_quantity_ant) == 0:
                         free_space = False
                 
-                self.ants.append(ant_k.copy())#NOTE: copy non dovrebbe servire fare check
+                self.ants.append(ant_k)
                 antsArea.append(totArea)
 
             # valutare la bontà tra tutte le soluzioni -> migliore = max     peggiore = min
@@ -96,15 +96,24 @@ class aco_bin_packing(ACO):
             self.prMoveUpdate()
 
             area_ratio = max(antsArea)/(self.vehicle['length'] * self.vehicle['width'])
-            if area_ratio >= 0.9 and iter >= 3:
-                break
-        
-        area_ratio = max(antsArea)/(self.vehicle['length'] * self.vehicle['width'])
-        print(area_ratio)
-        if area_ratio < 0.7:
+            if area_ratio >= 0.9:
+                if iter >= 3:
+                    break
+                self.evaporationCoeff = 0.9
+            elif area_ratio >= 0.8:
+                self.evaporationCoeff = 0.7
+            elif area_ratio >= 0.6:
+                self.evaporationCoeff = 0.4
+            
+            if area_ratio > bestArea:   # best solution during all the iteration
+                bestAnt = self.ants[np.argmax(antsArea)]
+                bestArea = area_ratio
+
+        print(bestArea)
+        if bestArea < 0.7:
             print("#########", self.vehicle['id_truck'])
 
-        self.solCreation(antsArea)
+        self.solCreation(bestAnt)
         return self.sol
     
     def addStack(self, toAddStack, x_pos, y_pos, y_max):
@@ -152,32 +161,86 @@ class aco_bin_packing(ACO):
         Note: 
             - matrix[0:N_code] are lengthwise
             - matrix[N_code:2*N_code] are widthwise
-            - matrix last state is the empty truck
+            - matrix last state is the empty
             
         #### INPUT PARAMETERS:
             - code_orientation: dataframe containing all the stackability codes
                                 and their forced orientation
         """
-        len_matrix = 0
-        code_sub = 1
+
+        # shared parameters
         N_code = len(code_orientation.stackability_code)
         len_matrix = (2*N_code) + 1     # length of the final matrix, the +1 is for adding the state of the empty truck
-        mult_mat = np.ones((len_matrix,len_matrix))
-        mult_mat[:,len_matrix-1] = 0
+        code_sub = 1
+
+        # attractiveness parameter
+        best_code1 = 0
+        best_code2 = 0
+        find = False
+        attr_mat = np.ones((len_matrix,len_matrix))
+        
+        #pr_move parameters
+        pr_mat = np.ones((len_matrix,len_matrix))  # used to put at 0 the row in respect to the stack no more available and the ones with orientation constrain
+        pr_mat[:,len_matrix-1] = 0
+
         for i,code in enumerate(code_orientation.stackability_code):
             if (code_orientation.iloc[code]["forced_orientation"]) == 'w' or self.stack_quantity[code] == 0:    # widthwise constrain
-                mult_mat[i,:] = 0
-                mult_mat[:,i] = 0
+                pr_mat[i,:] = 0
+                pr_mat[:,i] = 0
                 code_sub += 1
                 if self.stack_quantity[code] == 0:
-                    mult_mat[i+N_code,:] = 0
-                    mult_mat[:,i+N_code] = 0
+                    pr_mat[i+N_code,:] = 0
+                    pr_mat[:,i+N_code] = 0
                     code_sub += 1
 
-        self.pr_move = np.full((len_matrix,len_matrix), 1./(len_matrix-code_sub)) * mult_mat
-        self.attractiveness = np.full((len_matrix,len_matrix), 1) * mult_mat
-        #NOTE: prova a cambiare acctractivness
+            app = 0
+            j = 0
+            y = 0
+            while((j < (len(code_orientation) - code)) and (find == False)):
+                if (code_orientation.iloc[code]["length"] + code_orientation.iloc[j+code]["length"] > app) and (code_orientation.iloc[code]["length"] + code_orientation.iloc[j+code]["length"] <= self.vehicle["width"]): 
+                    app = code_orientation.iloc[code]["length"] + code_orientation.iloc[j+code]["length"]
+                    best_code1 = code + N_code
+                    best_code2 = j+code + N_code
+                    if(app == self.vehicle["width"]):
+                        find = True
+                if (code_orientation.iloc[code]["width"] + code_orientation.iloc[j+code]["width"] > app) and (code_orientation.iloc[code]["width"] + code_orientation.iloc[j+code]["width"] <= self.vehicle["width"]): 
+                    app = code_orientation.iloc[code]["width"] + code_orientation.iloc[j+code]["width"]
+                    best_code1 = code
+                    best_code2 = j+code
+                    if(app == self.vehicle["width"]):
+                        find = True
+                j += 1
+
+            while((y < (len(code_orientation))) and (find == False)):
+                if (code_orientation.iloc[code]["length"] + code_orientation.iloc[y]["width"] > app) and (code_orientation.iloc[code]["length"] + code_orientation.iloc[y]["width"] <= self.vehicle["width"]): 
+                    app = code_orientation.iloc[code]["length"] + code_orientation.iloc[y]["width"]
+                    best_code1 = code + N_code
+                    best_code2 = y
+                    if(app == self.vehicle["width"]):
+                        find = True
+                y += 1
+
+        attr_mat[:,best_code1] = attr_mat[:,best_code1] * 2
+        attr_mat[:,best_code2] = attr_mat[:,best_code2] * 2
+        
+        self.pr_move = np.full((len_matrix,len_matrix), 1./(len_matrix-code_sub)) * pr_mat
+        self.attractiveness = np.full((len(self.pr_move),len(self.pr_move)), 0.5) * attr_mat * pr_mat 
+        
+        
+
+    def attractivenessCreation(self):
+        """
+        attractivenessCreation
+        ----------------------
+
+        Method used to create the matrix of attractiveness. 
+
+        Parameters
+        - qqq: 
+        """
+        self.attractiveness = np.full((len(self.pr_move),len(self.pr_move)), 1) #initial creation of attractiveness matrix
         self.attractiveness[:,:7] = self.attractiveness[:,:7]*4
+        
 
     def trailUpdate(self, _antsArea):
         """
@@ -205,8 +268,6 @@ class aco_bin_packing(ACO):
             deltaTrail += trailApp * _antsArea[i] / vehicleArea # more is the area covered, more is the quality of the solution
         return deltaTrail
     
-    def changeVehicle(self, vehicle):
-        self.vehicle = vehicle
     
     def buildStacks(self, vehicle, df_items):
         """"
@@ -232,7 +293,7 @@ class aco_bin_packing(ACO):
                           stack_feat[1], stack_feat[2], stack_feat[3])
             
             new_stack_needed = False
-            iter_items = df_items[df_items.stackability_code == code].head(100)
+            iter_items = df_items[df_items.stackability_code == code].head(200)
             for i, row in iter_items.iterrows():
                 stack.updateHeight(row.height - row.nesting_height)
                 stack.updateWeight(row.weight)
@@ -257,8 +318,7 @@ class aco_bin_packing(ACO):
                     stack.addItem(row.id_item, row.height - row.nesting_height)
                     
     
-    def solCreation(self, _antsArea):
-        bestAnt = self.ants[np.argmax(_antsArea)]
+    def solCreation(self, bestAnt):
         for i,stack in enumerate(bestAnt):
             z_origin = 0
             for item in stack.items:

@@ -43,8 +43,7 @@ class Solver23():
         
         aco = aco_bin_packing()
         aco.buildStacks(vehicle, df_items)
-        aco.statesCreation(df_items[["stackability_code",
-                                               "forced_orientation"]].drop_duplicates())
+        aco.statesCreation(df_items[["length", "width", "stackability_code", "forced_orientation"]].drop_duplicates())
         aco.aco_2D_bin()
 
         df_sol = pd.DataFrame.from_dict(aco.sol)
@@ -64,9 +63,9 @@ class Solver23():
         - df_vehicles: dataframe containing all the different
                        types of trucks that can be choose
         """
-        aco_sol = aco_vehicle(df_items, df_vehicles)
-        aco_sol.aco_vehicle_sol()
-        #self.solve_single_vehicle(df_items, df_vehicles)
+        #aco_sol = aco_vehicle(df_items, df_vehicles)
+        #aco_sol.aco_vehicle_sol()
+        self.solve_single_vehicle(df_items[:200], df_vehicles)
         
 
 
@@ -94,5 +93,5 @@ if __name__ == "__main__":
 
     orthogonal_plane(df_items, df_vehicles, df_sol)
 
-    stack_3D(df_items, df_vehicles, df_sol)
+    #stack_3D(df_items, df_vehicles, df_sol)
     pass

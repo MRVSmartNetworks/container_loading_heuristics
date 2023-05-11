@@ -33,8 +33,8 @@ class aco_vehicle(ACO):
                     aco.buildStacks(vehicle=self.df_vehicles.iloc[next_vehicle], df_items=df_items_ant)
                     if sum(aco.stack_quantity) == 0:#TODO: change please
                         break
-                    aco.statesCreation(self.df_items[["stackability_code","forced_orientation"]].drop_duplicates())
-                    aco.changeVehicle(self.df_vehicles.iloc[next_vehicle])
+                    aco.statesCreation(self.df_items[["length", "width", "stackability_code", "forced_orientation"]].drop_duplicates())
+                    # aco.changeVehicle(self.df_vehicles.iloc[next_vehicle])
                     sol_truck = aco.aco_2D_bin()
                     sol_truck = pd.DataFrame.from_dict(sol_truck)
                     to_remove_items = list(sol_truck["id_item"])
