@@ -14,7 +14,7 @@ class aco_vehicle(ACO):
         self.df_items = df_items
         self.df_vehicles = df_vehicles
         self.N = len(df_vehicles) + 1   # no. of rows for pr_move, attract, trailMatrix
-        self.pr_move = np.full((self.N, self.N),1/(self.N-1)) * [1,1,1,1,1,1,1,0] # initialize pr_move with equal probabilities
+        self.pr_move = np.full((self.N, self.N),1/(self.N-1)) * [1,1,0] # initialize pr_move with equal probabilities
         self.trailMatrix = np.zeros((self.N, self.N))
         
 

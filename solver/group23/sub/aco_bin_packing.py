@@ -53,6 +53,7 @@ class aco_bin_packing(ACO):
                 prev_s_code = len(self.pr_move)-1 # empty vehicle state
                 x_pos= y_pos = y_max = 0    # position initialization
                 totArea = 0
+                totWeight = 0
                 ant_k = []
 
                 while(free_space):  # loop until free space available in vehicle
@@ -61,9 +62,10 @@ class aco_bin_packing(ACO):
                     toAddStack, x_pos, y_pos, y_max = self.addStack(new_stack, x_pos, y_pos, y_max)
                     
                     # Check if a stack can be added
-                    if toAddStack is not None:
+                    if toAddStack is not None and (totWeight + toAddStack.weight <= self.vehicle["max_weight"]):
                         ant_k.append(toAddStack)
                         totArea += (toAddStack.length*toAddStack.width)
+                        totWeight += toAddStack.weight
                         prev_s_code = next_s_code
                     else:
                         free_space = False
@@ -289,6 +291,7 @@ class aco_bin_packing(ACO):
         stackability_codes = df_items.stackability_code.unique()
         self.stack_lst = []
         self.stack_quantity = [0] * len(stackability_codes)
+        maxStackDensity = (self.vehicle["length"] * self.vehicle["width"]) * self.vehicle["max_density"] #area stack * vehicle max density = maximum stack weight
         for code in stackability_codes:
             stack_feat = getStackFeatures(df_items, code)
             
@@ -302,7 +305,7 @@ class aco_bin_packing(ACO):
                 stack.updateWeight(row.weight)
                 if stack.height > vehicle['height']:
                     new_stack_needed = True
-                if stack.weight > vehicle['max_weight_stack']:
+                if stack.weight > vehicle['max_weight_stack'] or stack.weight > maxStackDensity:
                     new_stack_needed = True
                 if stack.n_items == row.max_stackability:
                     new_stack_needed = True
