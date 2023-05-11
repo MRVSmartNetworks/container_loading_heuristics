@@ -8,7 +8,7 @@ class aco_bin_packing(ACO):
     
     def __init__(
             self, alpha=1, beta=1, 
-            n_ants=50, n_iter=10, evaporationCoeff=0.2
+            n_ants=70, n_iter=10, evaporationCoeff=0.2
             ):
         self.vehicle = None
         self.stack_lst = []
@@ -22,6 +22,7 @@ class aco_bin_packing(ACO):
 
         Method to solve 2D bin packing problem.
         """
+
         self.sol = {
             "type_vehicle": [],
             "idx_vehicle": [],
@@ -119,6 +120,7 @@ class aco_bin_packing(ACO):
         self.solCreation(bestAnt)
         return self.sol
     
+    
     def addStack(self, toAddStack, x_pos, y_pos, y_max):
         """  
         addStack
@@ -154,7 +156,7 @@ class aco_bin_packing(ACO):
                 toAddStack = None
         return toAddStack, x_pos, y_pos, y_max
 
-    def statesCreation(self, code_orientation):
+    def statesCreation(self, stackInfo):
         """ 
         statesCreation
         --------------
@@ -166,12 +168,12 @@ class aco_bin_packing(ACO):
             - matrix last state is the empty
             
         #### INPUT PARAMETERS:
-            - code_orientation: dataframe containing all the stackability codes
+            - stackInfo: dataframe containing all the stackability codes
                                 and their forced orientation
         """
 
         # shared parameters
-        N_code = len(code_orientation.stackability_code)
+        N_code = len(stackInfo.stackability_code)
         len_matrix = (2*N_code) + 1     # length of the final matrix, the +1 is for adding the state of the empty truck
         code_sub = 1
 
@@ -185,8 +187,9 @@ class aco_bin_packing(ACO):
         pr_mat = np.ones((len_matrix,len_matrix))  # used to put at 0 the row in respect to the stack no more available and the ones with orientation constrain
         pr_mat[:,len_matrix-1] = 0
 
-        for i,code in enumerate(code_orientation.stackability_code):
-            if (code_orientation.iloc[code]["forced_orientation"]) == 'w' or self.stack_quantity[code] == 0:    # widthwise constrain
+        for i,code in enumerate(stackInfo.stackability_code):
+            find == False
+            if (stackInfo.iloc[code]["forced_orientation"]) == 'w' or self.stack_quantity[code] == 0:    # widthwise constrain
                 pr_mat[i,:] = 0
                 pr_mat[:,i] = 0
                 code_sub += 1
@@ -194,52 +197,52 @@ class aco_bin_packing(ACO):
                     pr_mat[i+N_code,:] = 0
                     pr_mat[:,i+N_code] = 0
                     code_sub += 1
+                    find == True
 
-            app = 0
+            # Find the stacks that have the best fit in the trucks
+            app = 0 # Updated every time a best fit into the truck is find 
             j = 0
             y = 0
-            while((j < (len(code_orientation) - code)) and (find == False)):
-                if (code_orientation.iloc[code]["length"] + code_orientation.iloc[j+code]["length"] > app) and (code_orientation.iloc[code]["length"] + code_orientation.iloc[j+code]["length"] <= self.vehicle["width"]): 
-                    app = code_orientation.iloc[code]["length"] + code_orientation.iloc[j+code]["length"]
+            while((j < (len(stackInfo) - code)) and (find == False)): 
+                if (stackInfo.iloc[code]["length"] + stackInfo.iloc[j+code]["length"] > app) and (stackInfo.iloc[code]["length"] + stackInfo.iloc[j+code]["length"] <= self.vehicle["width"]): 
+                    app = stackInfo.iloc[code]["length"] + stackInfo.iloc[j+code]["length"]
                     best_code1 = code + N_code
                     best_code2 = j+code + N_code
                     if(app == self.vehicle["width"]):
                         find = True
-                if (code_orientation.iloc[code]["width"] + code_orientation.iloc[j+code]["width"] > app) and (code_orientation.iloc[code]["width"] + code_orientation.iloc[j+code]["width"] <= self.vehicle["width"]): 
-                    app = code_orientation.iloc[code]["width"] + code_orientation.iloc[j+code]["width"]
+                if (stackInfo.iloc[code]["width"] + stackInfo.iloc[j+code]["width"] > app) and (stackInfo.iloc[code]["width"] + stackInfo.iloc[j+code]["width"] <= self.vehicle["width"]): 
+                    app = stackInfo.iloc[code]["width"] + stackInfo.iloc[j+code]["width"]
                     best_code1 = code
                     best_code2 = j+code
-                    if(app == self.vehicle["width"]):
+                    if(app == self.vehicle["width"]): # if a perfect fit is found attractiveness matrix must be adjusted
                         find = True
+                        attr_mat[:,best_code1] = 2
+                        attr_mat[:,best_code2] = 2
                 j += 1
 
-            while((y < (len(code_orientation))) and (find == False)):
-                if (code_orientation.iloc[code]["length"] + code_orientation.iloc[y]["width"] > app) and (code_orientation.iloc[code]["length"] + code_orientation.iloc[y]["width"] <= self.vehicle["width"]): 
-                    app = code_orientation.iloc[code]["length"] + code_orientation.iloc[y]["width"]
+            find = False
+            
+            while((y < (len(stackInfo))) and (find == False)):
+                if (stackInfo.iloc[code]["length"] + stackInfo.iloc[y]["width"] > app) and (stackInfo.iloc[code]["length"] + stackInfo.iloc[y]["width"] <= self.vehicle["width"]): 
+                    app = stackInfo.iloc[code]["length"] + stackInfo.iloc[y]["width"]
                     best_code1 = code + N_code
                     best_code2 = y
-                    if(app == self.vehicle["width"]):
+                    if(app == self.vehicle["width"]):  # if a perfect fit is found attractiveness matrix must be adjusted
                         find = True
+                        attr_mat[:,best_code1] = 2
+                        attr_mat[:,best_code2] = 2
                 y += 1
 
-        attr_mat[:,best_code1] = attr_mat[:,best_code1] * 2
-        attr_mat[:,best_code2] = attr_mat[:,best_code2] * 2
+            find = False
+            
+        attr_mat[:,best_code1] = 2
+        attr_mat[:,best_code2] = 2
         
         self.pr_move = np.full((len_matrix,len_matrix), 1./(len_matrix-code_sub)) * pr_mat
         self.attractiveness = np.full((len(self.pr_move),len(self.pr_move)), 0.5) * attr_mat * pr_mat 
         
-    def attractivenessCreation(self):
-        """
-        attractivenessCreation
-        ----------------------
-
-        Method used to create the matrix of attractiveness. 
-
-        Parameters
-        - qqq: 
-        """
-        self.attractiveness = np.full((len(self.pr_move),len(self.pr_move)), 1) #initial creation of attractiveness matrix
-        self.attractiveness[:,:7] = self.attractiveness[:,:7]*4
+        self.attractiveness[:,:7] = self.attractiveness[:,:7]*1.5 #NOTE: metodo tappabuchi per farlo funzionare fino in fondo, si preferisce indiscrinatamente la posizione di stack lengthwise
+        
         
 
     def trailUpdate(self, _antsArea):
@@ -318,6 +321,16 @@ class aco_bin_packing(ACO):
                     stack.addItem(row.id_item, row.height - row.nesting_height)
                     
     def solCreation(self, bestAnt):
+        """
+        solCreation
+        -----------
+
+        Function used to create the truck solution that is saved in file.
+
+        Parameters
+        - bestAnt: bestAnt is the ant that have obtained the best \n
+                            solution during the ACO bin_packing.
+        """
         for i,stack in enumerate(bestAnt):
             z_origin = 0
             for item in stack.items:

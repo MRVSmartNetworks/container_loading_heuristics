@@ -1,9 +1,11 @@
 import numpy as np
+import os
 import pandas as pd
 from sub.ACO import ACO
 from sub.aco_bin_packing import aco_bin_packing
 from sub.utilities import *
 import time
+from sub.projection import *
 
 class aco_vehicle(ACO):
     def __init__(self, df_items, df_vehicles, alpha=1, beta=1, 
@@ -28,6 +30,7 @@ class aco_vehicle(ACO):
                 prev_vehicle = self.N - 1
                 df_items_ant = self.df_items.copy()
                 aco = aco_bin_packing()
+                i = 0
                 while(more_items):
                     next_vehicle = self.choose_move(prev_vehicle)
                     aco.buildStacks(vehicle=self.df_vehicles.iloc[next_vehicle], df_items=df_items_ant)
@@ -45,6 +48,13 @@ class aco_vehicle(ACO):
                         prev_vehicle = next_vehicle
                     else:
                         more_items = False
+                    """i += 1
+                    if i>50:
+                        df_sol = pd.DataFrame.from_dict(aco.sol)
+                        df_sol.to_csv(os.path.join('results', f'solver23_sol.csv'),
+                        index=False)
+                        df_sol = pd.read_csv(os.path.join('results', f'solver23_sol.csv'),)
+                        orthogonal_plane(self.df_items, self.df_vehicles, df_sol)"""
                 print("\nTime:", time.time() - st_time)
                 print("\nN trucks = ", len(ant_k))
                 break

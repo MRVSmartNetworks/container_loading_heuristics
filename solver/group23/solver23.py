@@ -63,7 +63,7 @@ class Solver23():
         - df_vehicles: dataframe containing all the different
                        types of trucks that can be choose
         """
-        aco_sol = aco_vehicle(df_items[:100], df_vehicles)
+        aco_sol = aco_vehicle(df_items, df_vehicles)
         aco_sol.aco_vehicle_sol()
         #self.solve_single_vehicle(df_items[:200], df_vehicles)
         
