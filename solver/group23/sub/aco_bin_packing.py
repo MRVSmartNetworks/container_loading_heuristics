@@ -8,7 +8,7 @@ class aco_bin_packing(ACO):
     
     def __init__(
             self, alpha=1, beta=1, 
-            n_ants=100, n_iter=20, evaporationCoeff=0.2
+            n_ants=50, n_iter=10, evaporationCoeff=0.2
             ):
         self.vehicle = None
         self.stack_lst = []
@@ -37,82 +37,85 @@ class aco_bin_packing(ACO):
         self.trailMatrix = np.zeros([len(self.pr_move), len(self.pr_move)]) # initialization of the trail matrix
         
         bestArea = 0
-        for iter in range(self.n_iter):
+        good_sol = False
+        _iter = 0
+        while _iter < self.n_iter and not good_sol:
             self.ants = []
             antsArea = []
             for _ in range(self.n_ants):
-                free_space = True 
-                prev_s_code = len(self.pr_move)-1 # empty vehicle state
-                # initialize solution of ant k
-                
-                x_pos = 0
-                y_pos = y_max = 0
-                totArea = 0
-                ant_k = []
                 stack_lst_ant = self.stack_lst.copy()
                 stack_quantity_ant = self.stack_quantity.copy()
                 pr_move = self.pr_move.copy()
+
+                # Variables initialization for each ant
+                free_space = True # bool to check if free space available in vehicle
+                prev_s_code = len(self.pr_move)-1 # empty vehicle state
+                x_pos= y_pos = y_max = 0    # position initialization
+                totArea = 0
+                ant_k = []
+
                 while(free_space):  # loop until free space available in vehicle
-                    next_s_code = self.choose_move(prev_s_code, pr_move)
-                    code = next_s_code 
-                    new_stack, stack_lst_ant, stack_quantity_ant = popStack(stack_lst_ant, stack_quantity_ant, next_s_code, n_code) #TODO: what if no more stacks with this stack code??
-                    
-                    if next_s_code >= n_code:
-                        code = code - n_code
-
-                    if stack_quantity_ant[code] == 0: # when the stack with this stackability code are 0 the probability to move 
-                        #self.pr_move[next_s_code,:] = 0  # to this state will become also equal to 0
-                
-                        if next_s_code >= n_code: #TODO: redistribuire le probabilità che si cancellano sulle altre ancora esistenti.
-                            prob_to_distr = pr_move[:,next_s_code] + pr_move[:,next_s_code-n_code]
-                            pr_move[:,next_s_code] = 0
-                            pr_move[:,next_s_code-n_code] = 0
-                            prob_to_distr = prob_to_distr/pr_move[:, pr_move.any(0)].shape[1]
-                            pr_move[:, pr_move.any(0)] +=  prob_to_distr.reshape(-1,1)
-                            
-                        else:
-                            prob_to_distr = pr_move[:,next_s_code] + pr_move[:,next_s_code+n_code]
-                            pr_move[:,next_s_code] = 0
-                            pr_move[:,next_s_code+n_code] = 0
-                            prob_to_distr = prob_to_distr/pr_move[:, pr_move.any(0)].shape[1]
-                            pr_move[:, pr_move.any(0)] +=  prob_to_distr.reshape(-1,1)
-
+                    next_s_code = self.choose_move(prev_s_code, pr_move)    # choose next state
+                    new_stack, stack_lst_ant, stack_quantity_ant = popStack(stack_lst_ant, stack_quantity_ant, next_s_code, n_code)
                     toAddStack, x_pos, y_pos, y_max = self.addStack(new_stack, x_pos, y_pos, y_max)
+                    
+                    # Check if a stack can be added
                     if toAddStack is not None:
                         ant_k.append(toAddStack)
                         totArea += (toAddStack.length*toAddStack.width)
                         prev_s_code = next_s_code
-                    if toAddStack is None or sum(stack_quantity_ant) == 0:
+                    else:
+                        free_space = False
+                    # Check if there are staks left
+                    if sum(stack_quantity_ant) > 0:
+                        code = next_s_code 
+                        
+                        if next_s_code >= n_code:
+                            code = code - n_code
+
+                        # if there are no more stacks of a certain code then set the
+                        # pr_move to zero and distribute the probability over rows
+                        if stack_quantity_ant[code] == 0: 
+                            prob_to_distr = pr_move[:,code] + pr_move[:,code+n_code]
+                            pr_move[:,[code, code + n_code]] = 0
+                            prob_to_distr = prob_to_distr/pr_move[:, pr_move.any(0)].shape[1]
+                            pr_move[:, pr_move.any(0)] +=  prob_to_distr.reshape(-1,1)
+                    else:
                         free_space = False
                 
                 self.ants.append(ant_k)
                 antsArea.append(totArea)
-
-            # valutare la bontà tra tutte le soluzioni -> migliore = max     peggiore = min
+            
+            # Evaluate the trail update  
             deltaTrail = self.trailUpdate(antsArea)
-            #zero_indexes =  np.where(~self.pr_move.any(0))[0]
             self.trailMatrix = self.evaporationCoeff*self.trailMatrix + deltaTrail
-            #self.trailMatrix[:,zero_indexes] = 0
+            # Update moves probabilities 
             self.prMoveUpdate()
 
+            # Find the best solution in terms of area ratio with vehicle size
             area_ratio = max(antsArea)/(self.vehicle['length'] * self.vehicle['width'])
+            if area_ratio > bestArea:   # best solution during all the iteration
+                bestAnt = self.ants[np.argmax(antsArea)]
+                bestArea = area_ratio
+
+            # Change evaportaion coefficient dynamically given the area ratio
             if area_ratio >= 0.9:
-                if iter >= 3:
-                    break
+                if _iter >= 3:
+                    good_sol = True
                 self.evaporationCoeff = 0.9
             elif area_ratio >= 0.8:
                 self.evaporationCoeff = 0.7
             elif area_ratio >= 0.6:
                 self.evaporationCoeff = 0.4
             
-            if area_ratio > bestArea:   # best solution during all the iteration
-                bestAnt = self.ants[np.argmax(antsArea)]
-                bestArea = area_ratio
+            _iter += 1
+            
 
-        print(bestArea)
+        print(f"Area ratio: {bestArea}, vehicle: {self.vehicle['id_truck']}")
         if bestArea < 0.7:
             print("#########", self.vehicle['id_truck'])
 
+        # Create the solution format
         self.solCreation(bestAnt)
         return self.sol
     
@@ -149,7 +152,6 @@ class aco_bin_packing(ACO):
             else:
                 # no more space in vehicle
                 toAddStack = None
-                #BUG: toAddStack non deve essere rimosso da stack_lst
         return toAddStack, x_pos, y_pos, y_max
 
     def statesCreation(self, code_orientation):
@@ -226,8 +228,6 @@ class aco_bin_packing(ACO):
         self.pr_move = np.full((len_matrix,len_matrix), 1./(len_matrix-code_sub)) * pr_mat
         self.attractiveness = np.full((len(self.pr_move),len(self.pr_move)), 0.5) * attr_mat * pr_mat 
         
-        
-
     def attractivenessCreation(self):
         """
         attractivenessCreation
@@ -317,7 +317,6 @@ class aco_bin_packing(ACO):
                     # else add the item
                     stack.addItem(row.id_item, row.height - row.nesting_height)
                     
-    
     def solCreation(self, bestAnt):
         for i,stack in enumerate(bestAnt):
             z_origin = 0
@@ -331,4 +330,3 @@ class aco_bin_packing(ACO):
                 self.sol['z_origin'].append(z_origin)
                 self.sol['orient'].append(stack.orient)
                 z_origin += item[1]
-            #TODO: return sol without calling aco.sol (fox disapproves)
