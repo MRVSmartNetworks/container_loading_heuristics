@@ -14,7 +14,7 @@ class aco_vehicle(ACO):
         self.df_items = df_items
         self.df_vehicles = df_vehicles
         self.N = len(df_vehicles) + 1   # no. of rows for pr_move, attract, trailMatrix
-        self.pr_move = np.full((self.N, self.N),1/(self.N-1)) * [1,1,0] # initialize pr_move with equal probabilities
+        self.pr_move = np.full((self.N, self.N),1/(self.N-1)) * [1,1,1,1,1,1,1,0] # initialize pr_move with equal probabilities
         self.trailMatrix = np.zeros((self.N, self.N))
         
 
@@ -33,7 +33,7 @@ class aco_vehicle(ACO):
                 i = 0
                 while(more_items):
                     next_vehicle = self.choose_move(prev_vehicle)
-                    aco.buildStacks(vehicle=self.df_vehicles.iloc[next_vehicle], df_items=df_items_ant)
+                    aco.buildStacks(vehicle=self.df_vehicles.iloc[6], df_items=df_items_ant)
                     if sum(aco.stack_quantity) == 0:#TODO: change please
                         break
                     aco.statesCreation(self.df_items[["length", "width", "stackability_code", "forced_orientation"]].drop_duplicates())

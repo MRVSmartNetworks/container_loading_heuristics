@@ -20,6 +20,7 @@ from sub.projection import *
 
 #TODO: less important
 # - certi stack code potrebbero avere la stessa dimensione
+
 class Solver23():
     def __init__(self):
         """
@@ -33,6 +34,11 @@ class Solver23():
         --------------------
 
         test function to work with ACO on the 2D bin packing of a single vehicle
+                
+        - df_items: dataframe containing all the items 
+                    that are to be put into the trucks
+        - df_vehicles: dataframe containing all the different
+                       types of trucks that can be choose
         """
         self.df_items = df_items
         self.df_vehicles = df_vehicles
@@ -58,12 +64,13 @@ class Solver23():
         """ 
         solve
         -----
+        
         - df_items: dataframe containing all the items 
                     that are to be put into the trucks
         - df_vehicles: dataframe containing all the different
                        types of trucks that can be choose
         """
-        aco_sol = aco_vehicle(df_items, df_vehicles[:2])
+        aco_sol = aco_vehicle(df_items, df_vehicles)
         aco_sol.aco_vehicle_sol()
         #self.solve_single_vehicle(df_items[:200], df_vehicles)
         

@@ -4,18 +4,44 @@ from sub.stack import Stack
 
 
 class aco_bin_packing(ACO):
-    
-    
+    """  
+    Ant Colony Optimization for bin packing problem
+    --------------------------------------------------------------------------------
+
+    #### INPUT PARAMETERS:
+        - stack_lst: stacks list, during the simulation will decrease until empty
+        - alpha: realative trail importance (default 1)
+        - beta: relative attractivness importance (default 1)
+        - n_ants: number of ants
+        - n_iter: number of iteration, if a good results is obtained not all the 
+                    n_iter are done
+        - evaporationCoeff: evaporation coefficient of the trail matrix, smaller 
+                            it is more the new ant solution will have importance
+    #### ACO PARAMETERS:
+        - attractiveness (η): N x N matrix of attractiveness from state i to j 
+                                (N is the total number of states)
+        - trailMatrix (τ): N x N matrix of trails from state i to j
+        - pr_move: N x N matrix of probabilities of the moves from i to j 
+                    (ultimate state is related to empty vehicle)
+    #### OUTPUT PARAMETERS:
+        - self.sol: solution dictionary containing all the stack and their 
+                    information contained by the truck choosen to be filled
+    --------------------------------------------------------------------------------
+    """
     def __init__(
             self, alpha=1, beta=1, 
-            n_ants=70, n_iter=10, evaporationCoeff=0.2
+            n_ants=40, n_iter=40, evaporationCoeff=0.2
             ):
         self.vehicle = None
         self.stack_lst = []
         self.stack_quantity = [] #TODO: cercare miglior modo di inizializzare (guarda in build stacks)
         super().__init__(alpha, beta, n_ants, n_iter, evaporationCoeff)
+
+
+    #####################################################################################################
+    ######### ACO function
      
-    def aco_2D_bin(self): #################################################### NON PRENDE LA SOLUZIONE MIGLIOREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+    def aco_2D_bin(self): 
         """ 
         aco_2D_bin
         ----------
@@ -132,10 +158,17 @@ class aco_bin_packing(ACO):
         Initially the stacks are added on the X axis until the max length 
         of the vehicle is reached.
 
-        Parameters
+        #### INPUT PARAMETERS:
         - toAddStack: the stack to be added
         - x_pos: update position on X axis considering previously added stacks
         - y_pos: update position on Y axis considering previously added stacks
+        - y_max: the max width of a stack in a row in order to build the next
+                row staring from y_max
+        #### OUTPUT PARAMETERS:
+        - toAddStack: the stack to be added, if none the stack will not fit
+                        in the truck
+        - x_pos: X position where to put the stack into the truck
+        - y_pos: Y position where to put the stack into the truck
         - y_max: the max width of a stack in a row in order to build the next
                 row staring from y_max
         """
@@ -157,21 +190,33 @@ class aco_bin_packing(ACO):
                 # no more space in vehicle
                 toAddStack = None
         return toAddStack, x_pos, y_pos, y_max
+    
+
+    #####################################################################################################
+    ######### Utilities
 
     def statesCreation(self, stackInfo):
         """ 
         statesCreation
         --------------
         Create and initialize the probability of a move matrix
+        and the matrix of attractiveness.
 
         Note: 
-            - matrix[0:N_code] are lengthwise
+            - matrix[0:N_code] are lengthwise (lengthwise in respect to the length of the truck)
             - matrix[N_code:2*N_code] are widthwise
-            - matrix last state is the empty
+            - matrix last state is the empty truck state
             
         #### INPUT PARAMETERS:
-            - stackInfo: dataframe containing all the stackability codes
-                                and their forced orientation
+            - stackInfo: dataframe containing all the stackability codes, their forced 
+                        orientation, length and width
+        #### OUTPUT PARAMETERS:
+            - self.pr_move: N x N matrix of probabilities of the moves from i to j, 
+                            if there are no more stack of a specific stackability 
+                            code or a forced orientatio is present, their respective 
+                            row and columns will be set to 0               
+            - self.attractiveness: N x N matrix of attractiveness from state i to j, 
+                                states that fill widthwise the truck are privileged
         """
 
         # shared parameters
@@ -257,8 +302,12 @@ class aco_bin_packing(ACO):
         coefficient and is added to the trail variation derived from the sum \n
         of the contribution of all ants that used move to construct their solution.
 
-        Parameters
-        - _antsArea: list of the area of all the ants
+        #### INPUT PARAMETERS:
+            - _antsArea: list of the area of all the ants
+            - vehicleArea: area of the vehicle taken into account
+        #### OUTPUT PARAMETERS:
+            - deltaTrail: trail matrix of one iteration that is summed to the
+                        old trail matrix multiplied by the evaporation coefficient
         """
         deltaTrail = np.full((len(self.pr_move), len(self.pr_move)), 0.01)
         for i,ant in enumerate(self.ants):
@@ -277,15 +326,19 @@ class aco_bin_packing(ACO):
         """"
         buildStacks
         -----------
+        Function used to create the stack with all the specificity of the selected truck.
 
-        - vehicle: vehicle type, needed to check the height for
-                   creating the stacks for this specific truck
+        #### INPUT PARAMETERS:
+            - vehicle: vehicle type, needed to check the height, weight, max density and max 
+                        stack weight for creating the stacks for this specific truck
+            - df_items: dataframe containing all the items that will be put into the trucks
+        #### OUTPUT PARAMETERS:
+            - self.stackList: list of all the stack created 
         """
         
-        # stack creation: adesso è fatta in modo molto stupido ma dato che item con lo stesso
+        # stack creation: adesso è fatta in modo molto semplice ma dato che item con lo stesso
         # stackability code possono avere diverse altezze probabilmente si può ottimizzare molto 
         # date le diverse altezze dei trucks
-        #TODO: controllo max density
         self.vehicle = vehicle
         stackability_codes = df_items.stackability_code.unique()
         self.stack_lst = []
@@ -321,6 +374,9 @@ class aco_bin_packing(ACO):
                 else:
                     # else add the item
                     stack.addItem(row.id_item, row.height - row.nesting_height)
+
+    #####################################################################################################
+    ######### Solution creation
                     
     def solCreation(self, bestAnt):
         """
@@ -329,9 +385,11 @@ class aco_bin_packing(ACO):
 
         Function used to create the truck solution that is saved in file.
 
-        Parameters
-        - bestAnt: bestAnt is the ant that have obtained the best \n
-                            solution during the ACO bin_packing.
+        #### INPUT PARAMETERS:
+            - bestAnt: bestAnt is the ant that have obtained the best solution during the ACO bin_packing.
+        #### OUTPUT PARAMETERS:
+            - self.sol: solution dictionary containing all the stack and their 
+                    information contained by the truck choosen to be filled
         """
         for i,stack in enumerate(bestAnt):
             z_origin = 0
