@@ -45,7 +45,7 @@ class Solver23():
         
         # for on truck's type
         # work on single truck
-        vehicle = self.df_vehicles.iloc[0] # vehicle type V0
+        vehicle = self.df_vehicles.iloc[1] # vehicle type V0
         
         aco = aco_bin_packing()
         aco.buildStacks(vehicle, df_items)

@@ -63,6 +63,7 @@ class aco_bin_packing(ACO):
         n_code = int((len(self.pr_move) - 1)/2)  # no. of different stackability codes
         self.trailMatrix = np.zeros([len(self.pr_move), len(self.pr_move)]) # initialization of the trail matrix
         vehicleArea = self.vehicle['length'] * self.vehicle['width']
+        vehicleVolume = vehicleArea * self.vehicle['height']
         bestArea = 0
         good_sol = False
         _iter = 0
@@ -80,6 +81,7 @@ class aco_bin_packing(ACO):
                 x_pos= y_pos = y_max = 0    # position initialization
                 totArea = 0
                 totWeight = 0
+                totVolume = 0
                 ant_k = []
 
                 while(free_space):  # loop until free space available in vehicle
@@ -116,7 +118,10 @@ class aco_bin_packing(ACO):
                     # Check if a stack can be added
                     if toAddStack is not None and (totWeight + toAddStack.weight <= self.vehicle["max_weight"]):
                         ant_k.append(toAddStack)
+                        if toAddStack.height > self.vehicle["height"]:
+                            print("Stack heigher")
                         totArea += (toAddStack.length*toAddStack.width)
+                        totVolume +=(toAddStack.length*toAddStack.width*toAddStack.height)
                         totWeight += toAddStack.weight
                         prev_s_code = next_s_code
                     else:
@@ -139,6 +144,9 @@ class aco_bin_packing(ACO):
                     else:
                         free_space = False
                 
+                if totVolume/vehicleVolume >=1:
+                    print(totVolume/vehicleVolume)
+                    raise Exception("VOLUME GREATER THAN 1")
                 self.ants.append(ant_k)
                 antsArea.append(totArea)
             
