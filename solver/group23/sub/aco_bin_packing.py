@@ -8,7 +8,7 @@ class aco_bin_packing(ACO):
     
     def __init__(
             self, alpha=1, beta=1, 
-            n_ants=70, n_iter=10, evaporationCoeff=0.2
+            n_ants=10, n_iter=20, evaporationCoeff=0.2
             ):
         self.vehicle = None
         self.stack_lst = []
@@ -59,6 +59,32 @@ class aco_bin_packing(ACO):
                     next_s_code = self.choose_move(prev_s_code, pr_move)    # choose next state
                     new_stack, stack_lst_ant, stack_quantity_ant = popStack(stack_lst_ant, stack_quantity_ant, next_s_code, n_code)
                     toAddStack, x_pos, y_pos, y_max = self.addStack(new_stack, x_pos, y_pos, y_max)
+                    """ i = 0
+                    toAddStack = None
+                    while np.any(pr_move) and toAddStack is None:
+                        next_s_code = self.choose_move(prev_s_code, pr_move)    # choose next state
+                        new_stack, stack_lst_ant, stack_quantity_ant = popStack(stack_lst_ant, stack_quantity_ant, next_s_code, n_code)
+                        toAddStack, x_pos, y_pos, y_max = self.addStack(new_stack, x_pos, y_pos, y_max)
+                        if toAddStack is None:
+                            code = next_s_code
+                            if next_s_code >= n_code:
+                                code = code - n_code
+
+                            # if there are no more stacks of a certain code then set the
+                            # pr_move to zero and distribute the probability over rows
+                            if stack_quantity_ant[code] == 0: 
+                                prob_to_distr = pr_move[:,code] + pr_move[:,code+n_code]
+                                pr_move[:,[code, code + n_code]] = 0
+                                if np.any(pr_move):
+                                    prob_to_distr = prob_to_distr/pr_move[:, pr_move.any(0)].shape[1]
+                                    pr_move[:, pr_move.any(0)] +=  prob_to_distr.reshape(-1,1)
+                            else:
+                                prob_to_distr = pr_move[:,next_s_code].copy()
+                                pr_move[:,next_s_code] = 0
+                                if np.any(pr_move):
+                                    prob_to_distr = prob_to_distr/pr_move[:, pr_move.any(0)].shape[1]
+                                    pr_move[:, pr_move.any(0)] +=  prob_to_distr.reshape(-1,1) """
+                                
                     
                     # Check if a stack can be added
                     if toAddStack is not None:
@@ -79,8 +105,9 @@ class aco_bin_packing(ACO):
                         if stack_quantity_ant[code] == 0: 
                             prob_to_distr = pr_move[:,code] + pr_move[:,code+n_code]
                             pr_move[:,[code, code + n_code]] = 0
-                            prob_to_distr = prob_to_distr/pr_move[:, pr_move.any(0)].shape[1]
-                            pr_move[:, pr_move.any(0)] +=  prob_to_distr.reshape(-1,1)
+                            if np.any(pr_move):
+                                prob_to_distr = prob_to_distr/pr_move[:, pr_move.any(0)].shape[1]
+                                pr_move[:, pr_move.any(0)] +=  prob_to_distr.reshape(-1,1)
                     else:
                         free_space = False
                 
@@ -283,7 +310,6 @@ class aco_bin_packing(ACO):
         # stack creation: adesso è fatta in modo molto stupido ma dato che item con lo stesso
         # stackability code possono avere diverse altezze probabilmente si può ottimizzare molto 
         # date le diverse altezze dei trucks
-        #TODO: controllo max density
         self.vehicle = vehicle
         stackability_codes = df_items.stackability_code.unique()
         self.stack_lst = []
@@ -295,7 +321,7 @@ class aco_bin_packing(ACO):
                           stack_feat[1], stack_feat[2], stack_feat[3])
             
             new_stack_needed = False
-            iter_items = df_items[df_items.stackability_code == code].head(200)
+            iter_items = df_items[df_items.stackability_code == code] #.head(200)
             for i, row in iter_items.iterrows():
                 stack.updateHeight(row.height - row.nesting_height)
                 stack.updateWeight(row.weight)
@@ -307,8 +333,9 @@ class aco_bin_packing(ACO):
                     new_stack_needed = True
                 # if a new stack is needed:
                 if new_stack_needed:
-                    self.stack_lst.append(stack)
-                    self.stack_quantity[code] += 1 # number of the stack with this precise stackability code
+                    if stack.items != []:
+                        self.stack_lst.append(stack)
+                        self.stack_quantity[code] += 1 # number of the stack with this precise stackability code
                     stack = Stack(code, stack_feat[0], 
                           stack_feat[1], stack_feat[2], stack_feat[3])
                     stack.addItem(row.id_item, row.height - row.nesting_height)
@@ -318,6 +345,10 @@ class aco_bin_packing(ACO):
                 else:
                     # else add the item
                     stack.addItem(row.id_item, row.height - row.nesting_height)
+            #if stack.items:
+            #    self.stack_lst.append(stack)
+            #    self.stack_quantity[code] += 1 # number of the stack with this precise stackability code
+    
                     
     def solCreation(self, bestAnt):
         """
