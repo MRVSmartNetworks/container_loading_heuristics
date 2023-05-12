@@ -30,7 +30,7 @@ class aco_bin_packing(ACO):
     """
     def __init__(
             self, alpha=1, beta=1, 
-            n_ants=10, n_iter=20, evaporationCoeff=0.2
+            n_ants=20, n_iter=10, evaporationCoeff=0.2
             ):
         self.vehicle = None
         self.stack_lst = []
@@ -71,7 +71,7 @@ class aco_bin_packing(ACO):
             self.ants = []
             antsArea = []
             for _ in range(self.n_ants):
-                stack_lst_ant = self.stack_lst.copy()
+                stack_lst_ant = self.stack_lst.copy() # [ele for ele in stack_lst] better????
                 stack_quantity_ant = self.stack_quantity.copy()
                 pr_move = self.pr_move.copy()
 
@@ -119,7 +119,7 @@ class aco_bin_packing(ACO):
                     if toAddStack is not None and (totWeight + toAddStack.weight <= self.vehicle["max_weight"]):
                         ant_k.append(toAddStack)
                         if toAddStack.height > self.vehicle["height"]:
-                            print("Stack heigher")
+                            print("Stack higher")
                         totArea += (toAddStack.length*toAddStack.width)
                         totVolume +=(toAddStack.length*toAddStack.width*toAddStack.height)
                         totWeight += toAddStack.weight
@@ -386,13 +386,13 @@ class aco_bin_packing(ACO):
                           stack_feat[1], stack_feat[2], stack_feat[3])
             
             new_stack_needed = False
-            iter_items = df_items[df_items.stackability_code == code] #.head(200)
+            iter_items = df_items[df_items.stackability_code == code].head(200)
             for i, row in iter_items.iterrows():
-                stack.updateHeight(row.height - row.nesting_height)
-                stack.updateWeight(row.weight)
-                if stack.height > vehicle['height']:
+                height = stack.height + (row.height - row.nesting_height)
+                weight = stack.weight + (row.weight)
+                if height > vehicle['height']:
                     new_stack_needed = True
-                if stack.weight > vehicle['max_weight_stack'] or stack.weight > maxStackDensity:
+                if weight > vehicle['max_weight_stack'] or stack.weight > maxStackDensity:
                     new_stack_needed = True
                 if stack.n_items == row.max_stackability:
                     new_stack_needed = True
@@ -410,6 +410,8 @@ class aco_bin_packing(ACO):
                 else:
                     # else add the item
                     stack.addItem(row.id_item, row.height - row.nesting_height)
+                    stack.updateHeight(row.height - row.nesting_height)
+                    stack.updateWeight(row.weight)
 
     #####################################################################################################
     ######### Solution creation
