@@ -1237,31 +1237,34 @@ class Solver22:
         # 3. Check constraints
 
         # 3.1 - Max area
-        # for i in range(len(used_trucks_id)):
-        #     truck_type = str(used_trucks_id[i][:2])
-        #     curr_truck = trucks_df.loc[trucks_df.id_truck == truck_type]
+        for i in range(len(used_trucks_id)):
+            truck_type = str(used_trucks_id[i][:2])
+            curr_truck = trucks_df.loc[trucks_df.id_truck == truck_type]
 
-        #     # Assuming the items are not overlapped:
-        #     curr_items_ground = np.array(sol["id_item"])[
-        #         sol["idx_vehicle"] == used_trucks_id[i] and sol["z_origin"] == 0
-        #     ]
+            # Assuming the items are not overlapped:
+            curr_items_ground = np.array(sol["id_item"])[
+                sol["idx_vehicle"] == used_trucks_id[i] and sol["z_origin"] == 0
+            ]
 
-        #     bool_items_ind = np.zeros((len(items_df.index),))
-        #     items_id_list = items_df.id_item.tolist()
-        #     for i in range(len(items_id_list)):
-        #         if items_id_list[i] in curr_items_ground:
-        #             bool_items_ind[i] = 1
+            bool_items_ind = np.zeros((len(items_df.index),))
+            items_id_list = items_df.id_item.tolist()
+            for i in range(len(items_id_list)):
+                if items_id_list[i] in curr_items_ground:
+                    bool_items_ind[i] = 1
 
-        #     items_gnd = items_df.loc[bool_items_ind == 1]
+            items_gnd = items_df.loc[bool_items_ind == 1]
+            items_gnd_area = pd.DataFrame()
 
-        #     items_gnd.loc[:, "area"] = items_gnd["length"] * items_gnd["width"]
+            items_gnd_area["area"] = items_gnd["length"] * items_gnd["width"]
 
-        #     tot_used_area = sum(items_gnd.area)
+            tot_used_area = sum(items_gnd_area.area)
 
-        #     if tot_used_area > int(curr_truck.length) * int(curr_truck.width):
-        #         valid = False
-        #         print(f"Truck {used_trucks_id[i]} includes too many elements!")
-        #         return valid
+            if tot_used_area > int(curr_truck.length.iloc[0]) * int(
+                curr_truck.width.iloc[0]
+            ):
+                valid = False
+                print(f"Truck {used_trucks_id[i]} includes too many elements!")
+                return valid
 
         if valid:
             print("Valid solution!")
