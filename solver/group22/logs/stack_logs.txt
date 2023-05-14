@@ -4668,3 +4668,12 @@ Solution count 1: 302
 
 Solve interrupted
 Best objective 3.020000000000e+02, best bound 2.210000000000e+02, gap 26.8212%
+
+Gurobi 10.0.1 (linux64) logging started Sat May  6 10:29:46 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (linux64)
+
+CPU model: AMD Ryzen 5 2600X Six-Core Processor, instruction set [SSE2|AVX|AVX2]
+Thread count: 6 physical cores, 12 logical processors, using up to 12 threads
+
