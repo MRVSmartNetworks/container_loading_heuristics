@@ -1,24 +1,20 @@
 # -*- coding: utf-8 -*-
 import itertools
-import math
 import os
 import random
 import time
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib import collections
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-from solver.group22.utilities import cuboid_data, set_axes_equal
+from solver.group22.solution_representation import myStack3D
 from solver.group22.stack import Stack
-from solver.group22.stack_creation_heur import create_stack_cs, checkValidStacks
+from solver.group22.stack_creation_heur import create_stack_cs
 
 STATS = False
 DEBUG = True
 DEBUG_MORE = False
 MAX_ITER = 10000
-MAX_TRIES = 1
+MAX_TRIES = 5
 
 
 class Solver22:
@@ -69,12 +65,17 @@ class Solver22:
         # Initialized to -1 - check it to detect 1st iteration
         self.best_obj_value = -1
 
+        # Store the 2D solutions obtained and associated scores
+        self.list_sol_2D = []
+        self.scores_2D = []
+
         # The following are variables used during the run to guide some decision
         self.last_truck_was_empty = False
         self.unusable_trucks = []
 
         self.iter = 0  # Iterator for single solution
         self.tries = 0  # Iterator used for looping between different solution attempts
+        self.stack_number = 1  # Used for choosing the stacks ID, needs to be incremented after each stack creation
 
         self.random_choice_factor = (
             0  # Probability of random behavior will be e^{random_choice_factor * iter}
@@ -96,6 +97,8 @@ class Solver22:
         random.seed(315054)
 
         for self.tries in range(MAX_TRIES):
+            sublist_sol_2D = []
+
             self.curr_sol = {
                 "type_vehicle": [],
                 "idx_vehicle": [],
@@ -138,16 +141,13 @@ class Solver22:
                     * tmp_vehicles["max_weight_stack"]
                 )
 
-            ord_vehicles = tmp_vehicles.sort_values(
-                by=["dim_wt_cost_ratio"], ascending=False
-            )
-
             # Used to track the different types of used vehicles and assign unique IDs:
             n_trucks = {}
-            for id in ord_vehicles.id_truck.unique():
+            for id in tmp_vehicles.id_truck.unique():
                 n_trucks[id] = 0
 
             self.iter = 0
+            print_trucks_ID = []
             while len(tmp_items.index) > 0 and self.iter < MAX_ITER:
                 print(f"Iter {self.iter}")
                 if DEBUG:
@@ -160,7 +160,7 @@ class Solver22:
 
                 # Strategy for selecting the trucks
                 curr_truck = self.selectNextTruck(
-                    ord_vehicles, tmp_items, self.unusable_trucks
+                    tmp_vehicles, tmp_items, self.unusable_trucks
                 )
 
                 # Having selected the truck type, update its ID by appending the counter found in n_trucks
@@ -168,8 +168,8 @@ class Solver22:
                 n_trucks[curr_truck.id_truck] += 1
                 curr_truck.id_truck = f"{curr_truck.id_truck}_{str(n_trucks[curr_truck.id_truck]).zfill(3)}"
 
-                if self.iter == 0:
-                    first_truck_id = curr_truck.id_truck
+                if self.iter % 50 == 0:
+                    print_trucks_ID.append(curr_truck.id_truck)
 
                 if DEBUG:
                     print(f"> Truck ID: {curr_truck.id_truck}")
@@ -180,12 +180,9 @@ class Solver22:
                     print("")
 
                 # Build stacks with the copied list of items 'tmp_items'
-                valid_stacks_list = create_stack_cs(tmp_items, curr_truck)
-
-                assert (
-                    checkValidStacks(valid_stacks_list, tmp_items, compareItems=True)
-                    == True
-                ), "Invalid stacks!"
+                valid_stacks_list, self.stack_number = create_stack_cs(
+                    tmp_items, curr_truck, self.stack_number
+                )
 
                 assert all(
                     len(st.items) > 0 for st in valid_stacks_list
@@ -199,9 +196,7 @@ class Solver22:
                     valid_stacks_list, curr_truck, tmp_items
                 )
 
-                assert (
-                    checkValidStacks(valid_stacks_list, tmp_items) == True
-                ), "There was some issue with the stacks in the solution!"
+                sublist_sol_2D.append(sol_2D)
 
                 assert all(
                     len(st.items) > 0 for st in sol_2D["stack"]
@@ -212,6 +207,8 @@ class Solver22:
 
                 self.curr_obj_value = self.evalObj()
                 self.iter += 1
+
+            self.list_sol_2D.append(sublist_sol_2D)
 
             used_trucks = 0
             for t in n_trucks.keys():
@@ -248,13 +245,12 @@ class Solver22:
         df_sol.to_csv(os.path.join("results", f"{self.name}_sol.csv"), index=False)
 
         ### Plot results:
-        self.myStack3D(self.df_items, self.df_vehicles, df_sol, first_truck_id)
-
-        self.myStack3D(self.df_items, self.df_vehicles, df_sol, "V1_077")
+        for t_id in print_trucks_ID:
+            myStack3D(self.df_items, self.df_vehicles, df_sol, t_id)
 
         # Get last used truck
         last_truck_id = df_sol.idx_vehicle.iloc[-1]
-        self.myStack3D(self.df_items, self.df_vehicles, df_sol, last_truck_id)
+        myStack3D(self.df_items, self.df_vehicles, df_sol, last_truck_id)
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -1273,137 +1269,3 @@ class Solver22:
 
     ##########################################################################
     # Displaying the solution
-
-    def myStack3D(self, df_items, df_vehicles, df_sol, idx_vehicle):
-        """
-        myStack3D
-        ---
-        Display the 3D representation of the solution for a single vehicle.
-
-        ### Input variables
-        - df_items: dataframe of the items
-        - df_vehicles: dataframe of the vehicles
-        - df_sol: dataframe of the current solution
-        - idx_vehicle: string indicating the specific vehicle
-        """
-        # Isolate vehicle:
-        df_cons = df_sol[df_sol["idx_vehicle"] == str(idx_vehicle)]
-
-        # NOTE: each stack ID is the same for all items that make it up
-        idx_stacks = (
-            df_cons.id_stack.unique()
-        )  # Distinct elements in the 'id_stack' column of the solution
-        n_stacks = len(
-            df_cons.id_stack.unique()
-        )  # Number of distinct elements in the 'id_stack' column
-
-        coordinates = np.zeros(
-            (n_stacks, 3)
-        )  # Initialize coordinates of the elements (x,y,z)
-        sizes = np.zeros((n_stacks, 3))  # Initialize the sides of the elements (h,w,d)
-
-        i = 0
-        for sid in idx_stacks:
-            # Iterate over stack IDs
-            curr_stack = df_cons[df_cons["id_stack"] == sid]
-            n_items_stack = len(curr_stack.index)
-
-            # Get 1st element in the stack (bottom element)
-            data_stack = curr_stack.iloc[0]
-            coordinates[i, 0] = data_stack.x_origin
-            coordinates[i, 1] = data_stack.y_origin
-            coordinates[i, 2] = data_stack.z_origin  # Always 0...
-
-            assert coordinates[i, 2] == 0, "The stack origin z coordinate is not 0!"
-
-            # Get item information
-            data_item = df_items[df_items["id_item"] == data_stack.id_item]
-            if data_stack["orient"] == "w":
-                sizes[i, 0] = data_item.width.iloc[0]
-                sizes[i, 1] = data_item.length.iloc[0]
-            else:
-                sizes[i, 0] = data_item.length.iloc[0]
-                sizes[i, 1] = data_item.width.iloc[0]
-            # Get the overall stack height by considering all items in the current stack
-            sizes[i, 2] = 0
-            # Extract single items
-            for j in range(n_items_stack):
-                data_stack = curr_stack.iloc[j]
-                data_item = df_items[df_items["id_item"] == data_stack.id_item]
-                sizes[i, 2] += data_item.height.iloc[0]
-
-            i += 1
-        # Up to now:
-        # Obtained the stack position and dimensions, which are the necessary info
-        # for representing the truck
-
-        colors = [
-            "#" + "".join([random.choice("0123456789ABCDEF") for j in range(6)])
-            for i in range(n_stacks)
-        ]
-        if not isinstance(colors, (list, np.ndarray)):
-            colors = ["C0"] * len(coordinates)
-        if not isinstance(sizes, (list, np.ndarray)):
-            sizes = [(1, 1, 1)] * len(coordinates)
-
-        # Display blocks
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection="3d")
-        g = []
-        # count = 0
-        for p, s, c in zip(coordinates, sizes, colors):
-            # Take all 'related' values of
-            # - Coordinates (rows)
-            # - Sizes (rows)
-            # - Colors (single items)
-
-            g.append(cuboid_data(p, size=s))
-            # add label
-            # ax.text(p[0], p[1], p[2], f"{count}?", color='black')
-            # count += 1
-
-        pc = Poly3DCollection(
-            np.concatenate(g),
-            facecolors=np.repeat(colors, 6, axis=None),
-            edgecolor="k",
-            linewidth=0.5,
-            alpha=1,
-        )
-
-        ax.add_collection3d(pc)
-
-        ax.set_xlabel("X")
-        ax.set_ylabel("Y")
-        ax.set_zlabel("Z")
-
-        # Extract actual vehicle type ID
-        idx_vehicle_type = int(idx_vehicle[1])
-
-        ax.set_title(f"Vehicle {idx_vehicle}")
-        # Set axis limit, given from the dimensions of the vehicle
-        x_lim = ax.set_xlim(0, df_vehicles.iloc[idx_vehicle_type]["length"])
-        y_lim = ax.set_ylim(0, df_vehicles.iloc[idx_vehicle_type]["width"])
-        z_lim = ax.set_zlim(0, df_vehicles.iloc[idx_vehicle_type]["height"])
-
-        # ax.set_aspect('equal')
-
-        # def set_aspect_equal_3d(ax):
-        #     x_mean = np.mean(x_lim)
-        #     y_mean = np.mean(y_lim)
-        #     z_mean = np.mean(z_lim)
-
-        #     plot_radius = max([abs(lim - mean_)
-        #                     for lims, mean_ in ((x_lim, x_mean),
-        #                                         (y_lim, y_mean),
-        #                                         (z_lim, z_mean))
-        #                     for lim in lims])
-
-        #     ax.set_xlim3d([0, x_mean + plot_radius])
-        #     ax.set_ylim3d([0, y_mean + plot_radius])
-        #     ax.set_zlim3d([0, z_mean + plot_radius])
-
-        # set_aspect_equal_3d(ax)
-
-        set_axes_equal(ax)
-
-        plt.show()

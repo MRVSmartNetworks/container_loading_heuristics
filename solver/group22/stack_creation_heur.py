@@ -4,7 +4,7 @@ import numpy as np
 DEBUG = False
 
 
-def create_stack_cs(df_items, truck):
+def create_stack_cs(df_items, truck, id):
     """
     create_stack_cs
     ---
@@ -191,16 +191,19 @@ def create_stack_cs(df_items, truck):
             stacks_list.append(new_stack)
 
     for j in range(len(stacks_list)):
-        stacks_list[j].assignID(j)
+        stacks_list[j].assignID(id)
+        id += 1
 
     assert all([s.tot_weight for s in stacks_list]) > 0
 
     # Check validity of stacks
-    if checkValidStacks(stacks_list, df_items, compareItems=True):
-        return stacks_list
+    if checkValidStacks(stacks_list, df_items, truck, compareItems=True):
+        return stacks_list, id
+    else:
+        raise ValueError("Invalid stacks have been created!")
 
 
-def checkValidStacks(stacks_list, df_items, compareItems=False):
+def checkValidStacks(stacks_list, df_items, truck, compareItems=False):
     """
     checkValidStacks
     ---
@@ -244,5 +247,11 @@ def checkValidStacks(stacks_list, df_items, compareItems=False):
                 used_counts[j] <= 1
             ), f"Item {used_unique_ids[j]} was used {used_counts[j]} times"
         return False
+
+    # Check that each stack is lower than the truck height
+    truck_height = truck.height
+    assert all(
+        st.tot_height <= truck_height for st in stacks_list
+    ), "Some stacks are higher than allowed!"
 
     return True
