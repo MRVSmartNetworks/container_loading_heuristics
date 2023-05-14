@@ -342,13 +342,17 @@ class Solver22:
             # Else: return the truck with the lowest cost among the ones which are bigger than
             # the whole volume
             valid_trucks = trucks_df[trucks_df.volume >= tot_item_vol]
-            ord_vehicles = valid_trucks.sort_values(by=["cost"], ascending=True)
+            valid_trucks = valid_trucks[valid_trucks.max_weight >= tot_item_wt]
+            sort_vehicles = valid_trucks.sort_values(by=["cost"], ascending=True)
 
-            if len(forbidden_trucks) > 0:
-                for i, row in ord_vehicles.iterrows():
+            if len(sort_vehicles.index) > 0:
+                for i, row in sort_vehicles.iterrows():
                     if str(row.id_truck) not in forbidden_trucks:
                         return row
             else:
+                ord_vehicles = trucks_df.sort_values(
+                    by=["dim_wt_cost_ratio"], ascending=False
+                )
                 return ord_vehicles.iloc[0]
 
     def create_stack(self, df_items, truck):  # NOT USED!
