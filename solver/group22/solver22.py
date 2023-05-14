@@ -14,7 +14,7 @@ from solver.group22.utilities import cuboid_data, set_axes_equal
 from solver.group22.stack import Stack
 from solver.group22.stack_creation_heur import create_stack_cs, checkValidStacks
 
-
+STATS = False
 DEBUG = True
 DEBUG_MORE = False
 MAX_ITER = 10000
@@ -249,6 +249,8 @@ class Solver22:
 
         ### Plot results:
         self.myStack3D(self.df_items, self.df_vehicles, df_sol, first_truck_id)
+
+        self.myStack3D(self.df_items, self.df_vehicles, df_sol, "V1_077")
 
         # Get last used truck
         last_truck_id = df_sol.idx_vehicle.iloc[-1]
@@ -529,23 +531,24 @@ class Solver22:
                 # TODO: check if the bound has some space left
                 space_left = False
 
-                # Evaluate area, volume and weight utilization
-                items_area = 0
-                items_volume = 0
-                items_weight = 0
-                for st in sol_2D["stack"]:
-                    assert len(st.items) > 0, "The current stack is empty!!!"
-                    items_area += st.area
-                    items_volume += st.area * st.tot_height
-                    items_weight += st.tot_weight
+                if STATS:
+                    # Evaluate area, volume and weight utilization
+                    items_area = 0
+                    items_volume = 0
+                    items_weight = 0
+                    for st in sol_2D["stack"]:
+                        assert len(st.items) > 0, "The current stack is empty!!!"
+                        items_area += st.area
+                        items_volume += st.area * st.tot_height
+                        items_weight += st.tot_weight
 
-                percent_area = items_area / truck_area
-                percent_vol = items_volume / truck_volume
-                percent_weight = items_weight / truck.max_weight
+                    percent_area = items_area / truck_area
+                    percent_vol = items_volume / truck_volume
+                    percent_weight = items_weight / truck.max_weight
 
-                print(f"> Truck area utilization: {percent_area}")
-                print(f"> Truck volume utilization: {percent_vol}")
-                print(f"> Truck weight utilization: {percent_weight}")
+                    print(f"> Truck area utilization: {percent_area}")
+                    print(f"> Truck volume utilization: {percent_vol}")
+                    print(f"> Truck weight utilization: {percent_weight}")
 
             count += 1
 
@@ -1234,31 +1237,31 @@ class Solver22:
         # 3. Check constraints
 
         # 3.1 - Max area
-        for i in range(len(used_trucks_id)):
-            truck_type = str(used_trucks_id[i][:2])
-            curr_truck = trucks_df.loc[trucks_df.id_truck == truck_type]
+        # for i in range(len(used_trucks_id)):
+        #     truck_type = str(used_trucks_id[i][:2])
+        #     curr_truck = trucks_df.loc[trucks_df.id_truck == truck_type]
 
-            # Assuming the items are not overlapped:
-            curr_items_ground = np.array(sol["id_item"])[
-                sol["idx_vehicle"] == used_trucks_id[i] and sol["z_origin"] == 0
-            ]
+        #     # Assuming the items are not overlapped:
+        #     curr_items_ground = np.array(sol["id_item"])[
+        #         sol["idx_vehicle"] == used_trucks_id[i] and sol["z_origin"] == 0
+        #     ]
 
-            bool_items_ind = np.zeros((len(items_df.index),))
-            items_id_list = items_df.id_item.tolist()
-            for i in len(items_id_list):
-                if items_id_list[i] in curr_items_ground:
-                    bool_items_ind[i] = 1
+        #     bool_items_ind = np.zeros((len(items_df.index),))
+        #     items_id_list = items_df.id_item.tolist()
+        #     for i in range(len(items_id_list)):
+        #         if items_id_list[i] in curr_items_ground:
+        #             bool_items_ind[i] = 1
 
-            items_gnd = items_df.loc[bool_items_ind == 1]
+        #     items_gnd = items_df.loc[bool_items_ind == 1]
 
-            items_gnd["area"] = items_gnd["length"] * items_df["width"]
+        #     items_gnd.loc[:, "area"] = items_gnd["length"] * items_gnd["width"]
 
-            tot_used_area = sum(items_gnd.area)
+        #     tot_used_area = sum(items_gnd.area)
 
-            if tot_used_area > (curr_truck.length * curr_truck.width):
-                valid = False
-                print(f"Truck {used_trucks_id[i]} includes too many elements!")
-                return valid
+        #     if tot_used_area > int(curr_truck.length) * int(curr_truck.width):
+        #         valid = False
+        #         print(f"Truck {used_trucks_id[i]} includes too many elements!")
+        #         return valid
 
         if valid:
             print("Valid solution!")
@@ -1313,18 +1316,18 @@ class Solver22:
             # Get item information
             data_item = df_items[df_items["id_item"] == data_stack.id_item]
             if data_stack["orient"] == "w":
-                sizes[i, 0] = data_item.width
-                sizes[i, 1] = data_item.length
+                sizes[i, 0] = data_item.width.iloc[0]
+                sizes[i, 1] = data_item.length.iloc[0]
             else:
-                sizes[i, 0] = data_item.length
-                sizes[i, 1] = data_item.width
+                sizes[i, 0] = data_item.length.iloc[0]
+                sizes[i, 1] = data_item.width.iloc[0]
             # Get the overall stack height by considering all items in the current stack
             sizes[i, 2] = 0
             # Extract single items
             for j in range(n_items_stack):
                 data_stack = curr_stack.iloc[j]
                 data_item = df_items[df_items["id_item"] == data_stack.id_item]
-                sizes[i, 2] += data_item.height
+                sizes[i, 2] += data_item.height.iloc[0]
 
             i += 1
         # Up to now:

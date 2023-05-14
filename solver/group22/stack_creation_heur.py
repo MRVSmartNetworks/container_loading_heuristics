@@ -58,11 +58,13 @@ def create_stack_cs(df_items, truck):
 
         new_stack = Stack()
         curr_items_code = df_items[df_items.stackability_code == code].reset_index()
-        curr_items_code["used_flag"] = 0  # Used to keep track of used items
         all_weights = np.sort(list(curr_items_code.weight.unique()))
         all_weights = all_weights[::-1]
         all_heights = np.sort(list(curr_items_code.height.unique()))
         all_heights = all_heights[::-1]
+
+        # Keep track of used items:
+        used_items_arr = np.zeros((len(curr_items_code.index),))
 
         # Make sure there is 1 item per ID
         all_items_ids, counts_current_items = np.unique(
@@ -70,17 +72,11 @@ def create_stack_cs(df_items, truck):
         )
         assert all(counts_current_items == 1), "Duplicate items are present!"
 
-        if code == 4:
-            print("Code is 4")
         for i, row in curr_items_code.iterrows():
             # Check the item was not added to a stack already
-            if row.id_item == "I0076":
-                print(".")
 
             # If the item has not been used yet
-            if int(row.used_flag) == 0:
-                if row.id_item == "I0076":
-                    print("a")
+            if used_items_arr[i] == 0:
                 was_added = new_stack.add_item_override(row, other_constraints)
 
                 # The value of 'new_stack_needed' can be:
@@ -110,21 +106,15 @@ def create_stack_cs(df_items, truck):
                             k = 0
                             while k < len(valid_df.index):
                                 possib_elem = valid_df.iloc[k]
-                                if possib_elem.used_flag == 0:
+                                if used_items_arr[list(valid_df.index)[k]] == 0:
                                     # Try adding it
-                                    if row.id_item == "I0076":
-                                        print("a")
                                     if (
                                         new_stack.add_item_override(
                                             possib_elem, other_constraints
                                         )
                                         == 1
                                     ):
-                                        curr_items_code.loc[
-                                            curr_items_code.id_item
-                                            == possib_elem.id_item,
-                                            "used_flag",
-                                        ] += 1
+                                        used_items_arr[list(valid_df.index)[k]] += 1
                                         new_stack_needed = False
                                         # If success, break cycle
                                         j = len(all_heights)
@@ -159,21 +149,15 @@ def create_stack_cs(df_items, truck):
                             k = 0
                             while k < len(valid_df.index):
                                 possib_elem = valid_df.iloc[k]
-                                if possib_elem.used_flag == 0:
+                                if used_items_arr[list(valid_df.index)[k]] == 0:
                                     # Try adding it
-                                    if row.id_item == "I0076":
-                                        print("a")
                                     if (
                                         new_stack.add_item_override(
                                             possib_elem, other_constraints
                                         )
                                         == 1
                                     ):
-                                        curr_items_code.loc[
-                                            curr_items_code.id_item
-                                            == possib_elem.id_item,
-                                            "used_flag",
-                                        ] += 1
+                                        used_items_arr[list(valid_df.index)[k]] += 1
                                         new_stack_needed = False
                                         # If success, break cycle
                                         j = len(all_weights)
@@ -190,31 +174,21 @@ def create_stack_cs(df_items, truck):
                     new_stack_needed = True
                 elif was_added == 1:
                     # SUCCESS - mark the item as used
-                    curr_items_code.loc[
-                        curr_items_code.id_item == row.id_item, "used_flag"
-                    ] += 1
+                    used_items_arr[i] += 1
 
                 # if a new stack is needed (unable to add elements):
                 if new_stack_needed:
-                    if "I0076" in [it.id_item for it in new_stack.items]:
-                        print("Item I0076 is in new stack")
                     if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
                         stacks_list.append(new_stack)
                     # Open new stack (with current element as first)
                     new_stack = Stack(row, other_constraints)
                     if len(new_stack.items) > 0:
-                        curr_items_code.loc[
-                            curr_items_code.id_item == row.id_item, "used_flag"
-                        ] += 1
+                        used_items_arr[i] += 1
                     new_stack_needed = False
 
         # Need to add last stack to the list (if not empty)
         if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
             stacks_list.append(new_stack)
-
-        assert all(
-            curr_items_code.used_flag < 2
-        ), "Some items have been used more than once!"
 
     for j in range(len(stacks_list)):
         stacks_list[j].assignID(j)
@@ -238,7 +212,7 @@ def checkValidStacks(stacks_list, df_items, compareItems=False):
     # Check that the provided items list does not contain duplicates
     items_ids = np.array(list(df_items.id_item))
     unique_ids, counts = np.unique(items_ids, return_counts=True)
-    assert all(counts == 1), "The items list contains duplicates!"
+    assert all(counts == 1), "The provided items list contains duplicates!"
 
     # Extract the used item ids from the stacks
     stack_items_ids = []  # IDs of all items in the stacks which have been used
@@ -264,10 +238,10 @@ def checkValidStacks(stacks_list, df_items, compareItems=False):
                 ), f"[i = {i}] -> Element {unique_ids[i]} has been used {used_counts[used_unique_ids == items_ids[i]]} times in the solution!"
 
     # Check that each item appearing in the used IDs is present only once
-    if not all(used_counts == 1):
+    if not all(used_counts <= 1):
         for j in range(len(used_counts)):
             assert (
-                used_counts[j] == 1
+                used_counts[j] <= 1
             ), f"Item {used_unique_ids[j]} was used {used_counts[j]} times"
         return False
 
