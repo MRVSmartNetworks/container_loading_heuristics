@@ -10,7 +10,7 @@ from solver.group22.solution_representation import myStack3D
 from solver.group22.stack import Stack
 from solver.group22.stack_creation_heur import create_stack_cs
 
-STATS = False
+STATS = True
 DEBUG = True
 DEBUG_MORE = False
 MAX_ITER = 10000
@@ -210,10 +210,13 @@ class Solver22:
                 ), "Some stacks of the solution are empty!"
 
                 # Use the 2D solution to update the overall solution
+                if curr_truck["id_truck"][:2] == "V0":
+                    print("Truck V0")
                 tmp_items = self.updateCurrSol(sol_2D, curr_truck, tmp_items)
 
-                self.curr_obj_value = self.evalObj()
                 self.iter += 1
+
+            self.curr_obj_value = self.evalObj()
 
             self.list_sol_2D.append(sublist_sol_2D)
             self.scores_2D.append(sublist_scores_2D)
@@ -341,7 +344,8 @@ class Solver22:
         else:
             # Else: return the truck with the lowest cost among the ones which are bigger than
             # the whole volume
-            valid_trucks = trucks_df[trucks_df.volume >= tot_item_vol]
+            # Get trucks having volume > 110% total remaining volume (empirical choice)
+            valid_trucks = trucks_df[trucks_df.volume >= tot_item_vol * 1.1]
             valid_trucks = valid_trucks[valid_trucks.max_weight >= tot_item_wt]
             sort_vehicles = valid_trucks.sort_values(by=["cost"], ascending=True)
 
@@ -1094,13 +1098,25 @@ class Solver22:
             s = sol
 
         o_val = 0
+        vehicle_list_cost = np.array(s["type_vehicle"])
+        vehicle_list_id = np.array(s["idx_vehicle"])
         # FIXME: don't know why but it works - seems a bit weak...
-        for t_id in list(set(s["idx_vehicle"])):
-            o_val += float(s["type_vehicle"][s["idx_vehicle"] == t_id])
+        for t_id in np.unique(s["idx_vehicle"]):
+            o_val += float(vehicle_list_cost[vehicle_list_id == t_id][0])
 
         return o_val
 
     def improveSolution(self, sol, df_items, df_trucks):
+        """
+        improveSolution
+        ---
+        Idea: evaluate score of filled trucks (% weight * % surface) and try destroying the
+        trucks with lowest values and rebuilding them from scratch.
+        The process is successful whenever the final cost of the trucks is lower than before.
+
+        The process of rebuilding can be carried out in the same way as 'solve' - it's just
+        important to obtain items as a dataframe.
+        """
         pass
 
     ##########################################################################
