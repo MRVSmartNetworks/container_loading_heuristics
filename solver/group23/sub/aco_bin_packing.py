@@ -30,7 +30,7 @@ class aco_bin_packing(ACO):
     """
     def __init__(
             self, alpha=1, beta=1, 
-            n_ants=20, n_iter=10, evaporationCoeff=0.2
+            n_ants=50, n_iter=20, evaporationCoeff=0.2
             ):
         self.vehicle = None
         self.stack_lst = []
@@ -285,14 +285,16 @@ class aco_bin_packing(ACO):
             app = 0 # Updated every time a best fit into the truck is find 
             j = 0
             y = 0
-            while((j < (len(stackInfo) - code)) and (find == False)): 
-                if (stackInfo.iloc[code]["length"] + stackInfo.iloc[j+code]["length"] > app) and (stackInfo.iloc[code]["length"] + stackInfo.iloc[j+code]["length"] <= self.vehicle["width"]): 
+            while((j < (len(stackInfo) - code)) and (find == False) and (self.stack_quantity[code] != 0)): 
+                if (stackInfo.iloc[code]["length"] + stackInfo.iloc[j+code]["length"] > app) and (stackInfo.iloc[code]["length"] + stackInfo.iloc[j+code]["length"] <= self.vehicle["width"]) and (self.stack_quantity[j+code] != 0): 
                     app = stackInfo.iloc[code]["length"] + stackInfo.iloc[j+code]["length"]
                     best_code1 = code + N_code
                     best_code2 = j+code + N_code
                     if(app == self.vehicle["width"]):
+                        attr_mat[:,best_code1] = 2
+                        attr_mat[:,best_code2] = 2
                         find = True
-                if (stackInfo.iloc[code]["width"] + stackInfo.iloc[j+code]["width"] > app) and (stackInfo.iloc[code]["width"] + stackInfo.iloc[j+code]["width"] <= self.vehicle["width"]): 
+                if (stackInfo.iloc[code]["width"] + stackInfo.iloc[j+code]["width"] > app) and (stackInfo.iloc[code]["width"] + stackInfo.iloc[j+code]["width"] <= self.vehicle["width"]) and (self.stack_quantity[j+code] != 0): 
                     app = stackInfo.iloc[code]["width"] + stackInfo.iloc[j+code]["width"]
                     best_code1 = code
                     best_code2 = j+code
@@ -304,8 +306,8 @@ class aco_bin_packing(ACO):
 
             find = False
             
-            while((y < (len(stackInfo))) and (find == False)):
-                if (stackInfo.iloc[code]["length"] + stackInfo.iloc[y]["width"] > app) and (stackInfo.iloc[code]["length"] + stackInfo.iloc[y]["width"] <= self.vehicle["width"]): 
+            while((y < (len(stackInfo))) and (find == False) and (self.stack_quantity[code] != 0)):
+                if (stackInfo.iloc[code]["length"] + stackInfo.iloc[y]["width"] > app) and (stackInfo.iloc[code]["length"] + stackInfo.iloc[y]["width"] <= self.vehicle["width"]) and (self.stack_quantity[y] != 0): 
                     app = stackInfo.iloc[code]["length"] + stackInfo.iloc[y]["width"]
                     best_code1 = code + N_code
                     best_code2 = y
