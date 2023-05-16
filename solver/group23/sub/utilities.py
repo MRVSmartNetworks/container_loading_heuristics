@@ -1,4 +1,5 @@
-import numpy as np
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 from copy import deepcopy
 
 def getStackFeatures(df_items, code):
@@ -48,7 +49,6 @@ def popStack(stack_lst, stack_quantity, code, n_code):
             else:
                 stack_copy.orient = 'l'
             
-            #NOTE: cerca una soluzione migliore
             return stack_copy, stack_lst, stack_quantity
     raise Exception("No more stacks with specified code")
 

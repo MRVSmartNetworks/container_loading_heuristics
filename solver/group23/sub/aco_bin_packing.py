@@ -1,7 +1,7 @@
-import os
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 import numpy as np
 from sub.utilities import *
-from sub.stack import Stack
 
 class ACO:
     """  
@@ -241,20 +241,28 @@ class ACO:
                     code_sub += 1
                     find == True
 
-            # Find the stacks that have the best fit in the trucks
+            # Find the stacks that have the best fit in the trucks width
             app = 0 # Updated every time a best fit into the truck is find 
             j = 0
             y = 0
             while((j < (len(self.stackInfo) - code)) and (find == False) and (self.stack_quantity[code] != 0)): 
-                if (self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[j+code]["length"] > app) and (self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[j+code]["length"] <= self.vehicle["width"]) and (self.stack_quantity[j+code] != 0): 
+
+                if (self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[j+code]["length"] > app) and \
+                    (self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[j+code]["length"] <= self.vehicle["width"]) and \
+                    (self.stack_quantity[j+code] != 0): 
+
                     app = self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[j+code]["length"]
                     best_code1 = code + self.n_code
                     best_code2 = j+code + self.n_code
-                    if(app == self.vehicle["width"]): #perfect solution for truck width, instant attractiveness
+                    if(app == self.vehicle["width"]): # if a perfect fit is found attractiveness matrix must be adjusted
                         attr_mat[:,best_code1] = 2
                         attr_mat[:,best_code2] = 2
-                        find = True
-                if (self.stackInfo.iloc[code]["width"] + self.stackInfo.iloc[j+code]["width"] > app) and (self.stackInfo.iloc[code]["width"] + self.stackInfo.iloc[j+code]["width"] <= self.vehicle["width"]) and (self.stack_quantity[j+code] != 0): 
+                        find = True # in this cases no more couple of best stack for this code must be found
+
+                if (self.stackInfo.iloc[code]["width"] + self.stackInfo.iloc[j+code]["width"] > app) and \
+                    (self.stackInfo.iloc[code]["width"] + self.stackInfo.iloc[j+code]["width"] <= self.vehicle["width"]) and \
+                    (self.stack_quantity[j+code] != 0):
+
                     app = self.stackInfo.iloc[code]["width"] + self.stackInfo.iloc[j+code]["width"]
                     best_code1 = code
                     best_code2 = j+code
@@ -267,7 +275,11 @@ class ACO:
             find = False
             
             while((y < (len(self.stackInfo))) and (find == False) and (self.stack_quantity[code] != 0)):
-                if (self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[y]["width"] > app) and (self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[y]["width"] <= self.vehicle["width"]) and (self.stack_quantity[y] != 0): 
+
+                if (self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[y]["width"] > app) and \
+                    (self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[y]["width"] <= self.vehicle["width"]) and \
+                    (self.stack_quantity[y] != 0): 
+                    
                     app = self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[y]["width"]
                     best_code1 = code + self.n_code
                     best_code2 = y
@@ -282,10 +294,12 @@ class ACO:
         attr_mat[:,best_code1] = 2
         attr_mat[:,best_code2] = 2
         
+        # self.pr_move and attractiveness creation with all the information obtained before
         self.pr_move = np.full((self.dim_matr,self.dim_matr), 1./(self.dim_matr-code_sub)) * pr_mat
         self.attractiveness = np.full((len(self.pr_move),len(self.pr_move)), 0.5) * attr_mat * pr_mat 
         
-        self.attractiveness[:,:7] = self.attractiveness[:,:7]*1.5 #NOTE: metodo tappabuchi per farlo funzionare fino in fondo, si preferisce indiscrinatamente la posizione di stack lengthwise
+        #NOTE: Items preferred lengthwise (longest side in respect to the length of the truck)
+        self.attractiveness[:,:7] = self.attractiveness[:,:7]*1.5
         
     def choose_move(self, prev_state, pr_move=None):
         """ 
