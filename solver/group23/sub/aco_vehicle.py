@@ -35,12 +35,11 @@ class aco_vehicle(ACO):
                 i = 0
                 while(more_items):
                     i += 1
-                    print("Truck number:",i)
-                    next_vehicle = self.choose_move(prev_vehicle)
                     aco.buildStacks(vehicle=self.df_vehicles.iloc[1], df_items=df_items_ant)
                     if sum(aco.stack_quantity) != 0:#TODO: change please
                         aco.statesCreation(self.df_items[["length", "width", "stackability_code", "forced_orientation"]].drop_duplicates())
                         # aco.changeVehicle(self.df_vehicles.iloc[next_vehicle])
+                        print(f"Truck number: {i} Vehicle: " )
                         sol_truck = aco.aco_2D_bin()
                         #sol_truck = pd.DataFrame.from_dict(sol_truck)
                         to_remove_items = sol_truck["id_item"]
@@ -48,9 +47,6 @@ class aco_vehicle(ACO):
                         totItems += len(to_remove_items)
                         
                         
-                        ant_k.append(self.df_vehicles.iloc[next_vehicle]["id_truck"])
-                        totCost += self.df_vehicles.iloc[next_vehicle]["cost"]
-                        prev_vehicle = next_vehicle
                     else:
                         break
                     """i += 1

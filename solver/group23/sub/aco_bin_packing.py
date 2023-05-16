@@ -70,6 +70,7 @@ class aco_bin_packing(ACO):
         while _iter < self.n_iter and not good_sol:
             self.ants = []
             antsArea = []
+            antsWeight = []
             for _ in range(self.n_ants):
                 stack_lst_ant = self.stack_lst.copy() # [ele for ele in stack_lst] better????
                 stack_quantity_ant = self.stack_quantity.copy()
@@ -116,7 +117,7 @@ class aco_bin_packing(ACO):
                                 
                     
                     # Check if a stack can be added
-                    if toAddStack is not None and (totWeight + toAddStack.weight <= self.vehicle["max_weight"]):
+                    if toAddStack is not None and (totWeight + toAddStack.weight <= self.vehicle["max_weight"]): # constrain of truck max weight
                         ant_k.append(toAddStack)
                         if toAddStack.height > self.vehicle["height"]:
                             print("Stack higher")
@@ -149,6 +150,7 @@ class aco_bin_packing(ACO):
                     raise Exception("VOLUME GREATER THAN 1")
                 self.ants.append(ant_k)
                 antsArea.append(totArea)
+                antsWeight.append(totWeight)
             
             # Evaluate the trail update  
             deltaTrail = self.trailUpdate(antsArea, vehicleArea)
@@ -160,7 +162,8 @@ class aco_bin_packing(ACO):
             area_ratio = max(antsArea)/vehicleArea
             if area_ratio > bestArea:   # best solution during all the iteration
                 bestAnt = self.ants[np.argmax(antsArea)]
-                bestArea = area_ratio
+                bestArea = area_ratio 
+                weightRatio = antsWeight[antsArea.index(max(antsArea))]/self.vehicle["max_weight"]
 
             # Change evaportaion coefficient dynamically given the area ratio
             if area_ratio >= 0.9:
@@ -175,7 +178,7 @@ class aco_bin_packing(ACO):
             _iter += 1
             
 
-        print(f"Area ratio: {bestArea}, vehicle: {self.vehicle['id_truck']}")
+        print(f"Area ratio: {bestArea},\n Weight ratio: {weightRatio} vehicle: {self.vehicle['id_truck']}")
         if bestArea < 0.7:
             print("#########", self.vehicle['id_truck'])
 
@@ -253,6 +256,7 @@ class aco_bin_packing(ACO):
             - self.attractiveness: N x N matrix of attractiveness from state i to j, 
                                 states that fill widthwise the truck are privileged
         """
+        stackInfo = stackInfo.sort_values(by=['stackability_code']) # if not matrix are not created correctly
 
         # shared parameters
         N_code = len(stackInfo.stackability_code)
