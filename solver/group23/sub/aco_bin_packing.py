@@ -450,33 +450,3 @@ class ACO:
                     if i == iter_items.tail(1).index:
                         self.stack_lst.append(stack)
                         self.stack_quantity[code] += 1 
-
-
-    #####################################################################################################
-    ######### Solution creation
-                    
-    def solCreation(self, bestAnt):
-        """
-        solCreation
-        -----------
-
-        Function used to create the truck solution that is saved in file.
-
-        #### INPUT PARAMETERS:
-            - bestAnt: bestAnt is the ant that have obtained the best solution during the ACO bin_packing.
-        #### OUTPUT PARAMETERS:
-            - self.sol: solution dictionary containing all the stack and their 
-                    information contained by the truck choosen to be filled
-        """
-        for i,stack in enumerate(bestAnt):
-            z_origin = 0
-            for item in stack.items:
-                self.sol['type_vehicle'].append(self.vehicle['id_truck'])
-                self.sol['idx_vehicle'].append(0) #TODO: need a way to update the number of that vehicle
-                self.sol['id_stack'].append(f"S{i}")    #BUG: doing so the id overwrite
-                self.sol['id_item'].append(item[0])
-                self.sol['x_origin'].append(stack.x_origin)
-                self.sol['y_origin'].append(stack.y_origin)
-                self.sol['z_origin'].append(z_origin)
-                self.sol['orient'].append(stack.orient)
-                z_origin += item[1]
