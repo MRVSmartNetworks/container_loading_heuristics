@@ -9,7 +9,8 @@ class ACO:
     --------------------------------------------------------------------------------
 
     #### INPUT PARAMETERS:
-        - stack_lst: stacks list, during the simulation will decrease until empty
+        - stackInfo: information related to the items given
+            their stackability code
         - alpha: realative trail importance (default 1)
         - beta: relative attractivness importance (default 1)
         - n_ants: number of ants
@@ -19,27 +20,32 @@ class ACO:
                             it is more the new ant solution will have importance
     #### ACO PARAMETERS:
         - attractiveness (η): N x N matrix of attractiveness from state i to j 
-                                (N is the total number of states)
+                                (N is the total number of states plus the empyty
+                                veichle state)
         - trailMatrix (τ): N x N matrix of trails from state i to j
         - pr_move: N x N matrix of probabilities of the moves from i to j 
                     (ultimate state is related to empty vehicle)
     #### OUTPUT PARAMETERS:
-        - self.sol: solution dictionary containing all the stack and their 
-                    information contained by the truck choosen to be filled
+        - bestAnt: the best ant solution in terms of area occupied
     --------------------------------------------------------------------------------
     """
-    def __init__(self, stackInfo,alpha=1, beta=1, n_ants=50, n_iter=20, evaporationCoeff = 0.5):
+    def __init__(self, stackInfo,alpha=1, beta=1, n_ants=50, n_iter=20, evaporationCoeff = 0.2):
         
-        self.stackInfo = stackInfo.sort_values(by=['stackability_code']) # if not matrix are not created correctly
+        self.stackInfo = stackInfo.sort_values(by=['stackability_code']) # sorting needed for states creation
         self.alpha = alpha
         self.beta = beta
         self.n_ants = n_ants 
         self.evaporationCoeff = evaporationCoeff
         self.n_iter = n_iter
+
+        self.n_code = len(self.stackInfo.stackability_code) # number of different stackability codes
+        self.dim_matr = 2 * self.n_code + 1 # the state added is fot the empty vehicle
+        self.trailMatrix = np.zeros([self.dim_matr, self.dim_matr]) # initialization of the trail matrix
+        self.pr_move = np.zeros([self.dim_matr, self.dim_matr]) # initialization of the probability matrix
+        self.attractiveness = np.zeros([self.dim_matr, self.dim_matr]) # initialization of the attractivness matrix
         self.ants = []
         self.vehicle = None
         self.stack_lst = []
-
 
     #####################################################################################################
     ######### ACO function
@@ -51,20 +57,7 @@ class ACO:
 
         Method to solve 2D bin packing problem.
         """
-
-        self.sol = {
-            "type_vehicle": [],
-            "idx_vehicle": [],
-            "id_stack": [],
-            "id_item": [],
-            "x_origin": [],
-            "y_origin": [],
-            "z_origin": [],
-            "orient": []
-        }
         self.statesCreation()
-        n_code = int((len(self.pr_move) - 1)/2)  # no. of different stackability codes
-        self.trailMatrix = np.zeros([len(self.pr_move), len(self.pr_move)]) # initialization of the trail matrix
         vehicleArea = self.vehicle['length'] * self.vehicle['width']
         vehicleVolume = vehicleArea * self.vehicle['height']
         bestArea = 0
@@ -78,10 +71,10 @@ class ACO:
                 stack_lst_ant = self.stack_lst.copy() # [ele for ele in stack_lst] better????
                 stack_quantity_ant = self.stack_quantity.copy()
                 pr_move = self.pr_move.copy()
-
+                
                 # Variables initialization for each ant
                 free_space = True # bool to check if free space available in vehicle
-                prev_s_code = len(self.pr_move)-1 # empty vehicle state
+                prev_s_code = 2*self.n_code # empty vehicle state
                 x_pos= y_pos = y_max = 0    # position initialization
                 totArea = 0
                 totWeight = 0
@@ -90,40 +83,12 @@ class ACO:
 
                 while(free_space):  # loop until free space available in vehicle
                     next_s_code = self.choose_move(prev_s_code, pr_move)    # choose next state
-                    new_stack, stack_lst_ant, stack_quantity_ant = popStack(stack_lst_ant, stack_quantity_ant, next_s_code, n_code)
+                    new_stack, stack_lst_ant, stack_quantity_ant = popStack(stack_lst_ant, stack_quantity_ant, next_s_code, self.n_code)
                     toAddStack, x_pos, y_pos, y_max = self.addStack(new_stack, x_pos, y_pos, y_max)
-                    """ i = 0
-                    toAddStack = None
-                    while np.any(pr_move) and toAddStack is None:
-                        next_s_code = self.choose_move(prev_s_code, pr_move)    # choose next state
-                        new_stack, stack_lst_ant, stack_quantity_ant = popStack(stack_lst_ant, stack_quantity_ant, next_s_code, n_code)
-                        toAddStack, x_pos, y_pos, y_max = self.addStack(new_stack, x_pos, y_pos, y_max)
-                        if toAddStack is None:
-                            code = next_s_code
-                            if next_s_code >= n_code:
-                                code = code - n_code
-
-                            # if there are no more stacks of a certain code then set the
-                            # pr_move to zero and distribute the probability over rows
-                            if stack_quantity_ant[code] == 0: 
-                                prob_to_distr = pr_move[:,code] + pr_move[:,code+n_code]
-                                pr_move[:,[code, code + n_code]] = 0
-                                if np.any(pr_move):
-                                    prob_to_distr = prob_to_distr/pr_move[:, pr_move.any(0)].shape[1]
-                                    pr_move[:, pr_move.any(0)] +=  prob_to_distr.reshape(-1,1)
-                            else:
-                                prob_to_distr = pr_move[:,next_s_code].copy()
-                                pr_move[:,next_s_code] = 0
-                                if np.any(pr_move):
-                                    prob_to_distr = prob_to_distr/pr_move[:, pr_move.any(0)].shape[1]
-                                    pr_move[:, pr_move.any(0)] +=  prob_to_distr.reshape(-1,1) """
                                 
-                    
                     # Check if a stack can be added
-                    if toAddStack is not None and (totWeight + toAddStack.weight <= self.vehicle["max_weight"]): # constrain of truck max weight
+                    if toAddStack is not None and (totWeight + toAddStack.weight <= self.vehicle["max_weight"]):
                         ant_k.append(toAddStack)
-                        if toAddStack.height > self.vehicle["height"]:
-                            print("Stack higher")
                         totArea += (toAddStack.length*toAddStack.width)
                         totVolume +=(toAddStack.length*toAddStack.width*toAddStack.height)
                         totWeight += toAddStack.weight
@@ -134,23 +99,20 @@ class ACO:
                     if sum(stack_quantity_ant.values()) > 0:
                         code = next_s_code 
                         
-                        if next_s_code >= n_code:
-                            code = code - n_code
+                        if next_s_code >= self.n_code:
+                            code = code - self.n_code
 
                         # if there are no more stacks of a certain code then set the
                         # pr_move to zero and distribute the probability over rows
                         if stack_quantity_ant[code] == 0: 
-                            prob_to_distr = pr_move[:,code] + pr_move[:,code+n_code]
-                            pr_move[:,[code, code + n_code]] = 0
+                            prob_to_distr = pr_move[:,code] + pr_move[:,code+self.n_code]
+                            pr_move[:,[code, code + self.n_code]] = 0
                             if np.any(pr_move):
                                 prob_to_distr = prob_to_distr/pr_move[:, pr_move.any(0)].shape[1]
                                 pr_move[:, pr_move.any(0)] +=  prob_to_distr.reshape(-1,1)
                     else:
                         free_space = False
-                
-                if totVolume/vehicleVolume >=1:
-                    print(totVolume/vehicleVolume)
-                    raise Exception("VOLUME GREATER THAN 1")
+
                 self.ants.append(ant_k)
                 antsArea.append(totArea)
                 antsWeight.append(totWeight)
@@ -166,7 +128,7 @@ class ACO:
             if area_ratio > bestArea:   # best solution during all the iteration
                 bestAnt = self.ants[np.argmax(antsArea)]
                 bestArea = area_ratio 
-                weightRatio = antsWeight[antsArea.index(max(antsArea))]/self.vehicle["max_weight"]
+                weightRatio = antsWeight[np.argmax(antsArea)]/self.vehicle["max_weight"]
 
             # Change evaportaion coefficient dynamically given the area ratio
             if area_ratio >= 0.9:
@@ -180,14 +142,9 @@ class ACO:
             
             _iter += 1
             
-
         print(f"Area ratio: {bestArea},\n Weight ratio: {weightRatio} vehicle: {self.vehicle['id_truck']}")
-        if bestArea < 0.7:
-            print("#########", self.vehicle['id_truck'])
-
         return bestAnt
-    
-    
+
     def addStack(self, toAddStack, x_pos, y_pos, y_max):
         """  
         addStack
@@ -242,8 +199,8 @@ class ACO:
         and the matrix of attractiveness.
 
         Note: 
-            - matrix[0:N_code] are lengthwise (lengthwise in respect to the length of the truck)
-            - matrix[N_code:2*N_code] are widthwise
+            - matrix[0:n_code] are lengthwise (lengthwise in respect to the length of the truck)
+            - matrix[n_code:2*n_code] are widthwise
             - matrix last state is the empty truck state
             
         #### INPUT PARAMETERS:
@@ -258,29 +215,29 @@ class ACO:
                                 states that fill widthwise the truck are privileged
         """
         # shared parameters
-        N_code = len(self.stackInfo.stackability_code)
-        len_matrix = (2*N_code) + 1     # length of the final matrix, the +1 is for adding the state of the empty truck
         code_sub = 1
 
         # attractiveness parameter
         best_code1 = 0
         best_code2 = 0
         find = False
-        attr_mat = np.ones((len_matrix,len_matrix))
+        attr_mat = np.ones((self.dim_matr,self.dim_matr))
         
         #pr_move parameters
-        pr_mat = np.ones((len_matrix,len_matrix))  # used to put at 0 the row in respect to the stack no more available and the ones with orientation constrain
-        pr_mat[:,len_matrix-1] = 0
+        # used to put at 0 the row in respect to the stack no more available and the ones with orientation constrain
+        pr_mat = np.ones((self.dim_matr,self.dim_matr))
+        pr_mat[:,self.dim_matr-1] = 0 #last state is the empty truck, no ants can go in this state apart from the start
 
+        # loop over all the stackability code for checking the orientation and the presence of stack
         for i,code in enumerate(self.stackInfo.stackability_code):
             find == False
             if (self.stackInfo.iloc[code]["forced_orientation"]) == 'w' or self.stack_quantity[code] == 0:    # widthwise constrain
                 pr_mat[i,:] = 0
                 pr_mat[:,i] = 0
                 code_sub += 1
-                if self.stack_quantity[code] == 0:
-                    pr_mat[i+N_code,:] = 0
-                    pr_mat[:,i+N_code] = 0
+                if self.stack_quantity[code] == 0: #if no more stack are present i must set to 0 the prMove columns and rows
+                    pr_mat[i+self.n_code,:] = 0
+                    pr_mat[:,i+self.n_code] = 0
                     code_sub += 1
                     find == True
 
@@ -291,9 +248,9 @@ class ACO:
             while((j < (len(self.stackInfo) - code)) and (find == False) and (self.stack_quantity[code] != 0)): 
                 if (self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[j+code]["length"] > app) and (self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[j+code]["length"] <= self.vehicle["width"]) and (self.stack_quantity[j+code] != 0): 
                     app = self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[j+code]["length"]
-                    best_code1 = code + N_code
-                    best_code2 = j+code + N_code
-                    if(app == self.vehicle["width"]):
+                    best_code1 = code + self.n_code
+                    best_code2 = j+code + self.n_code
+                    if(app == self.vehicle["width"]): #perfect solution for truck width, instant attractiveness
                         attr_mat[:,best_code1] = 2
                         attr_mat[:,best_code2] = 2
                         find = True
@@ -312,7 +269,7 @@ class ACO:
             while((y < (len(self.stackInfo))) and (find == False) and (self.stack_quantity[code] != 0)):
                 if (self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[y]["width"] > app) and (self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[y]["width"] <= self.vehicle["width"]) and (self.stack_quantity[y] != 0): 
                     app = self.stackInfo.iloc[code]["length"] + self.stackInfo.iloc[y]["width"]
-                    best_code1 = code + N_code
+                    best_code1 = code + self.n_code
                     best_code2 = y
                     if(app == self.vehicle["width"]):  # if a perfect fit is found attractiveness matrix must be adjusted
                         find = True
@@ -325,7 +282,7 @@ class ACO:
         attr_mat[:,best_code1] = 2
         attr_mat[:,best_code2] = 2
         
-        self.pr_move = np.full((len_matrix,len_matrix), 1./(len_matrix-code_sub)) * pr_mat
+        self.pr_move = np.full((self.dim_matr,self.dim_matr), 1./(self.dim_matr-code_sub)) * pr_mat
         self.attractiveness = np.full((len(self.pr_move),len(self.pr_move)), 0.5) * attr_mat * pr_mat 
         
         self.attractiveness[:,:7] = self.attractiveness[:,:7]*1.5 #NOTE: metodo tappabuchi per farlo funzionare fino in fondo, si preferisce indiscrinatamente la posizione di stack lengthwise
@@ -353,7 +310,6 @@ class ACO:
         """
         prMoveUpdate
         ------------
-
         Method used to update the probability to move matrix.
         """
         for i in range(len(self.trailMatrix)):
@@ -386,67 +342,33 @@ class ACO:
             trailApp = np.zeros([len(self.pr_move), len(self.pr_move)])
             for stack in ant:  # x and y are the position in the state matrix
                 y = stack.state
-                trailApp[x,y] += 1 #NOTE: forse il +1 qua non va bene, da verificare a programma completo
+                trailApp[x,y] += 1
                 x = y
                 
-            deltaTrail += trailApp * _antsArea[i] / vehicleArea # more is the area covered, more is the quality of the solution
+            deltaTrail += trailApp * _antsArea[i] / vehicleArea # more the area covered, the better the solution
         return deltaTrail
     
-    
-    def buildStacks(self, vehicle, df_items):
-        """"
-        buildStacks
-        -----------
-        Function used to create the stack with all the specificity of the selected truck.
-
-        #### INPUT PARAMETERS:
-            - vehicle: vehicle type, needed to check the height, weight, max density and max 
-                        stack weight for creating the stacks for this specific truck
-            - df_items: dataframe containing all the items that will be put into the trucks
-        #### OUTPUT PARAMETERS:
-            - self.stackList: list of all the stack created 
+    def getVehicle(self, vehicle):
+        """ 
+        getVehicle
+        -----
+        Get the vehicle for which the 2D bin packing
+        problem must be solved
+        ### Input parametes:
+            - vehicle: the vehicle for which the sol must
+                be found  
         """
-        #TODO: controllo su max_weight stack
-
         self.vehicle = vehicle
-        stackability_codes = df_items.stackability_code.unique()
-        self.stack_lst = []
-        self.stack_quantity = {code:0 for code in self.stackInfo.stackability_code}
-        maxStackDensity = (self.vehicle["length"] * self.vehicle["width"]) * self.vehicle["max_density"] #area stack * vehicle max density = maximum stack weight
-        for code in stackability_codes:
-            self.stack_quantity[code] = 0
-            stack_feat = getStackFeatures(df_items, code)
-            
-            stack = Stack(code, stack_feat[0], 
-                          stack_feat[1], stack_feat[2], stack_feat[3])
-            
-            new_stack_needed = False
-            iter_items = df_items[df_items.stackability_code == code].head(200)
-            for i, row in iter_items.iterrows():
-                height = stack.height + row.height  #NOTE: check if respect the constrain
-                weight = stack.weight + (row.weight)
-                if height > vehicle['height']:
-                    new_stack_needed = True
-                if weight > vehicle['max_weight_stack'] or stack.weight > maxStackDensity:
-                    new_stack_needed = True
-                if stack.n_items == row.max_stackability:
-                    new_stack_needed = True
-                # if a new stack is needed:
-                if new_stack_needed:
-                    if stack.items != []:
-                        self.stack_lst.append(stack)
-                        self.stack_quantity[code] += 1 # number of the stack with this precise stackability code
-                    stack = Stack(code, stack_feat[0], 
-                          stack_feat[1], stack_feat[2], stack_feat[3])
-                    stack.addItem(row.id_item, row.height - row.nesting_height)
-                    stack.updateHeight(row.height - row.nesting_height)
-                    stack.updateWeight(row.weight)
-                    new_stack_needed = False
-                else:
-                    # else add the item
-                    stack.addItem(row.id_item, row.height - row.nesting_height)
-                    stack.updateHeight(row.height - row.nesting_height)
-                    stack.updateWeight(row.weight)
-                    if i == iter_items.tail(1).index:
-                        self.stack_lst.append(stack)
-                        self.stack_quantity[code] += 1 
+    
+    def getStacks(self, stacks):
+        """ 
+        getStacks
+        -----
+        Get the stacks information need to fill
+        the vehicle
+        ### Input parameters
+            - stacks: is a list where the first element is
+                stack list and the second is stack quantity
+        """
+        self.stack_lst = stacks[0]
+        self.stack_quantity = stacks[1]
