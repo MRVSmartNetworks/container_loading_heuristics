@@ -30,7 +30,7 @@ class ACO:
     """
     def __init__(self, stackInfo,alpha=1, beta=1, n_ants=50, n_iter=20, evaporationCoeff = 0.5):
         
-        self.stackInfo = stackInfo
+        self.stackInfo = stackInfo.sort_values(by=['stackability_code']) # if not matrix are not created correctly
         self.alpha = alpha
         self.beta = beta
         self.n_ants = n_ants 
@@ -257,8 +257,6 @@ class ACO:
             - self.attractiveness: N x N matrix of attractiveness from state i to j, 
                                 states that fill widthwise the truck are privileged
         """
-        stackInfo = stackInfo.sort_values(by=['stackability_code']) # if not matrix are not created correctly
-
         # shared parameters
         N_code = len(self.stackInfo.stackability_code)
         len_matrix = (2*N_code) + 1     # length of the final matrix, the +1 is for adding the state of the empty truck
@@ -423,7 +421,7 @@ class ACO:
                           stack_feat[1], stack_feat[2], stack_feat[3])
             
             new_stack_needed = False
-            iter_items = df_items[df_items.stackability_code == code].head(20)
+            iter_items = df_items[df_items.stackability_code == code].head(200)
             for i, row in iter_items.iterrows():
                 height = stack.height + row.height  #NOTE: check if respect the constrain
                 weight = stack.weight + (row.weight)
