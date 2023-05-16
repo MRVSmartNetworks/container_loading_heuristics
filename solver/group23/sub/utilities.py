@@ -42,7 +42,7 @@ def popStack(stack_lst, stack_quantity, code, n_code):
             stack_copy = deepcopy(stack)
             stack_copy.state = code
             if widthwise:
-                stack_copy.state += 7
+                stack_copy.state += n_code
                 stack_copy.orient = 'w'
                 stack_copy.length, stack_copy.width = stack_copy.width, stack_copy.length
             else:
