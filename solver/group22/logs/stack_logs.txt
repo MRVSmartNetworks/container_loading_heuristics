@@ -1,0 +1,4670 @@
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 00:57:59 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.32s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.16 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    1s
+H    0     0                      90.0000000   65.00000  27.8%     -    1s
+H    0     0                      82.0000000   65.00000  20.7%     -    1s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.23 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 00:58:09 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 2.01s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.95 seconds (1.76 work units)
+Total elapsed time = 7.84s
+Total elapsed time = 15.79s
+Total elapsed time = 22.26s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   28s
+H    0     0                     352.0000000  297.41864  15.5%     -   28s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   59s
+
+Explored 1 nodes (1054513 simplex iterations) in 59.56 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 00:59:49 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.31s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.16 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    1s
+H    0     0                      90.0000000   65.00000  27.8%     -    1s
+H    0     0                      82.0000000   65.00000  20.7%     -    1s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.25 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 00:59:59 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.94s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.91 seconds (1.76 work units)
+Total elapsed time = 7.64s
+Total elapsed time = 15.40s
+Total elapsed time = 21.87s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   27s
+H    0     0                     352.0000000  297.41864  15.5%     -   27s
+H    0     0                     346.0000000  297.41864  14.0%     -   34s
+
+Explored 1 nodes (1054513 simplex iterations) in 34.59 seconds (50.15 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 3: 346 352 629 
+
+Solve interrupted
+Best objective 3.460000000000e+02, best bound 2.980000000000e+02, gap 13.8728%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:00:37 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.32s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.16 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    1s
+H    0     0                      90.0000000   65.00000  27.8%     -    1s
+H    0     0                      82.0000000   65.00000  20.7%     -    1s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.24 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:01:05 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.32s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    1s
+H    0     0                      90.0000000   65.00000  27.8%     -    1s
+H    0     0                      82.0000000   65.00000  20.7%     -    1s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.33 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:02:31 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.32s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.16 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    1s
+H    0     0                      90.0000000   65.00000  27.8%     -    1s
+H    0     0                      82.0000000   65.00000  20.7%     -    1s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.22 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:02:40 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.96s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.91 seconds (1.76 work units)
+Total elapsed time = 7.67s
+Total elapsed time = 15.41s
+Total elapsed time = 21.75s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   27s
+H    0     0                     352.0000000  297.41864  15.5%     -   27s
+H    0     0                     346.0000000  297.41864  14.0%     -   34s
+H    0     0                     331.0000000  297.41864  10.1%     -   57s
+
+Explored 1 nodes (1054513 simplex iterations) in 57.81 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:03:40 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.43s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.13 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.39 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:03:48 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.38s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.14 seconds (1.56 work units)
+Total elapsed time = 6.81s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.63 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:04:11 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 3372 rows, 1264500 columns and 3792376 nonzeros
+Model fingerprint: 0x077e6ccf
+Variable types: 0 continuous, 1264500 integer (1264500 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 756.0000000
+Presolve time: 2.38s
+Presolved: 3372 rows, 1264500 columns, 3792376 nonzeros
+Variable types: 0 continuous, 1264500 integer (1264500 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605102e+02, 1263379 iterations, 2.03 seconds (4.47 work units)
+Total elapsed time = 13.13s
+Total elapsed time = 15.45s
+Total elapsed time = 37.90s
+Total elapsed time = 58.72s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.51017    0  644  756.00000  460.51017  39.1%     -   83s
+H    0     0                     550.0000000  460.51017  16.3%     -   83s
+H    0     0                     535.0000000  460.51017  13.9%     -   85s
+H    0     0                     531.0000000  460.51017  13.3%     -   86s
+H    0     0                     519.0000000  460.51017  11.3%     -  149s
+     0     0  460.51017    0  813  519.00000  460.51017  11.3%     -  154s
+     0     0  460.51017    0  813  519.00000  460.51017  11.3%     -  244s
+
+Cutting planes:
+  Cover: 34
+  Clique: 15
+  MIR: 67
+  RLT: 85
+
+Explored 1 nodes (1412151 simplex iterations) in 244.58 seconds (627.67 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 519 531 535 ... 756
+
+Time limit reached
+Best objective 5.190000000000e+02, best bound 4.610000000000e+02, gap 11.1753%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:08:17 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 120 rows, 1640 columns and 4880 nonzeros
+Model fingerprint: 0x2d1c0352
+Variable types: 0 continuous, 1640 integer (1640 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 25.0000000
+Presolve time: 0.01s
+Presolved: 120 rows, 1640 columns, 4880 nonzeros
+Variable types: 0 continuous, 1640 integer (1640 binary)
+
+Root relaxation: objective 1.333333e+01, 215 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   13.33333    0    3   25.00000   13.33333  46.7%     -    0s
+H    0     0                      15.0000000   13.33333  11.1%     -    0s
+
+Explored 1 nodes (215 simplex iterations) in 0.01 seconds (0.01 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 15 25 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 1.500000000000e+01, best bound 1.400000000000e+01, gap 6.6667%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:08:17 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 255 rows, 7310 columns and 21845 nonzeros
+Model fingerprint: 0xcc1b21f6
+Variable types: 0 continuous, 7310 integer (7310 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 57.0000000
+Presolve time: 0.02s
+Presolved: 255 rows, 7310 columns, 21845 nonzeros
+Variable types: 0 continuous, 7310 integer (7310 binary)
+
+Root relaxation: objective 2.590339e+01, 452 iterations, 0.01 seconds (0.01 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   25.90339    0   31   57.00000   25.90339  54.6%     -    0s
+H    0     0                      30.0000000   25.90339  13.7%     -    0s
+H    0     0                      29.0000000   25.90339  10.7%     -    0s
+     0     0   25.90339    0   60   29.00000   25.90339  10.7%     -    0s
+     0     0   25.90339    0   71   29.00000   25.90339  10.7%     -    0s
+     0     0   25.90339    0   42   29.00000   25.90339  10.7%     -    0s
+     0     0   25.90339    0   56   29.00000   25.90339  10.7%     -    0s
+     0     0   25.90339    0   48   29.00000   25.90339  10.7%     -    0s
+     0     0   25.90339    0   35   29.00000   25.90339  10.7%     -    0s
+     0     2   25.90339    0   33   29.00000   25.90339  10.7%     -    1s
+    97    22   27.13220   34   34   29.00000   26.00000  10.3%   112    5s
+   285    79   27.64542   41   31   29.00000   26.00000  10.3%   119   10s
+   432   124 infeasible   49        29.00000   26.00000  10.3%   109   15s
+   728   233   27.94712   40   28   29.00000   26.00000  10.3%   101   20s
+  1052   315     cutoff   52        29.00000   26.00000  10.3%  92.1   25s
+  1382   384 infeasible   50        29.00000   26.00000  10.3%  87.2   30s
+  1674   461     cutoff   52        29.00000   26.00000  10.3%  84.7   36s
+  1989   538     cutoff   48        29.00000   26.00000  10.3%  86.3   40s
+  2280   588 infeasible   41        29.00000   26.00000  10.3%  82.6   45s
+  2570   670   28.00000   56   36   29.00000   26.00000  10.3%  83.3   50s
+  2955   793   28.00000   85   23   29.00000   26.00000  10.3%  83.4   56s
+  3227   894   27.00000   53   38   29.00000   26.00000  10.3%  80.8   60s
+
+Cutting planes:
+  Gomory: 26
+  Lift-and-project: 5
+  Cover: 1
+  MIR: 53
+  StrongCG: 35
+  Flow cover: 18
+  GUB cover: 16
+  Zero half: 1
+  RLT: 2
+
+Explored 3392 nodes (337691 simplex iterations) in 65.05 seconds (216.00 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 3: 29 30 57 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.900000000000e+01, best bound 2.700000000000e+01, gap 6.8966%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:09:23 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.32s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    1s
+H    0     0                      90.0000000   65.00000  27.8%     -    1s
+H    0     0                      82.0000000   65.00000  20.7%     -    1s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.36 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:09:33 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.98s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.93 seconds (1.76 work units)
+Total elapsed time = 7.81s
+Total elapsed time = 15.68s
+Total elapsed time = 22.15s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   27s
+H    0     0                     352.0000000  297.41864  15.5%     -   27s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   58s
+
+Explored 1 nodes (1054513 simplex iterations) in 58.75 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:10:34 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.42s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.13 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.40 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:10:42 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.34s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.14 seconds (1.56 work units)
+Total elapsed time = 6.79s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.61 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:11:04 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 3372 rows, 1264500 columns and 3792376 nonzeros
+Model fingerprint: 0x077e6ccf
+Variable types: 0 continuous, 1264500 integer (1264500 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 756.0000000
+Presolve time: 2.37s
+Presolved: 3372 rows, 1264500 columns, 3792376 nonzeros
+Variable types: 0 continuous, 1264500 integer (1264500 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605102e+02, 1263379 iterations, 2.07 seconds (4.47 work units)
+Total elapsed time = 13.29s
+Total elapsed time = 15.63s
+Total elapsed time = 38.32s
+Total elapsed time = 59.28s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.51017    0  644  756.00000  460.51017  39.1%     -   84s
+H    0     0                     550.0000000  460.51017  16.3%     -   84s
+H    0     0                     535.0000000  460.51017  13.9%     -   86s
+H    0     0                     531.0000000  460.51017  13.3%     -   87s
+H    0     0                     519.0000000  460.51017  11.3%     -  150s
+     0     0  460.51017    0  813  519.00000  460.51017  11.3%     -  155s
+     0     0  460.51017    0  813  519.00000  460.51017  11.3%     -  245s
+
+Cutting planes:
+  Cover: 34
+  Clique: 15
+  MIR: 67
+  RLT: 85
+
+Explored 1 nodes (1412151 simplex iterations) in 246.01 seconds (627.67 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 519 531 535 ... 756
+
+Time limit reached
+Best objective 5.190000000000e+02, best bound 4.610000000000e+02, gap 11.1753%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:15:12 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 120 rows, 1640 columns and 4880 nonzeros
+Model fingerprint: 0x2d1c0352
+Variable types: 0 continuous, 1640 integer (1640 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 25.0000000
+Presolve time: 0.00s
+Presolved: 120 rows, 1640 columns, 4880 nonzeros
+Variable types: 0 continuous, 1640 integer (1640 binary)
+
+Root relaxation: objective 1.333333e+01, 215 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   13.33333    0    3   25.00000   13.33333  46.7%     -    0s
+H    0     0                      15.0000000   13.33333  11.1%     -    0s
+
+Explored 1 nodes (215 simplex iterations) in 0.01 seconds (0.01 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 15 25 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 1.500000000000e+01, best bound 1.400000000000e+01, gap 6.6667%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:15:12 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 30 rows, 110 columns and 320 nonzeros
+Model fingerprint: 0xa653b6b8
+Variable types: 0 continuous, 110 integer (110 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 7.0000000
+Presolve removed 10 rows and 0 columns
+Presolve time: 0.00s
+Presolved: 20 rows, 110 columns, 210 nonzeros
+Variable types: 0 continuous, 110 integer (110 binary)
+
+Root relaxation: objective 5.000000e+00, 35 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0    5.00000    0    4    7.00000    5.00000  28.6%     -    0s
+H    0     0                       6.0000000    5.00000  16.7%     -    0s
+H    0     0                       5.0000000    5.00000  0.00%     -    0s
+     0     0    5.00000    0    4    5.00000    5.00000  0.00%     -    0s
+
+Explored 1 nodes (35 simplex iterations) in 0.00 seconds (0.00 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 3: 5 6 7 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 5.000000000000e+00, best bound 5.000000000000e+00, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:15:13 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.32s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    1s
+H    0     0                      90.0000000   65.00000  27.8%     -    1s
+H    0     0                      82.0000000   65.00000  20.7%     -    1s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.29 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:15:23 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.97s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.90 seconds (1.76 work units)
+Total elapsed time = 7.68s
+Total elapsed time = 15.45s
+Total elapsed time = 21.86s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   27s
+H    0     0                     352.0000000  297.41864  15.5%     -   27s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   58s
+
+Explored 1 nodes (1054513 simplex iterations) in 58.59 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:16:23 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.41s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.12 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.37 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:16:31 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.31s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.12 seconds (1.56 work units)
+Total elapsed time = 6.71s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.50 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:16:53 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 3372 rows, 1264500 columns and 3792376 nonzeros
+Model fingerprint: 0x077e6ccf
+Variable types: 0 continuous, 1264500 integer (1264500 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 756.0000000
+Presolve time: 2.34s
+Presolved: 3372 rows, 1264500 columns, 3792376 nonzeros
+Variable types: 0 continuous, 1264500 integer (1264500 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605102e+02, 1263379 iterations, 2.03 seconds (4.47 work units)
+Total elapsed time = 13.11s
+Total elapsed time = 15.43s
+Total elapsed time = 37.89s
+Total elapsed time = 58.83s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.51017    0  644  756.00000  460.51017  39.1%     -   83s
+H    0     0                     550.0000000  460.51017  16.3%     -   84s
+H    0     0                     535.0000000  460.51017  13.9%     -   85s
+H    0     0                     531.0000000  460.51017  13.3%     -   86s
+H    0     0                     519.0000000  460.51017  11.3%     -  150s
+     0     0  460.51017    0  813  519.00000  460.51017  11.3%     -  155s
+     0     0  460.51017    0  813  519.00000  460.51017  11.3%     -  245s
+
+Cutting planes:
+  Cover: 34
+  Clique: 15
+  MIR: 67
+  RLT: 85
+
+Explored 1 nodes (1412151 simplex iterations) in 245.73 seconds (627.67 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 519 531 535 ... 756
+
+Time limit reached
+Best objective 5.190000000000e+02, best bound 4.610000000000e+02, gap 11.1753%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:21:00 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 120 rows, 1640 columns and 4880 nonzeros
+Model fingerprint: 0x2d1c0352
+Variable types: 0 continuous, 1640 integer (1640 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 25.0000000
+Presolve time: 0.01s
+Presolved: 120 rows, 1640 columns, 4880 nonzeros
+Variable types: 0 continuous, 1640 integer (1640 binary)
+
+Root relaxation: objective 1.333333e+01, 215 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   13.33333    0    3   25.00000   13.33333  46.7%     -    0s
+H    0     0                      15.0000000   13.33333  11.1%     -    0s
+
+Explored 1 nodes (215 simplex iterations) in 0.01 seconds (0.01 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 15 25 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 1.500000000000e+01, best bound 1.400000000000e+01, gap 6.6667%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:21:02 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.33s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    2s
+H    0     0                      90.0000000   65.00000  27.8%     -    2s
+H    0     0                      82.0000000   65.00000  20.7%     -    2s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.37 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:21:11 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.95s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.91 seconds (1.76 work units)
+Total elapsed time = 7.67s
+Total elapsed time = 15.51s
+Total elapsed time = 21.90s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   27s
+H    0     0                     352.0000000  297.41864  15.5%     -   27s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   58s
+
+Explored 1 nodes (1054513 simplex iterations) in 58.96 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:22:12 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.41s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.13 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.39 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:22:20 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.33s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.10 seconds (1.56 work units)
+Total elapsed time = 6.73s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.57 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:22:43 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 3372 rows, 1264500 columns and 3792376 nonzeros
+Model fingerprint: 0x077e6ccf
+Variable types: 0 continuous, 1264500 integer (1264500 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 756.0000000
+Presolve time: 2.33s
+Presolved: 3372 rows, 1264500 columns, 3792376 nonzeros
+Variable types: 0 continuous, 1264500 integer (1264500 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605102e+02, 1263379 iterations, 2.03 seconds (4.47 work units)
+Total elapsed time = 13.10s
+Total elapsed time = 15.42s
+Total elapsed time = 38.08s
+Total elapsed time = 59.19s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.51017    0  644  756.00000  460.51017  39.1%     -   84s
+H    0     0                     550.0000000  460.51017  16.3%     -   84s
+H    0     0                     535.0000000  460.51017  13.9%     -   86s
+H    0     0                     531.0000000  460.51017  13.3%     -   86s
+H    0     0                     519.0000000  460.51017  11.3%     -  150s
+     0     0  460.51017    0  813  519.00000  460.51017  11.3%     -  155s
+     0     0  460.51017    0  813  519.00000  460.51017  11.3%     -  245s
+
+Cutting planes:
+  Cover: 34
+  Clique: 15
+  MIR: 67
+  RLT: 85
+
+Explored 1 nodes (1412151 simplex iterations) in 245.13 seconds (627.67 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 519 531 535 ... 756
+
+Time limit reached
+Best objective 5.190000000000e+02, best bound 4.610000000000e+02, gap 11.1753%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:26:50 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.32s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    1s
+H    0     0                      90.0000000   65.00000  27.8%     -    1s
+H    0     0                      82.0000000   65.00000  20.7%     -    2s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.35 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:27:00 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.95s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.91 seconds (1.76 work units)
+Total elapsed time = 7.66s
+Total elapsed time = 15.41s
+Total elapsed time = 21.83s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   27s
+H    0     0                     352.0000000  297.41864  15.5%     -   27s
+H    0     0                     346.0000000  297.41864  14.0%     -   34s
+H    0     0                     331.0000000  297.41864  10.1%     -   58s
+
+Explored 1 nodes (1054513 simplex iterations) in 58.11 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:28:00 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.40s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.12 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.36 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:28:08 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.31s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.11 seconds (1.56 work units)
+Total elapsed time = 6.71s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.47 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:28:29 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 3216 rows, 1150256 columns and 3449696 nonzeros
+Model fingerprint: 0xaa5a071f
+Variable types: 0 continuous, 1150256 integer (1150256 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 736.0000000
+Presolve time: 2.13s
+Presolved: 3216 rows, 1150256 columns, 3449696 nonzeros
+Variable types: 0 continuous, 1150256 integer (1150256 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.431153e+02, 1149186 iterations, 1.70 seconds (3.74 work units)
+Total elapsed time = 12.64s
+Total elapsed time = 34.64s
+Total elapsed time = 52.57s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  443.11525    0  610  736.00000  443.11525  39.8%     -   68s
+H    0     0                     526.0000000  443.11525  15.8%     -   68s
+H    0     0                     513.0000000  443.11525  13.6%     -   74s
+H    0     0                     509.0000000  443.11525  12.9%     -   74s
+H    0     0                     498.0000000  443.11525  11.0%     -  104s
+     0     0  443.11525    0  916  498.00000  443.11525  11.0%     -  108s
+     0     0  443.11525    0  916  498.00000  443.11525  11.0%     -  196s
+
+Cutting planes:
+  Cover: 45
+  Clique: 35
+  MIR: 34
+  StrongCG: 44
+  RLT: 143
+
+Explored 1 nodes (1296385 simplex iterations) in 196.28 seconds (618.74 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 498 509 513 ... 736
+
+Time limit reached
+Best objective 4.980000000000e+02, best bound 4.440000000000e+02, gap 10.8434%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:31:48 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.32s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    1s
+H    0     0                      90.0000000   65.00000  27.8%     -    1s
+H    0     0                      82.0000000   65.00000  20.7%     -    2s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.35 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:31:58 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.94s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.91 seconds (1.76 work units)
+Total elapsed time = 7.64s
+Total elapsed time = 15.38s
+Total elapsed time = 21.77s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   27s
+H    0     0                     352.0000000  297.41864  15.5%     -   27s
+H    0     0                     346.0000000  297.41864  14.0%     -   34s
+H    0     0                     331.0000000  297.41864  10.1%     -   57s
+
+Explored 1 nodes (1054513 simplex iterations) in 58.00 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:32:58 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.41s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.13 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.38 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:33:06 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.32s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.11 seconds (1.56 work units)
+Total elapsed time = 6.73s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.51 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:33:26 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 3054 rows, 1037342 columns and 3111008 nonzeros
+Model fingerprint: 0x11b56c0e
+Variable types: 0 continuous, 1037342 integer (1037342 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 693.0000000
+Presolve time: 1.90s
+Presolved: 3054 rows, 1037342 columns, 3111008 nonzeros
+Variable types: 0 continuous, 1037342 integer (1037342 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.254203e+02, 1036326 iterations, 1.58 seconds (3.57 work units)
+Total elapsed time = 10.21s
+Total elapsed time = 25.95s
+Total elapsed time = 36.08s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  425.42034    0  573  693.00000  425.42034  38.6%     -   47s
+H    0     0                     501.0000000  425.42034  15.1%     -   47s
+H    0     0                     498.0000000  425.42034  14.6%     -   54s
+H    0     0                     485.0000000  425.42034  12.3%     -   77s
+     0     0  425.42034    0  820  485.00000  425.42034  12.3%     -   80s
+H    0     0                     479.0000000  425.42034  11.2%     -  112s
+H    0     0                     476.0000000  425.42034  10.6%     -  113s
+H    0     0                     463.0000000  425.42034  8.12%     -  162s
+
+Cutting planes:
+  Cover: 115
+  Clique: 65
+  MIR: 70
+  StrongCG: 1
+  RLT: 127
+
+Explored 1 nodes (1151133 simplex iterations) in 162.36 seconds (297.27 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 7: 463 476 479 ... 693
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.630000000000e+02, best bound 4.260000000000e+02, gap 7.9914%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:36:11 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.32s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    1s
+H    0     0                      90.0000000   65.00000  27.8%     -    1s
+H    0     0                      82.0000000   65.00000  20.7%     -    1s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.34 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:36:21 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.97s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.91 seconds (1.76 work units)
+Total elapsed time = 7.71s
+Total elapsed time = 15.53s
+Total elapsed time = 21.94s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   27s
+H    0     0                     352.0000000  297.41864  15.5%     -   28s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   58s
+
+Explored 1 nodes (1054513 simplex iterations) in 58.51 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:37:21 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.42s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.12 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.37 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:37:29 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.31s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.11 seconds (1.56 work units)
+Total elapsed time = 6.71s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.47 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:37:49 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2892 rows, 930260 columns and 2789816 nonzeros
+Model fingerprint: 0x6d618765
+Variable types: 0 continuous, 930260 integer (930260 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 645.0000000
+Presolve time: 1.95s
+Presolved: 2892 rows, 930260 columns, 2789816 nonzeros
+Variable types: 0 continuous, 930260 integer (930260 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.079085e+02, 929299 iterations, 1.31 seconds (3.01 work units)
+Total elapsed time = 8.35s
+Total elapsed time = 10.07s
+Total elapsed time = 28.23s
+Total elapsed time = 44.64s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  407.90847    0  540  645.00000  407.90847  36.8%     -   57s
+H    0     0                     476.0000000  407.90847  14.3%     -   57s
+H    0     0                     475.0000000  407.90847  14.1%     -   63s
+H    0     0                     467.0000000  407.90847  12.7%     -   64s
+H    0     0                     462.0000000  407.90847  11.7%     -   64s
+H    0     0                     455.0000000  407.90847  10.3%     -   90s
+     0     0  407.90847    0  694  455.00000  407.90847  10.3%     -   93s
+     0     0  407.90847    0  694  455.00000  407.90847  10.3%     -  187s
+
+Cutting planes:
+  Cover: 1
+  MIR: 47
+  StrongCG: 8
+  RLT: 16
+
+Explored 1 nodes (1048441 simplex iterations) in 187.50 seconds (633.85 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 6: 455 462 467 ... 645
+
+Time limit reached
+Best objective 4.550000000000e+02, best bound 4.080000000000e+02, gap 10.3297%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:40:58 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.33s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    2s
+H    0     0                      90.0000000   65.00000  27.8%     -    2s
+H    0     0                      82.0000000   65.00000  20.7%     -    2s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.40 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:41:08 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.98s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.92 seconds (1.76 work units)
+Total elapsed time = 7.83s
+Total elapsed time = 15.80s
+Total elapsed time = 22.39s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   28s
+H    0     0                     352.0000000  297.41864  15.5%     -   28s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   58s
+
+Explored 1 nodes (1054513 simplex iterations) in 58.86 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:42:09 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.42s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.13 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.39 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:42:17 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.37s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.14 seconds (1.56 work units)
+Total elapsed time = 6.83s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.72 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:42:37 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2742 rows, 836310 columns and 2508016 nonzeros
+Model fingerprint: 0xf7a69e84
+Variable types: 0 continuous, 836310 integer (836310 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 632.0000000
+Presolve time: 2.21s
+Presolved: 2742 rows, 836310 columns, 2508016 nonzeros
+Variable types: 0 continuous, 836310 integer (836310 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 3.907017e+02, 835399 iterations, 1.15 seconds (2.57 work units)
+Total elapsed time = 8.64s
+Total elapsed time = 10.48s
+Total elapsed time = 20.34s
+Total elapsed time = 30.29s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  390.70169    0  508  632.00000  390.70169  38.2%     -   34s
+H    0     0                     456.0000000  390.70169  14.3%     -   34s
+H    0     0                     455.0000000  390.70169  14.1%     -   39s
+H    0     0                     444.0000000  390.70169  12.0%     -   40s
+H    0     0                     437.0000000  390.70169  10.6%     -   61s
+     0     0  390.70169    0  721  437.00000  390.70169  10.6%     -   64s
+H    0     0                     426.0000000  390.70169  8.29%     -  180s
+
+Cutting planes:
+  Cover: 3
+  MIR: 64
+  StrongCG: 1
+  RLT: 7
+
+Explored 1 nodes (935762 simplex iterations) in 180.07 seconds (607.55 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 6: 426 437 444 ... 632
+
+Time limit reached
+Best objective 4.260000000000e+02, best bound 3.910000000000e+02, gap 8.2160%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:45:39 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.32s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    2s
+H    0     0                      90.0000000   65.00000  27.8%     -    2s
+H    0     0                      82.0000000   65.00000  20.7%     -    2s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.38 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:45:48 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.96s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.93 seconds (1.76 work units)
+Total elapsed time = 7.96s
+Total elapsed time = 10.05s
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:46:03 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.35s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.19 seconds (0.26 work units)
+Total elapsed time = 16.05s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    2s
+H    0     0                      90.0000000   65.00000  27.8%     -    2s
+H    0     0                      82.0000000   65.00000  20.7%     -    2s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.53 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+Total elapsed time = 22.62s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   28s
+H    0     0                     352.0000000  297.41864  15.5%     -   28s
+H    0     0                     346.0000000  297.41864  14.0%     -   36s
+H    0     0                     331.0000000  297.41864  10.1%     -   59s
+
+Explored 1 nodes (1054513 simplex iterations) in 59.74 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:46:50 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.44s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.14 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.46 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:46:59 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.42s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.16 seconds (1.56 work units)
+Total elapsed time = 6.91s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.78 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:47:17 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2586 rows, 743906 columns and 2230856 nonzeros
+Model fingerprint: 0x25b8edaa
+Variable types: 0 continuous, 743906 integer (743906 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 585.0000000
+Presolve time: 1.57s
+Presolved: 2586 rows, 743906 columns, 2230856 nonzeros
+Variable types: 0 continuous, 743906 integer (743906 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 3.734492e+02, 743046 iterations, 1.00 seconds (2.20 work units)
+Total elapsed time = 6.96s
+Total elapsed time = 16.65s
+Total elapsed time = 22.49s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  373.44915    0  481  585.00000  373.44915  36.2%     -   31s
+H    0     0                     429.0000000  373.44915  12.9%     -   31s
+H    0     0                     426.0000000  373.44915  12.3%     -   36s
+H    0     0                     420.0000000  373.44915  11.1%     -   52s
+     0     0  373.44915    0  686  420.00000  373.44915  11.1%     -   54s
+H    0     0                     415.0000000  373.44915  10.0%     -   61s
+
+Cutting planes:
+  Cover: 27
+  Clique: 6
+  MIR: 55
+  RLT: 106
+
+Explored 1 nodes (837779 simplex iterations) in 61.41 seconds (104.08 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 415 420 426 ... 585
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.150000000000e+02, best bound 3.740000000000e+02, gap 9.8795%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:48:21 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.34s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    2s
+H    0     0                      90.0000000   65.00000  27.8%     -    2s
+H    0     0                      82.0000000   65.00000  20.7%     -    2s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.47 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:48:31 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 2.04s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.95 seconds (1.76 work units)
+Total elapsed time = 8.07s
+Total elapsed time = 10.18s
+Total elapsed time = 15.95s
+Total elapsed time = 22.40s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   28s
+H    0     0                     352.0000000  297.41864  15.5%     -   28s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   58s
+
+Explored 1 nodes (1054513 simplex iterations) in 58.74 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:49:32 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.41s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.13 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.39 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:49:40 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.31s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.11 seconds (1.56 work units)
+Total elapsed time = 6.73s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.50 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:49:57 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2427 rows, 655290 columns and 1965061 nonzeros
+Model fingerprint: 0x6e1f50aa
+Variable types: 0 continuous, 655290 integer (655290 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 563.0000000
+Presolve time: 1.36s
+Presolved: 2427 rows, 655290 columns, 1965061 nonzeros
+Variable types: 0 continuous, 655290 integer (655290 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 3.564559e+02, 654483 iterations, 0.72 seconds (1.55 work units)
+Total elapsed time = 6.67s
+Total elapsed time = 14.99s
+Total elapsed time = 22.54s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  356.45593    0  448  563.00000  356.45593  36.7%     -   29s
+H    0     0                     403.0000000  356.45593  11.5%     -   29s
+H    0     0                     399.0000000  356.45593  10.7%     -   33s
+H    0     0                     393.0000000  356.45593  9.30%     -   33s
+
+Explored 1 nodes (739107 simplex iterations) in 33.35 seconds (53.28 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 393 399 403 563 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.930000000000e+02, best bound 3.570000000000e+02, gap 9.1603%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:50:32 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.33s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    1s
+H    0     0                      90.0000000   65.00000  27.8%     -    1s
+H    0     0                      82.0000000   65.00000  20.7%     -    1s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.38 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:50:42 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.97s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.93 seconds (1.76 work units)
+Total elapsed time = 7.78s
+Total elapsed time = 15.65s
+Total elapsed time = 22.06s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   27s
+H    0     0                     352.0000000  297.41864  15.5%     -   27s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   58s
+
+Explored 1 nodes (1054513 simplex iterations) in 58.89 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:51:43 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.42s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.12 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.38 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:51:51 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.32s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.11 seconds (1.56 work units)
+Total elapsed time = 6.72s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.51 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:52:08 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2265 rows, 570780 columns and 1711585 nonzeros
+Model fingerprint: 0x4bc1e9b9
+Variable types: 0 continuous, 570780 integer (570780 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 514.0000000
+Presolve time: 1.16s
+Presolved: 2265 rows, 570780 columns, 1711585 nonzeros
+Variable types: 0 continuous, 570780 integer (570780 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 3.394017e+02, 570027 iterations, 0.74 seconds (1.66 work units)
+Total elapsed time = 5.20s
+Total elapsed time = 14.19s
+Total elapsed time = 19.24s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  339.40169    0  410  514.00000  339.40169  34.0%     -   25s
+H    0     0                     377.0000000  339.40169  10.0%     -   25s
+
+Explored 1 nodes (654758 simplex iterations) in 25.31 seconds (39.19 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 377 514 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.770000000000e+02, best bound 3.400000000000e+02, gap 9.8143%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:52:35 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.33s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    2s
+H    0     0                      90.0000000   65.00000  27.8%     -    2s
+H    0     0                      82.0000000   65.00000  20.7%     -    2s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.42 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:52:45 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.99s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.95 seconds (1.76 work units)
+Total elapsed time = 7.84s
+Total elapsed time = 15.77s
+Total elapsed time = 22.23s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   28s
+H    0     0                     352.0000000  297.41864  15.5%     -   28s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   59s
+
+Explored 1 nodes (1054513 simplex iterations) in 59.33 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:53:46 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.41s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.12 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.37 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:53:54 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.33s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.11 seconds (1.56 work units)
+Total elapsed time = 6.75s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.54 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:54:11 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2154 rows, 516242 columns and 1548008 nonzeros
+Model fingerprint: 0x1f7f5713
+Variable types: 0 continuous, 516242 integer (516242 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 493.0000000
+Presolve time: 1.05s
+Presolved: 2154 rows, 516242 columns, 1548008 nonzeros
+Variable types: 0 continuous, 516242 integer (516242 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 3.228966e+02, 515527 iterations, 0.67 seconds (1.51 work units)
+Total elapsed time = 5.64s
+Total elapsed time = 10.86s
+Total elapsed time = 15.53s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  322.89661    0  394  493.00000  322.89661  34.5%     -   19s
+H    0     0                     359.0000000  322.89661  10.1%     -   19s
+H    0     0                     358.0000000  322.89661  9.81%     -   21s
+
+Explored 1 nodes (583531 simplex iterations) in 21.24 seconds (35.68 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 3: 358 359 493 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.580000000000e+02, best bound 3.230000000000e+02, gap 9.7765%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:54:34 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.33s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    2s
+H    0     0                      90.0000000   65.00000  27.8%     -    2s
+H    0     0                      82.0000000   65.00000  20.7%     -    2s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.38 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:54:44 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.94s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.93 seconds (1.76 work units)
+Total elapsed time = 7.74s
+Total elapsed time = 15.53s
+Total elapsed time = 22.00s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   27s
+H    0     0                     352.0000000  297.41864  15.5%     -   28s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   58s
+
+Explored 1 nodes (1054513 simplex iterations) in 58.88 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:55:44 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.41s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.13 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.38 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:55:53 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.35s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.11 seconds (1.56 work units)
+Total elapsed time = 6.75s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.54 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:56:09 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2040 rows, 463080 columns and 1388560 nonzeros
+Model fingerprint: 0xca0049a8
+Variable types: 0 continuous, 463080 integer (463080 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 466.0000000
+Presolve time: 0.92s
+Presolved: 2040 rows, 463080 columns, 1388560 nonzeros
+Variable types: 0 continuous, 463080 integer (463080 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 3.066458e+02, 462402 iterations, 0.50 seconds (1.07 work units)
+Total elapsed time = 9.16s
+Total elapsed time = 12.93s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  306.64576    0  373  466.00000  306.64576  34.2%     -   16s
+H    0     0                     341.0000000  306.64576  10.1%     -   16s
+
+Explored 1 nodes (527825 simplex iterations) in 17.00 seconds (29.11 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 341 466 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.410000000000e+02, best bound 3.070000000000e+02, gap 9.9707%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:56:28 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.31s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    2s
+H    0     0                      90.0000000   65.00000  27.8%     -    2s
+H    0     0                      82.0000000   65.00000  20.7%     -    2s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.43 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:56:37 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.99s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.92 seconds (1.76 work units)
+Total elapsed time = 7.74s
+Total elapsed time = 15.54s
+Total elapsed time = 21.94s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   27s
+H    0     0                     352.0000000  297.41864  15.5%     -   27s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   58s
+
+Explored 1 nodes (1054513 simplex iterations) in 58.16 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:57:38 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.40s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.12 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.37 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:57:46 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.32s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.11 seconds (1.56 work units)
+Total elapsed time = 6.73s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.55 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:58:01 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1929 rows, 414092 columns and 1241633 nonzeros
+Model fingerprint: 0x69c2e822
+Variable types: 0 continuous, 414092 integer (414092 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 449.0000000
+Presolve time: 0.82s
+Presolved: 1929 rows, 414092 columns, 1241633 nonzeros
+Variable types: 0 continuous, 414092 integer (414092 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.901254e+02, 413451 iterations, 0.40 seconds (0.82 work units)
+Total elapsed time = 10.04s
+Total elapsed time = 15.63s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  290.12542    0  352  449.00000  290.12542  35.4%     -   17s
+H    0     0                     323.0000000  290.12542  10.2%     -   17s
+
+Explored 1 nodes (491216 simplex iterations) in 17.43 seconds (31.67 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 323 449 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.230000000000e+02, best bound 2.910000000000e+02, gap 9.9071%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:58:20 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.33s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    2s
+H    0     0                      90.0000000   65.00000  27.8%     -    2s
+H    0     0                      82.0000000   65.00000  20.7%     -    2s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.41 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:58:30 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.97s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.91 seconds (1.76 work units)
+Total elapsed time = 7.69s
+Total elapsed time = 15.49s
+Total elapsed time = 21.84s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   27s
+H    0     0                     352.0000000  297.41864  15.5%     -   27s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   58s
+
+Explored 1 nodes (1054513 simplex iterations) in 58.89 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:59:31 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.44s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.13 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.41 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:59:39 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.31s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.12 seconds (1.56 work units)
+Total elapsed time = 6.73s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.52 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 01:59:54 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1821 rows, 369056 columns and 1106561 nonzeros
+Model fingerprint: 0xb03a5c2d
+Variable types: 0 continuous, 369056 integer (369056 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 415.0000000
+Presolve time: 0.74s
+Presolved: 1821 rows, 369056 columns, 1106561 nonzeros
+Variable types: 0 continuous, 369056 integer (369056 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.739356e+02, 368451 iterations, 0.41 seconds (0.85 work units)
+Total elapsed time = 7.55s
+Total elapsed time = 10.81s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  273.93559    0  331  415.00000  273.93559  34.0%     -   12s
+H    0     0                     304.0000000  273.93559  9.89%     -   12s
+
+Explored 1 nodes (437567 simplex iterations) in 12.58 seconds (21.91 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 304 415 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.040000000000e+02, best bound 2.740000000000e+02, gap 9.8684%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:00:09 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.32s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    1s
+H    0     0                      90.0000000   65.00000  27.8%     -    1s
+H    0     0                      82.0000000   65.00000  20.7%     -    2s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.43 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:00:18 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.99s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.93 seconds (1.76 work units)
+Total elapsed time = 7.77s
+Total elapsed time = 15.65s
+Total elapsed time = 22.07s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   27s
+H    0     0                     352.0000000  297.41864  15.5%     -   28s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   59s
+
+Explored 1 nodes (1054513 simplex iterations) in 59.17 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:01:20 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.42s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.12 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.37 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:01:28 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.37s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.14 seconds (1.56 work units)
+Total elapsed time = 6.84s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.71 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:01:43 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1710 rows, 325470 columns and 975840 nonzeros
+Model fingerprint: 0x63727faf
+Variable types: 0 continuous, 325470 integer (325470 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 396.0000000
+Presolve time: 0.65s
+Presolved: 1710 rows, 325470 columns, 975840 nonzeros
+Variable types: 0 continuous, 325470 integer (325470 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.577153e+02, 324903 iterations, 0.38 seconds (0.79 work units)
+Total elapsed time = 5.84s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  257.71525    0  315  396.00000  257.71525  34.9%     -   11s
+H    0     0                     286.0000000  257.71525  9.89%     -   11s
+
+Explored 1 nodes (387466 simplex iterations) in 11.51 seconds (18.85 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 286 396 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.860000000000e+02, best bound 2.580000000000e+02, gap 9.7902%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:01:56 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.31s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    2s
+H    0     0                      90.0000000   65.00000  27.8%     -    2s
+H    0     0                      82.0000000   65.00000  20.7%     -    2s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.45 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:02:06 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 2.03s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.94 seconds (1.76 work units)
+Total elapsed time = 7.89s
+Total elapsed time = 10.00s
+Total elapsed time = 15.83s
+Total elapsed time = 22.40s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   27s
+H    0     0                     352.0000000  297.41864  15.5%     -   28s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   59s
+
+Explored 1 nodes (1054513 simplex iterations) in 59.14 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:03:07 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.43s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.13 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.42 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:03:15 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.40s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.15 seconds (1.56 work units)
+Total elapsed time = 6.86s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.74 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:03:30 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1602 rows, 285690 columns and 856536 nonzeros
+Model fingerprint: 0x2d55086c
+Variable types: 0 continuous, 285690 integer (285690 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 369.0000000
+Presolve time: 0.57s
+Presolved: 1602 rows, 285690 columns, 856536 nonzeros
+Variable types: 0 continuous, 285690 integer (285690 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.412407e+02, 285158 iterations, 0.32 seconds (0.65 work units)
+Total elapsed time = 7.63s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  241.24068    0  294  369.00000  241.24068  34.6%     -   10s
+H    0     0                     268.0000000  241.24068  10.0%     -   10s
+
+Explored 1 nodes (346371 simplex iterations) in 10.61 seconds (17.67 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 268 369 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.680000000000e+02, best bound 2.420000000000e+02, gap 9.7015%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:03:42 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.34s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    2s
+H    0     0                      90.0000000   65.00000  27.8%     -    2s
+H    0     0                      82.0000000   65.00000  20.7%     -    2s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.42 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:03:52 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 1.99s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.94 seconds (1.76 work units)
+Total elapsed time = 7.82s
+Total elapsed time = 15.78s
+Total elapsed time = 22.34s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   28s
+H    0     0                     352.0000000  297.41864  15.5%     -   28s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   59s
+
+Explored 1 nodes (1054513 simplex iterations) in 59.68 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:04:54 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.41s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.13 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.38 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:05:02 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.39s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.14 seconds (1.56 work units)
+Total elapsed time = 6.85s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.76 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:05:17 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1494 rows, 248502 columns and 745008 nonzeros
+Model fingerprint: 0xd7e8bf2d
+Variable types: 0 continuous, 248502 integer (248502 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 339.0000000
+Presolve time: 0.58s
+Presolved: 1494 rows, 248502 columns, 745008 nonzeros
+Variable types: 0 continuous, 248502 integer (248502 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.378387e+02, 248006 iterations, 0.27 seconds (0.56 work units)
+Total elapsed time = 6.48s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  237.83871    0  255  339.00000  237.83871  29.8%     -    8s
+H    0     0                     250.0000000  237.83871  4.86%     -    8s
+
+Explored 1 nodes (301032 simplex iterations) in 8.67 seconds (15.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 250 339 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.500000000000e+02, best bound 2.380000000000e+02, gap 4.8000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:05:27 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1170 rows, 152490 columns and 457080 nonzeros
+Model fingerprint: 0x0bedab6b
+Variable types: 0 continuous, 152490 integer (152490 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 243.0000000
+Presolve time: 0.34s
+Presolved: 1170 rows, 152490 columns, 457080 nonzeros
+Variable types: 0 continuous, 152490 integer (152490 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 6.500000e+01, 152101 iterations, 0.17 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   65.00000    0   74  243.00000   65.00000  73.3%     -    2s
+H    0     0                      90.0000000   65.00000  27.8%     -    2s
+H    0     0                      82.0000000   65.00000  20.7%     -    2s
+H    0     0                      79.0000000   65.00000  17.7%     -    2s
+H    0     0                      65.0000000   65.00000  0.00%     -    2s
+
+Cutting planes:
+  Cover: 114
+  Clique: 170
+  MIR: 31
+
+Explored 1 nodes (213360 simplex iterations) in 2.40 seconds (4.14 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 5: 65 79 82 ... 243
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 6.500000000000e+01, best bound 6.500000000000e+01, gap 0.0000%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:05:37 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2916 rows, 945756 columns and 2836296 nonzeros
+Model fingerprint: 0x71537efb
+Variable types: 0 continuous, 945756 integer (945756 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 629.0000000
+Presolve time: 2.02s
+Presolved: 2916 rows, 945756 columns, 2836296 nonzeros
+Variable types: 0 continuous, 945756 integer (945756 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.974186e+02, 944787 iterations, 0.94 seconds (1.76 work units)
+Total elapsed time = 7.87s
+Total elapsed time = 15.82s
+Total elapsed time = 22.35s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  297.41864    0  377  629.00000  297.41864  52.7%     -   28s
+H    0     0                     352.0000000  297.41864  15.5%     -   28s
+H    0     0                     346.0000000  297.41864  14.0%     -   35s
+H    0     0                     331.0000000  297.41864  10.1%     -   59s
+
+Explored 1 nodes (1054513 simplex iterations) in 59.74 seconds (90.62 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 4: 331 346 352 629 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 3.310000000000e+02, best bound 2.980000000000e+02, gap 9.9698%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:06:39 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1209 rows, 162812 columns and 488033 nonzeros
+Model fingerprint: 0x2dd54f1a
+Variable types: 0 continuous, 162812 integer (162812 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 273.0000000
+Presolve removed 403 rows and 0 columns
+Presolve time: 0.43s
+Presolved: 806 rows, 162812 columns, 325221 nonzeros
+Variable types: 0 continuous, 162812 integer (162812 binary)
+
+Root relaxation: objective 2.015000e+02, 2016 iterations, 0.13 seconds (0.21 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  201.50000    0   27  273.00000  201.50000  26.2%     -    1s
+H    0     0                     215.0000000  201.50000  6.28%     -    1s
+
+Explored 1 nodes (83280 simplex iterations) in 1.40 seconds (2.93 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 215 273 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 2.150000000000e+02, best bound 2.020000000000e+02, gap 6.0465%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:06:47 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 2763 rows, 849162 columns and 2546565 nonzeros
+Model fingerprint: 0x307065d7
+Variable types: 0 continuous, 849162 integer (849162 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 617.0000000
+Presolve removed 921 rows and 0 columns
+Presolve time: 2.36s
+Presolved: 1842 rows, 849162 columns, 1697403 nonzeros
+Variable types: 0 continuous, 849162 integer (849162 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 4.605000e+02, 848242 iterations, 2.14 seconds (1.56 work units)
+Total elapsed time = 6.83s
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  460.50000    0   49  617.00000  460.50000  25.4%     -   11s
+H    0     0                     485.0000000  460.50000  5.05%     -   11s
+
+Explored 1 nodes (1053797 simplex iterations) in 11.68 seconds (24.46 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 2: 485 617 
+
+Optimal solution found (tolerance 1.00e-01)
+Best objective 4.850000000000e+02, best bound 4.610000000000e+02, gap 4.9485%
+
+Gurobi 10.0.1 (mac64[arm]) logging started Sat May  6 02:07:01 2023
+
+Set parameter LogFile to value "./solver/group22/logs/stack_logs.txt"
+Gurobi Optimizer version 10.0.1 build v10.0.1rc0 (mac64[arm])
+
+CPU model: Apple M1 Pro
+Thread count: 10 physical cores, 10 logical processors, using up to 10 threads
+
+Optimize a model with 1386 rows, 213906 columns and 641256 nonzeros
+Model fingerprint: 0x94f5b965
+Variable types: 0 continuous, 213906 integer (213906 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+05]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 302.0000000
+Presolve time: 0.50s
+Presolved: 1386 rows, 213906 columns, 641256 nonzeros
+Variable types: 0 continuous, 213906 integer (213906 binary)
+
+Use crossover to convert LP symmetric solution to basic solution...
+
+Root relaxation: objective 2.208710e+02, 213446 iterations, 0.23 seconds (0.47 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  220.87097    0  360  302.00000  220.87097  26.9%     -    1s
+
+Explored 1 nodes (214236 simplex iterations) in 1.15 seconds (2.87 work units)
+Thread count was 10 (of 10 available processors)
+
+Solution count 1: 302 
+
+Solve interrupted
+Best objective 3.020000000000e+02, best bound 2.210000000000e+02, gap 26.8212%
