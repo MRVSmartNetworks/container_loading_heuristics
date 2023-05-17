@@ -178,16 +178,16 @@ class Solver23():
 ############ main         
 if __name__ == "__main__":
     
-    os.path.join('.', 'results', "sol1.csv")
+    os.path.join('.', 'results', "sol23.csv")
     df_items = pd.read_csv(
         os.path.join(
-            '.', 'data',
+            '.', 'data', 'datasetA',
             'items.csv'
         ),
     )
     df_vehicles = pd.read_csv(
         os.path.join(
-            '.', 'data',
+            '.', 'data', 'datasetA',
             'vehicles.csv'
         ),
     )
