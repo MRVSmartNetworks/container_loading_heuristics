@@ -99,7 +99,7 @@ class Solver22:
         random.seed(315054)
 
         self.df_items = df_items
-        self.df_trucks = df_trucks
+        self.df_vehicles = df_trucks
 
         for self.tries in range(MAX_TRIES):
             t_0 = time.time()
