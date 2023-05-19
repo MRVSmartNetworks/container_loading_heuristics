@@ -18,7 +18,7 @@ MAX_TRIES = 5
 
 
 class Solver22:
-    def __init__(self, df_items, df_vehicles):
+    def __init__(self, df_items=None, df_vehicles=None):
         """
         Solver22
         ---------------------------------------------------------------
@@ -33,8 +33,8 @@ class Solver22:
         """
         self.name = "solver22"
 
-        self.df_items = df_items
-        self.df_vehicles = df_vehicles
+        self.df_items = None
+        self.df_vehicles = None
 
         # Current solution
         self.curr_sol = {
@@ -90,13 +90,16 @@ class Solver22:
     ##########################################################################
     ## Solver
 
-    def solve(self):
+    def solve(self, df_items, df_trucks):
         """
         solve
         ---
         Solution of the problem with the proposed heuristics.
         """
         random.seed(315054)
+
+        self.df_items = df_items
+        self.df_trucks = df_trucks
 
         for self.tries in range(MAX_TRIES):
             t_0 = time.time()
