@@ -3,7 +3,12 @@ import os
 import pandas as pd
 import sys
 
-### NOTE: to be ran from
+"""
+Display solution for specific truck, given ID.
+
+This script accepts the truck ID as a command line 
+argument when launching the program.
+"""
 
 if __name__ == "__main__":
     data_path = os.path.join(os.path.dirname(__file__), "..", "..", "data")

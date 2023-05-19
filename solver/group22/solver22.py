@@ -69,6 +69,9 @@ class Solver22:
         self.list_sol_2D = []
         self.scores_2D = []
 
+        # Store the scores of the BEST solution only (updated at the end of each iteration)
+        self.scores_2D_best = []
+
         # Store time for single iteration
         self.runtimes = []
 
@@ -245,7 +248,9 @@ class Solver22:
                 len(tmp_items.index) == 0
             ), "Not all items have been used in current solution!"
 
-            self.updateBestSol()
+            if self.updateBestSol() != 0:
+                print("Solution was updated!")
+                self.scores_2D_best = sublist_scores_2D
 
             self.runtimes.append(time.time() - t_0)
             print("Time for solution: ", self.runtimes[self.tries], "\n")
@@ -1103,7 +1108,6 @@ class Solver22:
         o_val = 0
         vehicle_list_cost = np.array(s["type_vehicle"])
         vehicle_list_id = np.array(s["idx_vehicle"])
-        # FIXME: don't know why but it works - seems a bit weak...
         for t_id in np.unique(s["idx_vehicle"]):
             o_val += float(vehicle_list_cost[vehicle_list_id == t_id][0])
 
