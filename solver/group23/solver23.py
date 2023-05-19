@@ -48,6 +48,7 @@ class Solver23():
         aco = ACO(stackInfo)
         aco.getVehicle(vehicle)
         more_items = True
+        totCost = 0
         # Loop until there are no more items left
         while(more_items):
             # Create the stacks given a vehicle and give it to ACO
@@ -59,11 +60,14 @@ class Solver23():
                 self.solUpdate(bestAnt, vehicle)
                 # Remove the items already added to the solution
                 df_items = df_items[df_items.id_item.isin(self.sol["id_item"]) == False]
+                totCost += vehicle['cost']
+                print("Truck: ", self.id_vehicle)
             else:
                 more_items = False
         
         df_sol = pd.DataFrame.from_dict(self.sol)
         print("\nN trucks = ", df_sol['idx_vehicle'].nunique())
+        print("Tot cost: ", totCost)
         print("Tot items: ", len(self.sol["id_item"]))
         print("\nTime:", time.time() - st_time)
         
@@ -94,7 +98,6 @@ class Solver23():
         for code in stackability_codes:
             stack_quantity[code] = 0
             stack_feat = getStackFeatures(df_items, code)
-            
             stack = Stack(code, stack_feat[0], 
                           stack_feat[1], stack_feat[2], stack_feat[3])
             
@@ -198,6 +201,6 @@ if __name__ == "__main__":
         os.path.join('results', f'{tmp.name}_sol.csv'),
     )
 
-    orthogonal_plane(df_items, df_vehicles, df_sol)
+    #orthogonal_plane(df_items, df_vehicles, df_sol)
 
-    stack_3D(df_items, df_vehicles, df_sol)
+    #stack_3D(df_items, df_vehicles, df_sol)

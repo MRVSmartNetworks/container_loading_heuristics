@@ -35,7 +35,6 @@ def popStack(stack_lst, stack_quantity, code, n_code):
     if code >= n_code:
         code = code - n_code
         widthwise = True
-
     for i,stack in enumerate(stack_lst):
         if stack.stack_code == code:
             stack = stack_lst.pop(i)
@@ -51,5 +50,26 @@ def popStack(stack_lst, stack_quantity, code, n_code):
             
             return stack_copy, stack_lst, stack_quantity
     raise Exception("No more stacks with specified code")
+
+    """  stack_lst_code = [(i,stack) for i,stack in enumerate(stack_lst) if stack.stack_code == code]
+    if stack_lst_code:
+        if weight_ratio < 0.7:
+            stack_toPop = max(stack_lst_code, key=lambda stack: stack[1].weight)
+            stack_toPop = stack_lst.pop(stack_toPop[0])
+        else:
+            stack_toPop = min(stack_lst_code, key=lambda stack: stack[1].weight)
+            stack_toPop = stack_lst.pop(stack_toPop[0])
+        stack_quantity[code] -= 1
+        stack_copy = deepcopy(stack_toPop)
+        stack_copy.state = code
+        if widthwise:
+            stack_copy.state += n_code
+            stack_copy.orient = 'w'
+            stack_copy.length, stack_copy.width = stack_copy.width, stack_copy.length
+        else:
+            stack_copy.orient = 'l'
+        return stack_copy, stack_lst, stack_quantity
+    raise Exception("No more stacks with specified code") """
+
 
 

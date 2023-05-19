@@ -240,6 +240,7 @@ class ACO:
                     pr_mat[:,i+self.n_code] = 0
                     code_sub += 1
                     find == True
+            #TODO: aggiungere condizione lengthwise
 
             # Find the stacks that have the best fit in the trucks width
             app = 0 # Updated every time a best fit into the truck is find 
