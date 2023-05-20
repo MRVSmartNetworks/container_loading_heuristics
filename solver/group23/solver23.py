@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 import os
 import pandas as pd
-from sub.utilities import *
-from sub.stack import Stack
-from sub.aco_bin_packing import ACO
-from sub.projection import *
+from solver.group23.sub.utilities import *
+from solver.group23.sub.stack import Stack
+from solver.group23.sub.aco_bin_packing import ACO
+#from sub.projection import *
 import time
 #TODO:
 # - certi stack code potrebbero avere la stessa dimensione
