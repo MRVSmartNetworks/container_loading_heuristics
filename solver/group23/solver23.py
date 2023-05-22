@@ -55,13 +55,13 @@ class Solver23():
             aco.getStacks(self.buildStacks(vehicle, df_items, stackInfo))
             # Check if there are stacks left
             if sum(aco.stack_quantity.values()) != 0:
+                print("Truck: ", self.id_vehicle)
                 # Method to solve the 2D bin packing problem
                 bestAnt = aco.aco_2D_bin()
                 self.solUpdate(bestAnt, vehicle)
                 # Remove the items already added to the solution
                 df_items = df_items[df_items.id_item.isin(self.sol["id_item"]) == False]
                 totCost += vehicle['cost']
-                print("Truck: ", self.id_vehicle)
             else:
                 more_items = False
         
@@ -128,9 +128,9 @@ class Solver23():
                     stack.addItem(row.id_item, row.height - row.nesting_height)
                     stack.updateHeight(row.height - row.nesting_height)
                     stack.updateWeight(row.weight)
-                    if i == iter_items.tail(1).index:
-                        stack_lst.append(stack)
-                        stack_quantity[code] += 1
+            if i == iter_items.tail(1).index:
+                stack_lst.append(stack)
+                stack_quantity[code] += 1
         return stack_lst, stack_quantity
     
     def solUpdate(self, bestAnt, vehicle):
