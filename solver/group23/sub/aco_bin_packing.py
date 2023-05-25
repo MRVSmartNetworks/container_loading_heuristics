@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import numpy as np
-from sub.utilities import *
+from solver.group23.sub.utilities import *
 
 class ACO:
     """  
