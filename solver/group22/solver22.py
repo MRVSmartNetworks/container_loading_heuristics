@@ -1148,6 +1148,16 @@ class Solver22:
         worst_trucks = sorted_trucks_score[:10]
 
         # Extract items in the current solution which are placed in these specific trucks
+        item_cols = df_items.columns
+        collected_items = pd.DataFrame(columns=item_cols)
+        best_sol_items = np.array(self.curr_best_sol["id_item"])        # Isolate the list of items IDs
+        best_sol_trucks = np.array(self.curr_best_sol["idx_vehicle"])   # Isolate the list of truck IDs
+        for tr_id in worst_trucks:
+            items_in_curr_truck = best_sol_items[best_sol_trucks == tr_id]  # Isolate items in current truck
+            for it_id in items_in_curr_truck:
+                collected_items.stack(df_items.loc[df_items.id_item])
+
+
 
     ##########################################################################
     # Utilities
