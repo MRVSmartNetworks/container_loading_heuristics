@@ -18,7 +18,7 @@ MAX_TRIES = 5
 
 
 class Solver22:
-    def __init__(self, df_items, df_vehicles):
+    def __init__(self, df_items=None, df_vehicles=None):
         """
         Solver22
         ---------------------------------------------------------------
@@ -33,8 +33,8 @@ class Solver22:
         """
         self.name = "solver22"
 
-        self.df_items = df_items
-        self.df_vehicles = df_vehicles
+        self.df_items = None
+        self.df_vehicles = None
 
         # Current solution
         self.curr_sol = {
@@ -69,6 +69,10 @@ class Solver22:
         self.list_sol_2D = []
         self.scores_2D = []
 
+        # Store the scores of the BEST solution only (updated at the end of each iteration)
+        self.scores_2D_best = []
+        self.trucks_id_best_sol = []
+
         # Store time for single iteration
         self.runtimes = []
 
@@ -90,13 +94,16 @@ class Solver22:
     ##########################################################################
     ## Solver
 
-    def solve(self):
+    def solve(self, df_items, df_trucks):
         """
         solve
         ---
         Solution of the problem with the proposed heuristics.
         """
         random.seed(315054)
+
+        self.df_items = df_items
+        self.df_vehicles = df_trucks
 
         for self.tries in range(MAX_TRIES):
             t_0 = time.time()
@@ -150,6 +157,8 @@ class Solver22:
             for id in tmp_vehicles.id_truck.unique():
                 n_trucks[id] = 0
 
+            all_trucks_id = []
+
             self.iter = 0
             print_trucks_ID = []
             while len(tmp_items.index) > 0 and self.iter < MAX_ITER:
@@ -174,6 +183,8 @@ class Solver22:
 
                 if self.iter % 50 == 0:
                     print_trucks_ID.append(curr_truck.id_truck)
+
+                all_trucks_id.append(curr_truck.id_truck)
 
                 if DEBUG:
                     print(f"> Truck ID: {curr_truck.id_truck}")
@@ -242,7 +253,10 @@ class Solver22:
                 len(tmp_items.index) == 0
             ), "Not all items have been used in current solution!"
 
-            self.updateBestSol()
+            if self.updateBestSol() != 0:
+                print("Solution was updated!")
+                self.scores_2D_best = sublist_scores_2D
+                self.trucks_id_best_sol = all_trucks_id
 
             self.runtimes.append(time.time() - t_0)
             print("Time for solution: ", self.runtimes[self.tries], "\n")
@@ -1100,7 +1114,6 @@ class Solver22:
         o_val = 0
         vehicle_list_cost = np.array(s["type_vehicle"])
         vehicle_list_id = np.array(s["idx_vehicle"])
-        # FIXME: don't know why but it works - seems a bit weak...
         for t_id in np.unique(s["idx_vehicle"]):
             o_val += float(vehicle_list_cost[vehicle_list_id == t_id][0])
 
@@ -1117,7 +1130,24 @@ class Solver22:
         The process of rebuilding can be carried out in the same way as 'solve' - it's just
         important to obtain items as a dataframe.
         """
-        pass
+        # Work on self.current_best_sol and self.scores_2D_best
+
+        # Get the individual trucks
+        assert (
+            len(self.trucks_id_best_sol) == self.scores_2D_best
+        ), "The number unique truck IDs does not correspond to the number of scores..."
+
+        # Get indices of sorted scores (INCREASING)
+        ind_sorted_scores = np.argsort(self.scores_2D_best)
+
+        # Sort trucks according to the increasing score
+        sorted_trucks_score = np.array(self.trucks_id_best_sol)[ind_sorted_scores]
+
+        # TODO: review - how to select the worst trucks (threshold vs fixed amount)
+        # Select 10 worst trucks
+        worst_trucks = sorted_trucks_score[:10]
+
+        # Extract items in the current solution which are placed in these specific trucks
 
     ##########################################################################
     # Utilities

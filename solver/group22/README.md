@@ -100,6 +100,10 @@ Possible optimizations of this require the widest elements to be placed first (l
 Optimal stacks can be created in the same way as the cutting stock problem - this way it is possible to minimize the number of stacks by reducing the z dimension left from the ceiling.
 See [here](https://developers.google.com/optimization/pack/knapsack).
 
+In order to introduce exploitation in the solution evaluation, the proposed approach is to assign a score to each 2D solution, corresponding to the product (/sum) of the surface utilization and maximum weight utilization of each truck.
+Then, having set a threshold (or maybe having selected a number of trucks), some (bad in terms of score) vehicles are destroyed and a new solution is performed on the destroyed vehicles only (sort of a recursion).
+Thanks to the random behavior, the new trucks may happen to yield a better solution than before - just check the cost of the new trucks against the old total cost of the destroyed trucks.
+
 ## Useful links
 
 - [3D bin packing heuristics](https://github.com/bchaiks/3D_Bin_Packing_Heuristics) - useful for solution representation in python
