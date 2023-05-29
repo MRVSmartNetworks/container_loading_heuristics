@@ -106,6 +106,7 @@ class Solver22:
         self.df_vehicles = df_trucks
 
         for self.tries in range(MAX_TRIES):
+            print(f"Solution {self.tries + 1}")
             t_0 = time.time()
             sublist_sol_2D = []
             sublist_scores_2D = []
