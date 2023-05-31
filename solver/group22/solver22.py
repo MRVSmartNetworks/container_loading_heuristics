@@ -9,6 +9,7 @@ import pandas as pd
 from solver.group22.solution_representation import myStack3D
 from solver.group22.stack import Stack
 from solver.group22.stack_creation_heur import create_stack_cs
+from solver.group22.stack_creation_gurobi_new import create_stack_gurobi
 
 STATS = True
 DEBUG = True
@@ -196,7 +197,11 @@ class Solver22:
                     print("")
 
                 # Build stacks with the copied list of items 'tmp_items'
-                valid_stacks_list, self.stack_number = create_stack_cs(
+                # valid_stacks_list, self.stack_number = create_stack_cs(
+                #     tmp_items, curr_truck, self.stack_number
+                # )
+
+                valid_stacks_list, self.stack_number = create_stack_gurobi(
                     tmp_items, curr_truck, self.stack_number
                 )
 
