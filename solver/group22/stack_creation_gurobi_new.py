@@ -27,10 +27,14 @@ def create_stack_gurobi(df_items, truck, id):
     ### Approach
 
     Having isolated items with the same stackability code,
-    create stacks by solving the minimization problem of the
-    delta between the stack height and the truck height, until
-    all items have been used.
+    create stacks by solving the maximization problem of the
+    stack height and the truck height, until all items have
+    been used.
     """
+    # If the path exists, delete the log file (avoid building up large file)
+    if os.path.exists(os.path.join(".", "logs", "stack_logs_g22.txt")):
+        os.remove(os.path.join(".", "logs", "stack_logs_g22.txt"))
+
     stack_codes = df_items.stackability_code.unique()
     stacks_list = []  # Outcome of this function
 
@@ -38,6 +42,10 @@ def create_stack_gurobi(df_items, truck, id):
     tmp_items = df_items.copy()
 
     for code in stack_codes:
+        if DEBUG:
+            print("Code: ", code)
+            # if code == 1:
+            #     print("Code is 1")
         # TODO - review these:
         tot_high = 0
         tot_weight = 0
@@ -140,11 +148,12 @@ def solve_knapsack_stack(items, truck_height, weight, other_constraints):
 
     ## Constraints
     # Total height should be less than truck's
-    solver.addConstr(
-        sum(
-            x[i, j] * data["heights"][i] - (1 - x[i, 0]) * data["nesting_height"][i]
+    tot_height_constr = solver.addConstr(
+        sum(x[i, j] * data["heights"][i] for i in data["items"] for j in data["bins"])
+        - sum(
+            x[i, 0] * data["nesting_height"][i]
             for i in data["items"]
-            for j in data["bins"]
+            for j in data["bins"][1:]
         )
         <= data["bin_height"],
         "Respect max height",
@@ -156,6 +165,12 @@ def solve_knapsack_stack(items, truck_height, weight, other_constraints):
             sum(x[i, j] for j in data["bins"]) <= 1, "Item can be in 1 position"
         )
 
+    # For each position there should be one object only
+    for j in data["bins"]:
+        solver.addConstr(
+            sum(x[i, j] for i in data["items"]) <= 1, "Item can be in 1 position"
+        )
+
     # Max weight of stacks
     solver.addConstr(
         sum(x[i, j] * data["weights"][i] for i in data["items"] for j in data["bins"])
@@ -164,34 +179,51 @@ def solve_knapsack_stack(items, truck_height, weight, other_constraints):
     )
 
     # Max stackability
+    # NOTE: gurobi does not allow for strict inequality constraints - had to use <= ...
     for j in data["bins"]:
         for i in data["items"]:
-            solver.addConstr(j * x[i, j] <= data["max_stack"][i])
+            solver.addConstr(j * x[i, j] <= data["max_stack"][i] - 1)
 
     ## Objective: minimization of the total number of stacks produced
     solver.setObjective(
-        sum(
-            x[i, j] * data["heights"][i] - (1 - x[i, 0]) * data["nesting_height"][i]
+        gp.quicksum(
+            x[i, j] * data["heights"][i] for i in data["items"] for j in data["bins"]
+        )
+        - gp.quicksum(
+            x[i, 0] * data["nesting_height"][i]
             for i in data["items"]
-            for j in data["bins"]
+            for j in data["bins"][1:]
         ),
         GRB.MAXIMIZE,
     )
 
     ## Setting stopping criteria (avoid excessive runtimes)
-    # solver.Params.TimeLimit = 180  # 3 min time limit for each stack
-    # solver.Params.MIPGap = 0.1  # 10% gap...
     solver.Params.LogToConsole = 0
+    solver.Params.TimeLimit = 5  # 5 s time limit for each stack
+    solver.Params.MIPGap = 0.1  # 10% gap...
     solver.Params.LogFile = os.path.join(".", "logs", "stack_logs_g22.txt")
 
     solver.optimize()
 
+    # if DEBUG:
+    #     print(f"  Obj. val: {solver.getObjective().getValue()}")
+    #     print(
+    #         f"  Height constraint value: {solver.getRow(tot_height_constr).getValue()}"
+    #     )
+
+    assert solver.getRow(tot_height_constr).getValue() <= data["bin_height"]
+
     new_stack = Stack()
-    for j in data["bins"]:
+    for j in data["bins"][::-1]:
         found_in_row = False
         for i in data["items"]:
             if not found_in_row and x[i, j].X == 1:
                 # Add element to the stack
+                if DEBUG:
+                    assert (
+                        data["heights"][i] == items.iloc[i].height
+                    ), "The item heights don't match"
+
                 add_attempt = new_stack.add_item_override(
                     newitem=items.iloc[i], other_constraints=other_constraints
                 )
@@ -199,6 +231,8 @@ def solve_knapsack_stack(items, truck_height, weight, other_constraints):
                     add_attempt == 1
                 ), f"Cannot add the item in the stack despite it appearing in solution - constraints violated with code {add_attempt}"
                 found_in_row = True
+            elif found_in_row and x[i, j].X == 1:
+                raise ValueError(f"Another element has been placed in position {j}")
 
     return new_stack
 
