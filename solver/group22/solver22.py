@@ -15,7 +15,7 @@ STATS = True
 DEBUG = True
 DEBUG_MORE = False
 MAX_ITER = 10000
-MAX_TRIES = 1
+MAX_TRIES = 10
 
 
 class Solver22:
@@ -92,6 +92,11 @@ class Solver22:
 
         self.count_broken = 0
 
+        # Add the possibility to recover stacks if truck ID matches the one from before
+        self.stacks_list = []
+        self.curr_truck_type = ""
+        self.last_truck_type = ""
+
     ##########################################################################
     ## Solver
 
@@ -163,6 +168,9 @@ class Solver22:
 
             self.iter = 0
             print_trucks_ID = []
+
+            self.curr_truck_type = ""
+            self.last_truck_type = ""
             while len(tmp_items.index) > 0 and self.iter < MAX_ITER:
                 print(f"Iter {self.iter}")
                 if DEBUG:
@@ -177,6 +185,10 @@ class Solver22:
                 curr_truck = self.selectNextTruck(
                     tmp_vehicles, tmp_items, self.unusable_trucks
                 )
+
+                # Update the attributes used for recycling stacks
+                self.last_truck_type = self.curr_truck_type
+                self.curr_truck_type = curr_truck.id_truck
 
                 # Having selected the truck type, update its ID by appending the counter found in n_trucks
                 # NOTE: the padding done in this case allows for at most 999 trucks of the same type...
@@ -196,25 +208,28 @@ class Solver22:
                 if self.iter == 170:
                     print("")
 
-                # Build stacks with the copied list of items 'tmp_items'
-                # valid_stacks_list, self.stack_number = create_stack_cs(
-                #     tmp_items, curr_truck, self.stack_number
-                # )
-
-                valid_stacks_list, self.stack_number = create_stack_gurobi(
-                    tmp_items, curr_truck, self.stack_number
-                )
+                if self.curr_truck_type != self.last_truck_type:
+                    # Build stacks with the copied list of items 'tmp_items'
+                    self.stacks_list, self.stack_number = create_stack_cs(
+                        tmp_items, curr_truck, self.stack_number
+                    )
+                    # self.stacks_list, self.stack_number = create_stack_gurobi(
+                    #     tmp_items, curr_truck, self.stack_number
+                    # )
+                else:
+                    # The stacks present in the current list are still valid!
+                    pass
 
                 assert all(
-                    len(st.items) > 0 for st in valid_stacks_list
+                    len(st.items) > 0 for st in self.stacks_list
                 ), "Some stacks have been created empty!"  # If passed, the stack creation is successful
 
                 if DEBUG_MORE:
-                    print(f"Total number of generated stacks: {len(valid_stacks_list)}")
+                    print(f"Total number of generated stacks: {len(self.stacks_list)}")
 
                 # Solve 2D problems to place the stacks
-                sol_2D, valid_stacks_list, curr_score = self.solve2D(
-                    valid_stacks_list,
+                sol_2D, self.stacks_list, curr_score = self.solve2D(
+                    self.stacks_list,
                     curr_truck,
                     scores=True,
                 )
@@ -272,7 +287,7 @@ class Solver22:
         # TODO: solution improvement from best solution so far
         # Approach: start from the last truck which was filled, try to extract items
         # and place them in other trucks
-        self.improveSolution()
+        # self.improveSolution()
 
         # Append best solution for current truck
         # Need to make sure the items left have been updated
@@ -513,6 +528,7 @@ class Solver22:
             rightmost = max([p[0] for p in bound])
             x_dim = x_truck - rightmost
 
+            # BUILD A NEW SLICE
             new_slice, up_stacks = self.buildSlice(
                 up_stacks, x_dim, y_truck, weight_left
             )
@@ -777,6 +793,8 @@ class Solver22:
 
         number_old_stacks = i + 0
 
+        discarded_stacks = []
+
         if weight_left > 0 and len(stacks) > 0:
             i = 0
             # Review the possibility to add pieces of remaining stacks
@@ -819,10 +837,11 @@ class Solver22:
                                 stacks.append(new_stack)
                         else:
                             # Remove the empty element from the stack list
-
-                            # Also, don't add the new stack - will not be able
-                            # to place any of these items in the current truck
                             del stacks[i]
+
+                            # Also, store among the discarded stacks the other one. (Will be recycled, possibly)
+                            discarded_stacks.append(new_stack)
+
                             i -= 1  # Needed to prevent skipping an element
 
                     # Try changing orientation
@@ -855,6 +874,7 @@ class Solver22:
 
                         else:
                             del stacks[i]
+                            discarded_stacks.append(new_stack)
                             i -= 1  # Needed to prevent skipping an element
 
                     # else:
@@ -914,6 +934,8 @@ class Solver22:
 
         if DEBUG_MORE:
             print(f"N. stacks in new slice: {len(new_slice)}")
+
+        stacks = stacks + discarded_stacks
 
         return new_slice, stacks
 
