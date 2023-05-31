@@ -14,7 +14,7 @@ STATS = True
 DEBUG = True
 DEBUG_MORE = False
 MAX_ITER = 10000
-MAX_TRIES = 5
+MAX_TRIES = 1
 
 
 class Solver22:
@@ -267,6 +267,7 @@ class Solver22:
         # TODO: solution improvement from best solution so far
         # Approach: start from the last truck which was filled, try to extract items
         # and place them in other trucks
+        self.improveSolution()
 
         # Append best solution for current truck
         # Need to make sure the items left have been updated
@@ -1120,7 +1121,7 @@ class Solver22:
 
         return o_val
 
-    def improveSolution(self, sol, df_items, df_trucks):
+    def improveSolution(self, df_items, df_trucks):
         """
         improveSolution
         ---
@@ -1130,6 +1131,10 @@ class Solver22:
 
         The process of rebuilding can be carried out in the same way as 'solve' - it's just
         important to obtain items as a dataframe.
+
+        ### Input parameters
+        - df_items: initial dataframe containing all items
+        - df_trucks: dataframe containing all truck types
         """
         # Work on self.current_best_sol and self.scores_2D_best
 
@@ -1151,14 +1156,20 @@ class Solver22:
         # Extract items in the current solution which are placed in these specific trucks
         item_cols = df_items.columns
         collected_items = pd.DataFrame(columns=item_cols)
-        best_sol_items = np.array(self.curr_best_sol["id_item"])        # Isolate the list of items IDs
-        best_sol_trucks = np.array(self.curr_best_sol["idx_vehicle"])   # Isolate the list of truck IDs
-        for tr_id in worst_trucks:
-            items_in_curr_truck = best_sol_items[best_sol_trucks == tr_id]  # Isolate items in current truck
+        best_sol_items = np.array(
+            self.curr_best_sol["id_item"]
+        )  # Isolate the list of items IDs
+        best_sol_trucks = np.array(
+            self.curr_best_sol["idx_vehicle"]
+        )  # Isolate the list of truck IDs
+        for tr_id in worst_trucks:  # tr_id is an ID (string)
+            items_in_curr_truck = best_sol_items[
+                best_sol_trucks == tr_id
+            ]  # Isolate items in current truck
             for it_id in items_in_curr_truck:
-                collected_items.stack(df_items.loc[df_items.id_item])
-
-
+                collected_items.append(
+                    df_items.loc[df_items.id_item], ignore_index=True
+                )
 
     ##########################################################################
     # Utilities
