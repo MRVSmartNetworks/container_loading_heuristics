@@ -237,7 +237,7 @@ def checkValidStacks(stacks_list, df_items, truck, compareItems=False):
         for i in range(len(items_ids)):
             if items_ids[i] in used_unique_ids:
                 assert (
-                    used_counts[used_unique_ids == unique_ids[i]] <= 1
+                    used_counts[used_unique_ids == items_ids[i]] <= 1
                 ), f"[i = {i}] -> Element {unique_ids[i]} has been used {used_counts[used_unique_ids == items_ids[i]]} times in the solution!"
 
     # Check that each item appearing in the used IDs is present only once

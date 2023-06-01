@@ -94,6 +94,7 @@ class Solver22:
 
         # Add the possibility to recover stacks if truck ID matches the one from before
         self.stacks_list = []
+        self.discarded_stacks = []
         self.curr_truck_type = ""
         self.last_truck_type = ""
 
@@ -210,15 +211,31 @@ class Solver22:
 
                 if self.curr_truck_type != self.last_truck_type:
                     # Build stacks with the copied list of items 'tmp_items'
-                    # self.stacks_list, self.stack_number = create_stack_cs(
-                    #     tmp_items, curr_truck, self.stack_number
-                    # )
-                    self.stacks_list, self.stack_number = create_stack_gurobi(
+                    self.stacks_list, self.stack_number = create_stack_cs(
                         tmp_items, curr_truck, self.stack_number
                     )
+                    # self.stacks_list, self.stack_number = create_stack_gurobi(
+                    #     tmp_items, curr_truck, self.stack_number
+                    # )
                 else:
                     # The stacks present in the current list are still valid!
-                    pass
+                    # Can create new stacks with the items in the discarded ones
+                    if len(self.discarded_stacks) > 0:
+                        # Extract items from stacks
+                        it_recycle = pd.DataFrame(columns=tmp_items.columns)
+                        for st in self.discarded_stacks:
+                            for it in st.items:
+                                it_recycle.loc[len(it_recycle)] = it
+
+                        recycled_stacks, self.stack_number = create_stack_cs(
+                            it_recycle, curr_truck, self.stack_number
+                        )
+
+                        # recycled_stacks, self.stack_number = create_stack_gurobi(
+                        #     it_recycle, curr_truck, self.stack_number
+                        # )
+
+                        self.stacks_list += recycled_stacks
 
                 assert all(
                     len(st.items) > 0 for st in self.stacks_list
@@ -517,6 +534,7 @@ class Solver22:
         weight_left = max_weight
 
         count = 0
+        self.discarded_stacks = []
         while space_left and weight_left > 0:
             # 1. Assign prices to each stack:
             self.priceStack(up_stacks, override=[0, 1, 2, 3])
@@ -529,9 +547,11 @@ class Solver22:
             x_dim = x_truck - rightmost
 
             # BUILD A NEW SLICE
-            new_slice, up_stacks = self.buildSlice(
+            new_slice, up_stacks, disc_stacks = self.buildSlice(
                 up_stacks, x_dim, y_truck, weight_left
             )
+
+            self.discarded_stacks = self.discarded_stacks + disc_stacks
 
             if DEBUG_MORE:
                 print(
@@ -938,11 +958,10 @@ class Solver22:
         for st in discarded_stacks:
             st.assignID(self.stack_number)
             self.stack_number += 1
-            stacks.append(st)
 
         # stacks = stacks + discarded_stacks
 
-        return new_slice, stacks
+        return new_slice, stacks, discarded_stacks
 
     def pushSlice(self, bound, new_slice, curr_sol_2D):
         """
