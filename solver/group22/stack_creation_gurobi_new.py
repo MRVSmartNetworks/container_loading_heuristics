@@ -6,6 +6,7 @@ import os
 from solver.group22.stack_creation_heur import checkValidStacks
 
 DEBUG = True
+DEBUG_MORE = False
 
 
 def create_stack_gurobi(df_items, truck, id):
@@ -151,7 +152,7 @@ def solve_knapsack_stack(items, truck_height, weight, other_constraints):
     tot_height_constr = solver.addConstr(
         sum(x[i, j] * data["heights"][i] for i in data["items"] for j in data["bins"])
         - sum(
-            x[i, 0] * data["nesting_height"][i]
+            x[i, j] * data["nesting_height"][i]
             for i in data["items"]
             for j in data["bins"][1:]
         )
@@ -169,6 +170,13 @@ def solve_knapsack_stack(items, truck_height, weight, other_constraints):
     for j in data["bins"]:
         solver.addConstr(
             sum(x[i, j] for i in data["items"]) <= 1, "Item can be in 1 position"
+        )
+
+    # No empty positions
+    for j in data["bins"][1:]:
+        solver.addConstr(
+            sum(x[i, j] for i in data["items"])
+            <= sum(x[i, j - 1] for i in data["items"])
         )
 
     # Max weight of stacks
@@ -190,7 +198,7 @@ def solve_knapsack_stack(items, truck_height, weight, other_constraints):
             x[i, j] * data["heights"][i] for i in data["items"] for j in data["bins"]
         )
         - gp.quicksum(
-            x[i, 0] * data["nesting_height"][i]
+            x[i, j] * data["nesting_height"][i]
             for i in data["items"]
             for j in data["bins"][1:]
         ),
@@ -205,11 +213,11 @@ def solve_knapsack_stack(items, truck_height, weight, other_constraints):
 
     solver.optimize()
 
-    # if DEBUG:
-    #     print(f"  Obj. val: {solver.getObjective().getValue()}")
-    #     print(
-    #         f"  Height constraint value: {solver.getRow(tot_height_constr).getValue()}"
-    #     )
+    if DEBUG_MORE:
+        print(f"  Obj. val: {solver.getObjective().getValue()}")
+        print(
+            f"  Height constraint value: {solver.getRow(tot_height_constr).getValue()}"
+        )
 
     assert solver.getRow(tot_height_constr).getValue() <= data["bin_height"]
 
@@ -227,9 +235,18 @@ def solve_knapsack_stack(items, truck_height, weight, other_constraints):
                 add_attempt = new_stack.add_item_override(
                     newitem=items.iloc[i], other_constraints=other_constraints
                 )
-                assert (
-                    add_attempt == 1
-                ), f"Cannot add the item in the stack despite it appearing in solution - constraints violated with code {add_attempt}"
+                if add_attempt != 1:
+                    print("  Obj. value:", solver.getObjective().getValue())
+                    print(
+                        "  Height of stack would be: ",
+                        new_stack.tot_height
+                        - new_stack.next_nesting
+                        + items.iloc[i].height,
+                    )
+                    raise ValueError(
+                        f"Cannot add the item in the stack despite it appearing in solution - constraints violated with code {add_attempt}"
+                    )
+
                 found_in_row = True
             elif found_in_row and x[i, j].X == 1:
                 raise ValueError(f"Another element has been placed in position {j}")

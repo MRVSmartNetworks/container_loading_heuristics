@@ -15,7 +15,7 @@ STATS = True
 DEBUG = True
 DEBUG_MORE = False
 MAX_ITER = 10000
-MAX_TRIES = 10
+MAX_TRIES = 1
 
 
 class Solver22:
@@ -210,12 +210,12 @@ class Solver22:
 
                 if self.curr_truck_type != self.last_truck_type:
                     # Build stacks with the copied list of items 'tmp_items'
-                    self.stacks_list, self.stack_number = create_stack_cs(
-                        tmp_items, curr_truck, self.stack_number
-                    )
-                    # self.stacks_list, self.stack_number = create_stack_gurobi(
+                    # self.stacks_list, self.stack_number = create_stack_cs(
                     #     tmp_items, curr_truck, self.stack_number
                     # )
+                    self.stacks_list, self.stack_number = create_stack_gurobi(
+                        tmp_items, curr_truck, self.stack_number
+                    )
                 else:
                     # The stacks present in the current list are still valid!
                     pass
@@ -935,7 +935,12 @@ class Solver22:
         if DEBUG_MORE:
             print(f"N. stacks in new slice: {len(new_slice)}")
 
-        stacks = stacks + discarded_stacks
+        for st in discarded_stacks:
+            st.assignID(self.stack_number)
+            self.stack_number += 1
+            stacks.append(st)
+
+        # stacks = stacks + discarded_stacks
 
         return new_slice, stacks
 

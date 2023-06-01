@@ -11,7 +11,7 @@ argument when launching the program.
 """
 
 if __name__ == "__main__":
-    data_path = os.path.join(os.path.dirname(__file__), "..", "..", "data")
+    data_path = os.path.join(os.path.dirname(__file__), "..", "..", "data", "datasetA")
 
     df_items = pd.read_csv(os.path.join(data_path, "items.csv"))
 
@@ -25,6 +25,6 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         truck_id = str(sys.argv[1])
     else:
-        truck_id = "V1_001"
+        truck_id = "V1_100"
 
     myStack3D(df_items, df_trucks, df_sol, truck_id)
