@@ -15,7 +15,7 @@ STATS = True
 DEBUG = True
 DEBUG_MORE = False
 MAX_ITER = 10000
-MAX_TRIES = 1
+MAX_TRIES = 3
 
 
 class Solver22:
@@ -248,7 +248,7 @@ class Solver22:
 
                 self.iter += 1
 
-            self.curr_obj_value = self.evalObj()
+            self.curr_obj_value = self.evalObj(df_trucks)
 
             self.list_sol_2D.append(sublist_sol_2D)
             self.scores_2D.append(sublist_scores_2D)
@@ -1111,7 +1111,7 @@ class Solver22:
             for it in sol_2D["stack"][i].items:
                 # if it.id_item == "I0283":
                 #     print("Incriminated element!")
-                self.curr_sol["type_vehicle"].append(truck["cost"])
+                self.curr_sol["type_vehicle"].append(truck["id_truck"][:2])
                 self.curr_sol["idx_vehicle"].append(truck["id_truck"])
                 self.curr_sol["id_stack"].append(sol_2D["stack"][i].id)
                 self.curr_sol["id_item"].append(it["id_item"])
@@ -1129,7 +1129,7 @@ class Solver22:
 
         return upd_items
 
-    def evalObj(self, sol=None):
+    def evalObj(self, df_trucks, sol=None):
         """
         evalObj
         ---
@@ -1146,10 +1146,10 @@ class Solver22:
             s = sol
 
         o_val = 0
-        vehicle_list_cost = np.array(s["type_vehicle"])
+        vehicle_list_type = np.array(s["type_vehicle"])
         vehicle_list_id = np.array(s["idx_vehicle"])
-        for t_id in np.unique(s["idx_vehicle"]):
-            o_val += float(vehicle_list_cost[vehicle_list_id == t_id][0])
+        for t_id in np.unique(vehicle_list_id):
+            o_val += float(df_trucks.loc[df_trucks.id_truck == t_id[:2], "cost"].values)
 
         return o_val
 
@@ -1370,6 +1370,33 @@ class Solver22:
             ):
                 valid = False
                 print(f"Truck {used_trucks_id[i]} includes too many elements!")
+                return valid
+
+        # 3.2 - Max weight
+        for i in range(len(used_trucks_id)):
+            truck_type = str(used_trucks_id[i][:2])
+            curr_truck = trucks_df.loc[trucks_df.id_truck == truck_type]
+
+            curr_tot_wt = curr_truck["max_weight"].values
+
+            items_in_truck_id = np.array(sol["id_item"])[
+                sol["idx_vehicle"] == used_trucks_id[i]
+            ]
+
+            bool_items_ind = np.zeros((len(items_df.index),))
+            items_id_list = items_df.id_item.tolist()
+            for i in range(len(items_id_list)):
+                if items_id_list[i] in items_in_truck_id:
+                    bool_items_ind[i] = 1
+
+            items_in_truck = items_df.loc[bool_items_ind == 1]
+
+            tot_wt_items = sum(items_in_truck.weight)
+            if tot_wt_items > curr_tot_wt:
+                valid = False
+                print(
+                    f"Truck {used_trucks_id[i]} has its max_weight constraint violated"
+                )
                 return valid
 
         if valid:
