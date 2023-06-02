@@ -732,6 +732,10 @@ class Solver22:
         weight_left = max_weight
         new_slice = []
 
+        if DEBUG_MORE:
+            print("Starting to build slice:")
+            print("  Number of available stacks: ", len(stacks))
+
         assert all(
             len(st.items) > 0 for st in stacks
         ), "buildSlice was provided with empty stacks"
@@ -744,9 +748,6 @@ class Solver22:
         j = 0  # j tracks the number of stacks in the current slice
         delta_y = y_dim
         # Until all possible stacks have been visited, try to add new one to fill slice
-        # NOTE: this can be improved in the future, e.g., by finding optimal slice at each
-        # iteration, in terms of minimum delta_y left
-        # For now, I will keep this approach as it follows what explained in the paper...
         # NOTE: also the check of the weight is done here!
         while i < len(stacks):
             stack_added = False
@@ -809,27 +810,36 @@ class Solver22:
                 j += 1
 
             i += 1
-        # When out of the loop, the slice has been built
+        # When out of the loop, the slice has been built - but it may be sub-optimal
+        # E.g., there is still some space/weight left, but full stacks are too
+        # heavy --> It may be possible to remove some itmes from stacks to try and
+        # place them.
 
-        number_old_stacks = i + 0
+        number_old_stacks = i + 0  # Number of "full" stacks used
 
+        if DEBUG_MORE:
+            print("  Number of full stacks used: ", number_old_stacks)
+            print("  Number of stacks left: ", len(stacks))
+
+        # Keep track of the discarded items (placed in new stacks):
         discarded_stacks = []
 
+        # If there are still stacks left, iterate
         if weight_left > 0 and len(stacks) > 0:
             i = 0
-            # Review the possibility to add pieces of remaining stacks
+            # Review the possibility to add *pieces* of remaining stacks
             while i < len(stacks):
                 stack_added = False
                 # Iterate over the remaining stacks
-                # If the stack is
+                # If the stack would be too heavy:
                 if len(stacks[i].items) > 0 and weight_left < stacks[i].tot_weight:
                     # If there is still space in the current slice:
                     if delta_y >= stacks[i].width and x_dim >= stacks[i].length:
-                        # Initialize extra stack for discarded items
+                        # Initialize extra stack for DISCARDED ITEMS
                         new_stack = Stack()
 
                         # Try removing elements from the stack (heaviest first) until it
-                        # is (possibly) light enough to be placed
+                        # is (possibly) light enough to be placed OR there are no more items in the stack
                         while (
                             weight_left < stacks[i].tot_weight
                             and len(stacks[i].items) > 0
@@ -840,31 +850,36 @@ class Solver22:
                             # Create new stack with removed item
                             new_stack.add_item_override(rem_item)
 
-                        # If the current stack still contains elements, it means that it can
+                        # If the current (broken) stack still contains elements, it means that it can
                         # be added (loop was broken because stack weight became < available weight)
                         if len(stacks[i].items) > 0:
+                            # The broken stack can be added to the solution
                             new_slice.append([stacks[i], i, 0])
-                            # Updated y dimension left
+
+                            # Update y dimension left
                             delta_y -= stacks[i].width
                             stack_added = True
+                            # Remove stack from original list
                             del stacks[i]
                             self.count_broken += 1
 
-                            # Add the new stack to the 'stacks' list
+                            # Add the new stack with discarded elements to the 'stacks' list
                             new_stack.assignID(number_old_stacks)
                             number_old_stacks += 1
                             if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
                                 stacks.append(new_stack)
                         else:
+                            # The stack was emptied completely
+
                             # Remove the empty element from the stack list
                             del stacks[i]
-
                             # Also, store among the discarded stacks the other one. (Will be recycled, possibly)
                             discarded_stacks.append(new_stack)
 
                             i -= 1  # Needed to prevent skipping an element
 
                     # Try changing orientation
+                    # (Repeat same procedure as before)
                     elif (
                         stacks[i].forced_orientation == "n"
                         and delta_y >= stacks[i].length
@@ -898,8 +913,8 @@ class Solver22:
                             i -= 1  # Needed to prevent skipping an element
 
                     # else:
-                    #     # if stack does not fulfill weight requirements, nor it can be
-                    #     # placed in the current slice, delete it from the list (is it???)
+                    #     # if stack cannot be placed in the current slice, delete it
+                    #     # from the list (is it???)
                     #     # -> wrong, maybe it can be broken and placed in another slice!
                     #     stack_added = False
                     #     del stacks[i]
@@ -955,11 +970,14 @@ class Solver22:
         if DEBUG_MORE:
             print(f"N. stacks in new slice: {len(new_slice)}")
 
-        for st in discarded_stacks:
-            st.assignID(self.stack_number)
-            self.stack_number += 1
+        if DEBUG:
+            print("Number of discarded stacks: ", len(discarded_stacks))
 
-        # stacks = stacks + discarded_stacks
+        for st in discarded_stacks:
+            st.assignID(number_old_stacks)
+            number_old_stacks += 1
+
+        self.stack_number = number_old_stacks
 
         return new_slice, stacks, discarded_stacks
 
