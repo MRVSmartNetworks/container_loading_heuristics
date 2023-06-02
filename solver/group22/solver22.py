@@ -69,6 +69,9 @@ class Solver22:
         self.list_sol_2D = []
         self.scores_2D = []
 
+        # Store time for single iteration
+        self.runtimes = []
+
         # The following are variables used during the run to guide some decision
         self.last_truck_was_empty = False
         self.unusable_trucks = []
@@ -93,11 +96,12 @@ class Solver22:
         ---
         Solution of the problem with the proposed heuristics.
         """
-        t_0 = time.time()
         random.seed(315054)
 
         for self.tries in range(MAX_TRIES):
+            t_0 = time.time()
             sublist_sol_2D = []
+            sublist_scores_2D = []
 
             self.curr_sol = {
                 "type_vehicle": [],
@@ -192,23 +196,30 @@ class Solver22:
                     print(f"Total number of generated stacks: {len(valid_stacks_list)}")
 
                 # Solve 2D problems to place the stacks
-                sol_2D, valid_stacks_list = self.solve2D(
-                    valid_stacks_list, curr_truck, tmp_items
+                sol_2D, valid_stacks_list, curr_score = self.solve2D(
+                    valid_stacks_list,
+                    curr_truck,
+                    scores=True,
                 )
 
                 sublist_sol_2D.append(sol_2D)
+                sublist_scores_2D.append(curr_score)
 
                 assert all(
                     len(st.items) > 0 for st in sol_2D["stack"]
                 ), "Some stacks of the solution are empty!"
 
                 # Use the 2D solution to update the overall solution
+                if curr_truck["id_truck"][:2] == "V0":
+                    print("Truck V0")
                 tmp_items = self.updateCurrSol(sol_2D, curr_truck, tmp_items)
 
-                self.curr_obj_value = self.evalObj()
                 self.iter += 1
 
+            self.curr_obj_value = self.evalObj()
+
             self.list_sol_2D.append(sublist_sol_2D)
+            self.scores_2D.append(sublist_scores_2D)
 
             used_trucks = 0
             for t in n_trucks.keys():
@@ -232,6 +243,9 @@ class Solver22:
             ), "Not all items have been used in current solution!"
 
             self.updateBestSol()
+
+            self.runtimes.append(time.time() - t_0)
+            print("Time for solution: ", self.runtimes[self.tries], "\n")
 
         print(f"Optimal initial value: {self.best_obj_value}")
 
@@ -330,14 +344,19 @@ class Solver22:
         else:
             # Else: return the truck with the lowest cost among the ones which are bigger than
             # the whole volume
-            valid_trucks = trucks_df[trucks_df.volume >= tot_item_vol]
-            ord_vehicles = valid_trucks.sort_values(by=["cost"], ascending=True)
+            # Get trucks having volume > 110% total remaining volume (empirical choice)
+            valid_trucks = trucks_df[trucks_df.volume >= tot_item_vol * 1.1]
+            valid_trucks = valid_trucks[valid_trucks.max_weight >= tot_item_wt]
+            sort_vehicles = valid_trucks.sort_values(by=["cost"], ascending=True)
 
-            if len(forbidden_trucks) > 0:
-                for i, row in ord_vehicles.iterrows():
+            if len(sort_vehicles.index) > 0:
+                for i, row in sort_vehicles.iterrows():
                     if str(row.id_truck) not in forbidden_trucks:
                         return row
             else:
+                ord_vehicles = trucks_df.sort_values(
+                    by=["dim_wt_cost_ratio"], ascending=False
+                )
                 return ord_vehicles.iloc[0]
 
     def create_stack(self, df_items, truck):  # NOT USED!
@@ -414,7 +433,7 @@ class Solver22:
 
         return stacks_list
 
-    def solve2D(self, stacks, truck, items_df):
+    def solve2D(self, stacks, truck, scores=False):
         """
         solve2D
         ---
@@ -444,7 +463,7 @@ class Solver22:
         truck_area = x_truck * y_truck
         truck_volume = truck_area * truck["height"]
         # No need for height (we are solving 2D currently)
-        max_weight = truck["max_weight"]  ## TODO: use it!!!!
+        max_weight = truck["max_weight"]
 
         # This solution simply consists of a 2D bin packing with no constraint but the
         # dimensions of the bin and max_weight: it is assumed the stacks have been built
@@ -453,7 +472,6 @@ class Solver22:
         # Initialize solution
         # Keep in mind: this is just the 2D solution, the task of the main solver is
         # that of "translating" this solution into the overall one
-        # TODO: check memory efficency...
         sol_2D = {"x_sol": [], "y_sol": [], "stack": [], "orient": []}
 
         # Initialize bound
@@ -463,7 +481,6 @@ class Solver22:
         weight_left = max_weight
 
         count = 0
-
         while space_left and weight_left > 0:
             # 1. Assign prices to each stack:
             self.priceStack(up_stacks, override=[0, 1, 2, 3])
@@ -485,9 +502,9 @@ class Solver22:
                     [len(it[0].items) for it in new_slice],
                 )
 
-            assert all(
-                len(it[0].items) > 0 for it in new_slice
-            ), f"Some stacks of the current slice ({count}) are empty!"
+            # assert all(
+            #     len(it[0].items) > 0 for it in new_slice
+            # ), f"Some stacks of the current slice ({count}) are empty!"
             # assert (len(up_stacks) + len(new_slice) == curr_stacks_n), "Something went wrong! The stacks don't add up"
 
             if len(new_slice) > 0:  # Slice is not empty
@@ -514,43 +531,40 @@ class Solver22:
 
             else:
                 # If the new slice is empty, close the bin
-                # TODO: check for big spaces to fill with arbitrary slices
-                # but tricky (buildSlice can be used for arbitrary dimensions)
                 if len(sol_2D["x_sol"]) == 0:
                     print("Cannot fit any item in this truck!")
                     self.last_truck_was_empty = True
 
-                # Translate solution into 3D one
-                # First, build lists of the same size, then assign them
-                # self.updateCurrSol(sol_2D, truck, items_df)
-
                 # TODO: check if the bound has some space left
                 space_left = False
 
-                if STATS:
-                    # Evaluate area, volume and weight utilization
-                    items_area = 0
-                    items_volume = 0
-                    items_weight = 0
-                    for st in sol_2D["stack"]:
-                        assert len(st.items) > 0, "The current stack is empty!!!"
-                        items_area += st.area
-                        items_volume += st.area * st.tot_height
-                        items_weight += st.tot_weight
-
-                    percent_area = items_area / truck_area
-                    percent_vol = items_volume / truck_volume
-                    percent_weight = items_weight / truck.max_weight
-
-                    print(f"> Truck area utilization: {percent_area}")
-                    print(f"> Truck volume utilization: {percent_vol}")
-                    print(f"> Truck weight utilization: {percent_weight}")
-
             count += 1
 
-        # Something else?
+        if scores:
+            # Evaluate area, volume and weight utilization
+            items_area = 0
+            items_volume = 0
+            items_weight = 0
+            for st in sol_2D["stack"]:
+                assert len(st.items) > 0, "The current stack is empty!!!"
+                items_area += st.area
+                items_volume += st.area * st.tot_height
+                items_weight += st.tot_weight
 
-        return sol_2D, up_stacks
+            percent_area = items_area / truck_area
+            # percent_vol = items_volume / truck_volume
+            percent_weight = items_weight / truck.max_weight
+
+            score = [percent_area, percent_weight, percent_area * percent_weight]
+
+        if STATS:
+            print(f"> Truck area utilization: {percent_area}")
+            # print(f"> Truck volume utilization: {percent_vol}")
+            print(f"> Truck weight utilization: {percent_weight}")
+
+        # Something else?
+        if scores:
+            return sol_2D, up_stacks, score
 
     def priceStack(self, stacks, override=None):
         """
@@ -1084,13 +1098,25 @@ class Solver22:
             s = sol
 
         o_val = 0
+        vehicle_list_cost = np.array(s["type_vehicle"])
+        vehicle_list_id = np.array(s["idx_vehicle"])
         # FIXME: don't know why but it works - seems a bit weak...
-        for t_id in list(set(s["idx_vehicle"])):
-            o_val += float(s["type_vehicle"][s["idx_vehicle"] == t_id])
+        for t_id in np.unique(s["idx_vehicle"]):
+            o_val += float(vehicle_list_cost[vehicle_list_id == t_id][0])
 
         return o_val
 
     def improveSolution(self, sol, df_items, df_trucks):
+        """
+        improveSolution
+        ---
+        Idea: evaluate score of filled trucks (% weight * % surface) and try destroying the
+        trucks with lowest values and rebuilding them from scratch.
+        The process is successful whenever the final cost of the trucks is lower than before.
+
+        The process of rebuilding can be carried out in the same way as 'solve' - it's just
+        important to obtain items as a dataframe.
+        """
         pass
 
     ##########################################################################
@@ -1266,6 +1292,3 @@ class Solver22:
             print("Valid solution!")
 
         return valid
-
-    ##########################################################################
-    # Displaying the solution
