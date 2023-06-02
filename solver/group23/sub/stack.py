@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 class Stack:
     def __init__(self, stack_code, length, width, max_stack, orient):
         self.stack_code = stack_code
