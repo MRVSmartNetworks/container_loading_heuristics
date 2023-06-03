@@ -24,7 +24,7 @@ GUROBI = False
 N_DEBUG = False
 
 MAX_ITER = 10000
-MAX_TRIES = 1
+MAX_TRIES = 3
 
 
 class Solver22:
