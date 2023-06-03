@@ -23,8 +23,8 @@ if __name__ == "__main__":
         raise ValueError("Solution file not found!")
 
     if len(sys.argv) > 1:
-        truck_id = str(sys.argv[1])
+        truck_id = int(sys.argv[1])
     else:
-        truck_id = "V1_100"
+        truck_id = 100
 
     myStack3D(df_items, df_trucks, df_sol, truck_id)

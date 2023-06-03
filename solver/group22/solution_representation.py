@@ -18,7 +18,7 @@ def myStack3D(df_items, df_vehicles, df_sol, idx_vehicle):
     - idx_vehicle: string indicating the specific vehicle
     """
     # Isolate vehicle:
-    df_cons = df_sol[df_sol["idx_vehicle"] == str(idx_vehicle)]
+    df_cons = df_sol[df_sol["idx_vehicle"] == idx_vehicle]
 
     # NOTE: each stack ID is the same for all items that make it up
     idx_stacks = (
@@ -108,13 +108,19 @@ def myStack3D(df_items, df_vehicles, df_sol, idx_vehicle):
     ax.set_zlabel("Z")
 
     # Extract actual vehicle type ID
-    idx_vehicle_type = int(idx_vehicle[1])
+    vehicle_type = df_cons.type_vehicle.iloc[0]
 
     ax.set_title(f"Vehicle {idx_vehicle}")
     # Set axis limit, given from the dimensions of the vehicle
-    x_lim = ax.set_xlim(0, df_vehicles.iloc[idx_vehicle_type]["length"])
-    y_lim = ax.set_ylim(0, df_vehicles.iloc[idx_vehicle_type]["width"])
-    z_lim = ax.set_zlim(0, df_vehicles.iloc[idx_vehicle_type]["height"])
+    x_lim = ax.set_xlim(
+        0, df_vehicles[df_vehicles.id_truck == vehicle_type]["length"].values
+    )
+    y_lim = ax.set_ylim(
+        0, df_vehicles[df_vehicles.id_truck == vehicle_type]["width"].values
+    )
+    z_lim = ax.set_zlim(
+        0, df_vehicles[df_vehicles.id_truck == vehicle_type]["height"].values
+    )
 
     # ax.set_aspect('equal')
 
