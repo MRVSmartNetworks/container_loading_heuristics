@@ -1,7 +1,8 @@
 from solver.group22.stack import Stack
 import numpy as np
 
-DEBUG = False
+VERB = False
+N_DEBUG = False
 
 
 def create_stack_heur(df_items, truck, id):
@@ -52,7 +53,7 @@ def create_stack_heur(df_items, truck, id):
         return [], id
 
     for code in stack_codes:
-        if DEBUG:
+        if VERB:
             print(f"CODE: {code}")
         new_stack_needed = False
         other_constraints = {  # Enforce constraints at stack creation rather than after
@@ -75,7 +76,8 @@ def create_stack_heur(df_items, truck, id):
         all_items_ids, counts_current_items = np.unique(
             curr_items_code.id_item, return_counts=True
         )
-        assert all(counts_current_items == 1), "Duplicate items are present!"
+        if N_DEBUG:
+            assert all(counts_current_items == 1), "Duplicate items are present!"
 
         for i, row in curr_items_code.iterrows():
             # Check the item was not added to a stack already
@@ -172,7 +174,7 @@ def create_stack_heur(df_items, truck, id):
                 elif was_added == 0:
                     # Max stackability was violated, stop
 
-                    # if DEBUG:
+                    # if VERB:
                     #     print("-> Reached max stackability!")
                     new_stack_needed = True
                 elif was_added == 1:
@@ -196,20 +198,24 @@ def create_stack_heur(df_items, truck, id):
         if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
             stacks_list.append(new_stack)
 
-        assert all(
-            used_items_arr == 1
-        ), f"For code {code}, {sum(1-used_items_arr)} items have not been used\nUnused: {np.argwhere(used_items_arr == 0)}"
+        if N_DEBUG:
+            assert all(
+                used_items_arr == 1
+            ), f"For code {code}, {sum(1-used_items_arr)} items have not been used\nUnused: {np.argwhere(used_items_arr == 0)}"
 
     for j in range(len(stacks_list)):
         stacks_list[j].assignID(id)
         id += 1
 
-    assert all([s.tot_weight for s in stacks_list]) > 0
+    if N_DEBUG:
+        assert all([s.tot_weight for s in stacks_list]) > 0
 
     n_items_post = len(df_items.index)
-    assert (
-        n_items_init == n_items_post
-    ), f"The number of items before was {n_items_init}, but after it is {n_items_post}"
+
+    if N_DEBUG:
+        assert (
+            n_items_init == n_items_post
+        ), f"The number of items before was {n_items_init}, but after it is {n_items_post}"
 
     # Check validity of stacks
     if checkValidStacks(stacks_list, truck, df_items, compareItems=True):
@@ -255,9 +261,10 @@ def refill_stacks(stacks_list, df_items, truck, id, stack_creation):
 
     it_added = []
 
-    assert len(np.unique(df_items["id_item"].values)) == len(
-        df_items.index
-    ), "The recycled item df contains duplicate"
+    if N_DEBUG:
+        assert len(np.unique(df_items["id_item"].values)) == len(
+            df_items.index
+        ), "The recycled item df contains duplicates"
 
     for i in range(len(stacks_list)):
         # Make sure it is still possible to add items to the stack

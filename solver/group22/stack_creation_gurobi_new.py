@@ -5,8 +5,10 @@ import os
 
 from solver.group22.stack_creation_heur import checkValidStacks
 
-DEBUG = False
-DEBUG_MORE = False
+VERB = False
+MORE_VERB = False
+
+N_DEBUG = False
 
 
 def create_stack_gurobi(df_items, truck, id):
@@ -60,9 +62,11 @@ def create_stack_gurobi(df_items, truck, id):
         # Isolate the items with the current code
         current_items = tmp_items[tmp_items.stackability_code == code]
         nest_h = current_items.nesting_height.values[0]
-        assert all(
-            current_items.nesting_height.values == nest_h
-        ), "Nesting heights are not always the same!"
+
+        if N_DEBUG:
+            assert all(
+                current_items.nesting_height.values == nest_h
+            ), "Nesting heights are not always the same!"
 
         # Evaluate most bounding weight constraint
         # Since for each stack. code the base dimensions have to be the same,
@@ -80,7 +84,7 @@ def create_stack_gurobi(df_items, truck, id):
             stacks_list.append(new_stack)
             current_items = updateItemsList(new_stack, current_items)
 
-            if DEBUG:
+            if VERB:
                 print(f"Remaining items, type {code}: {len(current_items.index)}")
 
     for j in range(len(stacks_list)):
@@ -213,13 +217,14 @@ def solve_knapsack_stack(items, truck_height, weight, other_constraints):
 
     solver.optimize()
 
-    if DEBUG_MORE:
+    if MORE_VERB:
         print(f"  Obj. val: {solver.getObjective().getValue()}")
         print(
             f"  Height constraint value: {solver.getRow(tot_height_constr).getValue()}"
         )
 
-    assert solver.getRow(tot_height_constr).getValue() <= data["bin_height"]
+    if N_DEBUG:
+        assert solver.getRow(tot_height_constr).getValue() <= data["bin_height"]
 
     new_stack = Stack()
     for j in data["bins"][::-1]:
@@ -227,7 +232,7 @@ def solve_knapsack_stack(items, truck_height, weight, other_constraints):
         for i in data["items"]:
             if not found_in_row and x[i, j].X == 1:
                 # Add element to the stack
-                if DEBUG:
+                if N_DEBUG:
                     assert (
                         data["heights"][i] == items.iloc[i].height
                     ), "The item heights don't match"

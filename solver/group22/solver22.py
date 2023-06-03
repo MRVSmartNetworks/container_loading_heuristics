@@ -11,11 +11,17 @@ from solver.group22.stack import Stack
 from solver.group22.stack_creation_heur import create_stack_heur, refill_stacks
 from solver.group22.stack_creation_gurobi_new import create_stack_gurobi
 
-DEBUG = False
-DEBUG_MORE = False
-
-GUROBI = True
+# VERB and MORE_VERB are used to print more information during runs
+VERB = False
+MORE_VERB = False
+# STATS prints scores of 2D solutions
 STATS = True
+
+# GUROBI is used to choose whether to use Gurobi to create stacks or not
+GUROBI = False
+
+# N_DEBUG is used to decide whether to execute assertions (much faster solution without)
+N_DEBUG = False
 
 MAX_ITER = 10000
 MAX_TRIES = 1
@@ -193,7 +199,7 @@ class Solver22:
             self.last_truck_type = ""
             while len(tmp_items.index) > 0 and self.iter < MAX_ITER:
                 print(f"Iter {self.iter}")
-                if DEBUG:
+                if VERB:
                     print(f"> Items left: {len(tmp_items.index)}")
 
                 if self.last_truck_was_empty:
@@ -240,9 +246,10 @@ class Solver22:
                         )
 
                     tot_it_in_stacks = sum([len(st.items) for st in self.stacks_list])
-                    assert tot_it_in_stacks == len(
-                        tmp_items.index
-                    ), f"Items in stack = {tot_it_in_stacks}, total items = {len(tmp_items.index)}"
+                    if N_DEBUG:
+                        assert tot_it_in_stacks == len(
+                            tmp_items.index
+                        ), f"Items in stack = {tot_it_in_stacks}, total items = {len(tmp_items.index)}"
                 else:
                     # Destroy the worse stacks that are present in the list
                     # (More than 30% height margin and no max stack)
@@ -273,18 +280,20 @@ class Solver22:
 
                         # Check that there are no discarded elements among the ones in the solution
                         for ind, row in it_recycle.iterrows():
-                            for st in self.stacks_list:
-                                assert row["id_item"] not in [
-                                    it["id_item"] for it in st.items
-                                ], f"Item {row['id_item']} was discarded, but appears in valid stack {st.id}!"
+                            if N_DEBUG:
+                                for st in self.stacks_list:
+                                    assert row["id_item"] not in [
+                                        it["id_item"] for it in st.items
+                                    ], f"Item {row['id_item']} was discarded, but appears in valid stack {st.id}!"
 
                         tot_it_not_in_sol = sum(
                             [len(st.items) for st in self.stacks_list]
                         ) + len(it_recycle.index)
 
-                        assert tot_it_not_in_sol == len(
-                            tmp_items.index
-                        ), "The items not in the solution do not match"
+                        if N_DEBUG:
+                            assert tot_it_not_in_sol == len(
+                                tmp_items.index
+                            ), "The items not in the solution do not match"
 
                         self.stacks_list, self.stack_number = refill_stacks(
                             self.stacks_list,
@@ -311,13 +320,14 @@ class Solver22:
 
                 tot_items_in_stacks = sum([len(st.items) for st in self.stacks_list])
 
-                assert tot_items_in_stacks == len(
-                    used_unique_ids
-                ), "The items in the stacks are not matching!"
+                if N_DEBUG:
+                    assert tot_items_in_stacks == len(
+                        used_unique_ids
+                    ), "The items in the stacks are not matching!"
 
-                assert (
-                    len(used_unique_ids) == n_unique_ids
-                ), f"The stacks contain {len(used_unique_ids)} elements, while the remaining items are {n_unique_ids}"
+                    assert (
+                        len(used_unique_ids) == n_unique_ids
+                    ), f"The stacks contain {len(used_unique_ids)} elements, while the remaining items are {n_unique_ids}"
                 #
                 #
                 ##################################
@@ -338,7 +348,7 @@ class Solver22:
                 # Cleanup stacks list
                 # self.stacks_list = self.cleanStackList(self.stacks_list)
 
-                if DEBUG:
+                if VERB:
                     print(f"Total number of generated stacks: {len(self.stacks_list)}")
 
                 # Solve 2D problems to place the stacks
@@ -365,7 +375,7 @@ class Solver22:
             for t in n_trucks.keys():
                 used_trucks += n_trucks[t]
 
-            if DEBUG:
+            if VERB:
                 print(f"Number of trucks analyzed: {used_trucks}")
                 print(
                     f"Actual number of used trucks: {len(list(set(self.curr_sol['idx_vehicle'])))}"
@@ -375,9 +385,10 @@ class Solver22:
             print(f"Current objective value: {self.curr_obj_value}")
             print(f"Broken Stacks: {self.count_broken}")
 
-            assert (
-                len(tmp_items.index) == 0
-            ), "Not all items have been used in current solution!"
+            if N_DEBUG:
+                assert (
+                    len(tmp_items.index) == 0
+                ), "Not all items have been used in current solution!"
 
             if self.updateBestSol() != 0:
                 print("Solution was updated!")
@@ -398,7 +409,7 @@ class Solver22:
         if recur:
             was_improv = self.improveSolution(df_items, df_trucks, n_trucks)
 
-            if was_improv:
+            if was_improv == 1:
                 print(f"Improved objective value: {self.best_obj_value}")
             else:
                 print(f"Optimal initial value: {self.best_obj_value}")
@@ -665,16 +676,17 @@ class Solver22:
                 # 'Push' stack towards bottom
                 sol_2D, bound = self.pushSlice(bound, new_slice, sol_2D)
 
-                assert all(
-                    len(st.items) > 0 for st in sol_2D["stack"]
-                ), "(2) Some stacks of the solution are empty!"
+                if N_DEBUG:
+                    assert all(
+                        len(st.items) > 0 for st in sol_2D["stack"]
+                    ), "(2) Some stacks of the solution are empty!"
 
-                if bound[-1][1] != truck["width"]:
-                    print("Error!")
+                    if bound[-1][1] != truck["width"]:
+                        print("Error!")
 
-                assert (
-                    bound[-1][1] == truck["width"]
-                ), f"Bound was built wrong! last: {bound[-1][1]}, width: {truck['width']}"
+                    assert (
+                        bound[-1][1] == truck["width"]
+                    ), f"Bound was built wrong! last: {bound[-1][1]}, width: {truck['width']}"
 
             else:
                 # If the new slice is empty, close the bin
@@ -693,7 +705,8 @@ class Solver22:
             items_volume = 0
             items_weight = 0
             for st in sol_2D["stack"]:
-                assert len(st.items) > 0, "The current stack is empty!!!"
+                if N_DEBUG:
+                    assert len(st.items) > 0, "The current stack is empty!!!"
                 items_area += st.area
                 items_volume += st.area * st.tot_height
                 items_weight += st.tot_weight
@@ -716,9 +729,10 @@ class Solver22:
 
         tot_items_after = tot_sol_items + tot_discarded_items + tot_remaining_items
 
-        assert (
-            tot_passed_items == tot_items_after
-        ), f"Passed items: {tot_passed_items}\nFinal count: {tot_items_after}"
+        if N_DEBUG:
+            assert (
+                tot_passed_items == tot_items_after
+            ), f"Passed items: {tot_passed_items}\nFinal count: {tot_items_after}"
 
         # Something else?
         if scores:
@@ -813,7 +827,7 @@ class Solver22:
             else:
                 i += 1
 
-        if DEBUG:
+        if VERB:
             print(f"{count_rem} stacks were removed because empty!")
 
         return stacks
@@ -863,13 +877,14 @@ class Solver22:
         weight_left = max_weight
         new_slice = []
 
-        if DEBUG_MORE:
+        if MORE_VERB:
             print("Starting to build slice:")
             print("  Number of available stacks: ", len(stacks))
 
-        assert all(
-            len(st.items) > 0 for st in stacks
-        ), "buildSlice was provided with empty stacks"
+        if N_DEBUG:
+            assert all(
+                len(st.items) > 0 for st in stacks
+            ), "buildSlice was provided with empty stacks"
 
         # Sort the stacks according to decreasing price
         stacks.sort(key=lambda x: x.price, reverse=True)
@@ -888,7 +903,7 @@ class Solver22:
                     # Stack is good as is - insert it
                     new_slice.append([stacks[i], i, 0])
 
-                    if DEBUG_MORE:
+                    if MORE_VERB:
                         print("Stack added to slice!")
 
                     delta_y -= stacks[i].width
@@ -905,7 +920,7 @@ class Solver22:
                     # If the stack cannot be placed, try rotating it by 90 degrees, if allowed
                     new_slice.append([stacks[i], i, 1])
 
-                    if DEBUG_MORE:
+                    if MORE_VERB:
                         print("Stack added to slice! (2)")
                     # Rotated stack - can place it width-wise
                     delta_y -= stacks[i].length
@@ -915,9 +930,10 @@ class Solver22:
                     i -= 1
 
             if stack_added:
-                assert (
-                    j == len(new_slice) - 1
-                ), f"Wrong j = {j}, but slice contains {len(new_slice)} items"
+                if N_DEBUG:
+                    assert (
+                        j == len(new_slice) - 1
+                    ), f"Wrong j = {j}, but slice contains {len(new_slice)} items"
 
                 # Update weight_left - remove the weight of the last added stack
                 weight_left -= new_slice[-1][0].tot_weight
@@ -926,11 +942,11 @@ class Solver22:
                 if j != 0:
                     # Get width (length if rotated) of 2nd to last element
                     if new_slice[-2][2] == 0:
-                        if DEBUG_MORE:
+                        if MORE_VERB:
                             print("Success here")
                         w_min2 = new_slice[j - 1][0].width
                     else:
-                        if DEBUG_MORE:
+                        if MORE_VERB:
                             print("Success here (2)")
                         w_min2 = new_slice[j - 1][0].length
                     # Add the width to the origin of the stack to get new origin
@@ -947,13 +963,14 @@ class Solver22:
         # heavy --> It may be possible to remove some itmes from stacks to try and
         # place them.
 
-        assert (
-            len(stacks) == n_stacks_init - n_stacks_placed
-        ), "The stacks do not add up... (1)"
+        if N_DEBUG:
+            assert (
+                len(stacks) == n_stacks_init - n_stacks_placed
+            ), "The stacks do not add up... (1)"
 
         number_old_stacks = i
 
-        if DEBUG_MORE:
+        if MORE_VERB:
             print("  Number of full stacks used: ", n_stacks_placed)
             print("  Number of stacks left: ", len(stacks))
 
@@ -1012,9 +1029,10 @@ class Solver22:
                                 discarded_stacks.append(new_stack)
                         else:
                             # The stack was emptied completely
-                            assert (
-                                len(stacks[i].items) == 0
-                            ), "The stack is not actually empty..."
+                            if N_DEBUG:
+                                assert (
+                                    len(stacks[i].items) == 0
+                                ), "The stack is not actually empty..."
 
                             # Remove the empty element from the stack list
                             del stacks[i]
@@ -1069,9 +1087,10 @@ class Solver22:
                     #########
 
                     if stack_added:
-                        assert (
-                            j == len(new_slice) - 1
-                        ), f"Wrong j = {j}, but slice contains {len(new_slice)} items"
+                        if N_DEBUG:
+                            assert (
+                                j == len(new_slice) - 1
+                            ), f"Wrong j = {j}, but slice contains {len(new_slice)} items"
                         # Update weight_left - remove the weight of the current stack
                         weight_left -= new_slice[-1][0].tot_weight
 
@@ -1079,11 +1098,11 @@ class Solver22:
                         if j > 0:
                             # Get width (length if rotated) of 2nd to last element
                             if new_slice[j - 1][2] == 0:
-                                if DEBUG_MORE:
+                                if MORE_VERB:
                                     print("Success here")
                                 w_min2 = new_slice[j - 1][0].width
                             else:
-                                if DEBUG_MORE:
+                                if MORE_VERB:
                                     print("Success here (2)")
                                 w_min2 = new_slice[j - 1][0].length
                             # Add the width to the origin of the stack to get new origin
@@ -1117,16 +1136,20 @@ class Solver22:
 
                 i += 1
 
-        if DEBUG_MORE:
+        if MORE_VERB:
             print(f"N. stacks in new slice: {len(new_slice)}")
 
-        if DEBUG:
+        if VERB:
             print("Number of discarded stacks: ", len(discarded_stacks))
 
-        assert (
-            len(stacks)
-            == n_stacks_init - n_stacks_placed - len(discarded_stacks) + n_placed_broken
-        ), "The stacks do not add up... (2)"
+        if N_DEBUG:
+            assert (
+                len(stacks)
+                == n_stacks_init
+                - n_stacks_placed
+                - len(discarded_stacks)
+                + n_placed_broken
+            ), "The stacks do not add up... (2)"
 
         for st in discarded_stacks:
             st.assignID(number_old_stacks)
@@ -1196,9 +1219,10 @@ class Solver22:
                 ind_top += 1
             # When the loop finishes, the element bound[ind_top] contains the upper end
 
-            assert (
-                len(bound[ind_bound : ind_top + 1]) > 1
-            ), "The considered elements of the bound are less than 2! Something went wrong"
+            if N_DEBUG:
+                assert (
+                    len(bound[ind_bound : ind_top + 1]) > 1
+                ), "The considered elements of the bound are less than 2! Something went wrong"
 
             # Search for valid points
             ind_top = (
@@ -1208,9 +1232,10 @@ class Solver22:
                 ind_top += 1
             # When the loop finishes, the element bound[ind_top] contains the upper end
 
-            assert (
-                len(bound[ind_bound : ind_top + 1]) > 1
-            ), "The considered elements of the bound are less than 2! Something went wrong"
+            if N_DEBUG:
+                assert (
+                    len(bound[ind_bound : ind_top + 1]) > 1
+                ), "The considered elements of the bound are less than 2! Something went wrong"
 
             # The x coordinate is the max between the x coord of the elements of
             # index between ind_bound and ind_top
@@ -1264,18 +1289,20 @@ class Solver22:
                 for p in bound[ind_extra:]:
                     new_bound.append(p)
 
-                assert (
-                    bound[-1][1] == new_bound[-1][1]
-                ), f"The last y of the bound does not match - {bound[ind_extra - 1][1]} (old) vs. {new_bound[-1][1]}"
+                if N_DEBUG:
+                    assert (
+                        bound[-1][1] == new_bound[-1][1]
+                    ), f"The last y of the bound does not match - {bound[ind_extra - 1][1]} (old) vs. {new_bound[-1][1]}"
 
             elif bound[ind_extra - 1][1] < new_bound[-1][1]:
                 raise ValueError("The last point of the bound was lost!")
 
             else:
                 # Ind_extra == len(bound)
-                assert (
-                    bound[ind_extra - 1][1] == new_bound[-1][1]
-                ), f"The last y of the bound should have been {bound[ind_extra - 1][1]}, it is instead {new_bound[-1][1]}"
+                if N_DEBUG:
+                    assert (
+                        bound[ind_extra - 1][1] == new_bound[-1][1]
+                    ), f"The last y of the bound should have been {bound[ind_extra - 1][1]}, it is instead {new_bound[-1][1]}"
 
         return curr_sol_2D, new_bound
 
@@ -1324,9 +1351,10 @@ class Solver22:
         # Work on self.current_best_sol and self.scores_2D_best
 
         # Get the individual trucks
-        assert len(self.trucks_id_best_sol) == len(
-            self.scores_2D_best
-        ), "The number unique truck IDs does not correspond to the number of scores..."
+        if N_DEBUG:
+            assert len(self.trucks_id_best_sol) == len(
+                self.scores_2D_best
+            ), "The number unique truck IDs does not correspond to the number of scores..."
 
         # Extract scores
         trucks_scores = [e[2] for e in self.scores_2D_best]
@@ -1359,6 +1387,9 @@ class Solver22:
                 collected_items.loc[len(collected_items)] = df_items.loc[
                     df_items.id_item == it_id
                 ].iloc[0]
+
+        # Shuffle the items dataframe:
+        collected_items = collected_items.sample(frac=1)
 
         # Now it is possible to evaluate the price associated with these trucks
         # and then we can proceed with a new solution involving the specified
