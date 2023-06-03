@@ -18,7 +18,10 @@ MORE_VERB = False
 STATS = True
 
 # GUROBI is used to choose whether to use Gurobi to create stacks or not
-GUROBI = False
+GUROBI = True
+
+# Fraction (percentage) of deleted trucks when improving solution
+FRAC_DELETED_TRUCKS = 35  # %
 
 # N_DEBUG is used to decide whether to execute assertions (much faster solution without)
 N_DEBUG = False
@@ -81,10 +84,12 @@ class Solver22:
 
         # Store the scores of the BEST solution only (updated at the end of each iteration)
         self.scores_2D_best = []
-        self.trucks_id_best_sol = []
 
         # Store time for single iteration
         self.runtimes = []
+
+        # Id of truck
+        self.idx_vehicle = 0
 
         # The following are variables used during the run to guide some decision
         self.last_truck_was_empty = False
@@ -184,11 +189,13 @@ class Solver22:
             # Used to track the different types of used vehicles and assign unique IDs:
             # NOTE: it can be assigned by the
             if used_trucks_dict is None:
+                self.idx_vehicle = 0
                 n_trucks = {}
                 for id in tmp_vehicles.id_truck.unique():
                     n_trucks[id] = 0
             else:
                 n_trucks = used_trucks_dict.copy()
+                self.idx_vehicle = sum(used_trucks_dict.values())
 
             all_trucks_id = []
 
@@ -198,7 +205,7 @@ class Solver22:
             self.curr_truck_type = ""
             self.last_truck_type = ""
             while len(tmp_items.index) > 0 and self.iter < MAX_ITER:
-                print(f"Iter {self.iter}")
+                print(f"\nIter {self.iter}")
                 if VERB:
                     print(f"> Items left: {len(tmp_items.index)}")
 
@@ -216,18 +223,19 @@ class Solver22:
                 self.last_truck_type = self.curr_truck_type
                 self.curr_truck_type = curr_truck.id_truck
 
-                # Having selected the truck type, update its ID by appending the counter found in n_trucks
-                # NOTE: the padding done in this case allows for at most 999 trucks of the same type...
                 n_trucks[curr_truck.id_truck] += 1
-                curr_truck.id_truck = f"{curr_truck.id_truck}_{str(n_trucks[curr_truck.id_truck]).zfill(3)}"
+                # The value is updated with sol
+                curr_truck["idx_vehicle"] = self.idx_vehicle
 
                 if self.iter % 50 == 0:
-                    print_trucks_ID.append(curr_truck.id_truck)
+                    print_trucks_ID.append(curr_truck.idx_vehicle)
 
                 all_trucks_id.append(curr_truck.id_truck)
 
                 if True:
-                    print(f"> Truck ID: {curr_truck.id_truck}")
+                    print(
+                        f"> Truck type: {curr_truck.id_truck}\n> Truck ID: {curr_truck.idx_vehicle}"
+                    )
 
                 ##################################
                 # Improved implementation
@@ -351,7 +359,7 @@ class Solver22:
                 if VERB:
                     print(f"Total number of generated stacks: {len(self.stacks_list)}")
 
-                # Solve 2D problems to place the stacks
+                ####### 2D PROBLEM SOLUTION (2D bin packing)
                 sol_2D, self.stacks_list, curr_score = self.solve2D(
                     self.stacks_list,
                     curr_truck,
@@ -377,9 +385,7 @@ class Solver22:
 
             if VERB:
                 print(f"Number of trucks analyzed: {used_trucks}")
-                print(
-                    f"Actual number of used trucks: {len(list(set(self.curr_sol['idx_vehicle'])))}"
-                )
+                print(f"Actual number of used trucks: {self.idx_vehicle}")
 
             self.checkValidSolution(self.curr_sol, self.df_items, self.df_vehicles)
             print(f"Current objective value: {self.curr_obj_value}")
@@ -393,7 +399,6 @@ class Solver22:
             if self.updateBestSol() != 0:
                 print("Solution was updated!")
                 self.scores_2D_best = sublist_scores_2D
-                self.trucks_id_best_sol = all_trucks_id
 
             self.runtimes.append(time.time() - t_0)
             print("Time for solution: ", self.runtimes[self.tries], "\n")
@@ -403,7 +408,7 @@ class Solver22:
 
         print(f"Optimal initial value: {self.best_obj_value}")
 
-        # TODO: solution improvement from best solution so far
+        ##### SOLUTION IMPROVEMENT
         # Approach: start from the last truck which was filled, try to extract items
         # and place them in other trucks
         if recur:
@@ -419,7 +424,7 @@ class Solver22:
         df_sol = pd.DataFrame.from_dict(self.curr_best_sol)
         df_sol.to_csv(os.path.join("results", f"{self.name}_sol.csv"), index=False)
 
-        ### Plot results:
+        ### PLOTS:
         if used_trucks_dict is None:
             # Only plot if the trucks dictionary has been created from scratch
             for t_id in print_trucks_ID:
@@ -715,7 +720,9 @@ class Solver22:
             # percent_vol = items_volume / truck_volume
             percent_weight = items_weight / truck.max_weight
 
-            score = [percent_area, percent_weight, percent_area * percent_weight]
+            # Assigning scores (2 possible approaches)
+            # score = [percent_area, percent_weight, percent_area * percent_weight]
+            score = [percent_area, percent_weight, percent_area + percent_weight]
 
         if STATS:
             print(f"> Truck area utilization: {percent_area}")
@@ -1206,31 +1213,24 @@ class Solver22:
                 ind_bound += 1
 
             if ind_bound < len(bound):
-                if bound[ind_bound][1] == y_i:
-                    pass
-                else:
-                    ind_bound -= 1
+                assert bound[ind_bound][1] > y_i
+                ind_bound -= 1
+                # This point has the same x coordinate as the one at which
+                # the loop was broken and it is for sure not 'above' the
+                # current stack
+            else:
+                raise ValueError("Out of boundary array bounds!")
 
             # Search for valid points
-            ind_top = (
-                ind_bound + 0
-            )  # Needed to prevent to just copy the reference and update both indices...
+            ind_top = ind_bound + 0
+            # (Needed to prevent to just copy the reference and update both indices...)
             while ind_top < len(bound) and bound[ind_top][1] <= y_i + w_i:
                 ind_top += 1
             # When the loop finishes, the element bound[ind_top] contains the upper end
 
-            if N_DEBUG:
-                assert (
-                    len(bound[ind_bound : ind_top + 1]) > 1
-                ), "The considered elements of the bound are less than 2! Something went wrong"
-
-            # Search for valid points
-            ind_top = (
-                ind_bound + 0
-            )  # Needed to prevent to just copy the reference and update both indices...
-            while bound[ind_top][1] <= y_i + w_i:
-                ind_top += 1
-            # When the loop finishes, the element bound[ind_top] contains the upper end
+            if ind_top >= len(bound):
+                assert bound[ind_top - 1][1] == y_i + w_i
+                ind_top -= 1
 
             if N_DEBUG:
                 assert (
@@ -1325,8 +1325,12 @@ class Solver22:
         o_val = 0
         vehicle_list_type = np.array(s["type_vehicle"])
         vehicle_list_id = np.array(s["idx_vehicle"])
-        for t_id in np.unique(vehicle_list_id):
-            o_val += float(df_trucks.loc[df_trucks.id_truck == t_id[:2], "cost"].values)
+
+        unique_ids, idx = np.unique(vehicle_list_id, return_index=True)
+        all_vehicle_types = vehicle_list_type[idx]
+
+        for t_id in all_vehicle_types:
+            o_val += float(df_trucks.loc[df_trucks.id_truck == t_id, "cost"].values)
 
         return o_val
 
@@ -1352,7 +1356,7 @@ class Solver22:
 
         # Get the individual trucks
         if N_DEBUG:
-            assert len(self.trucks_id_best_sol) == len(
+            assert len(self.curr_best_sol["idx_vehicle"]) == len(
                 self.scores_2D_best
             ), "The number unique truck IDs does not correspond to the number of scores..."
 
@@ -1363,11 +1367,19 @@ class Solver22:
         ind_sorted_scores = np.argsort(trucks_scores)
 
         # Sort trucks according to the increasing score
-        sorted_trucks = np.array(self.trucks_id_best_sol)[ind_sorted_scores]
+        sorted_trucks = np.unique(np.arange(self.idx_vehicle))[ind_sorted_scores]
 
-        # TODO: review - how to select the worst trucks (threshold vs fixed amount)
-        # Select 10 worst trucks
-        worst_trucks = sorted_trucks[:10]
+        # The number of selected trucks is given by the percentage
+        n_del_trucks = round((FRAC_DELETED_TRUCKS * len(sorted_trucks)) / 100)
+        worst_trucks = sorted_trucks[:n_del_trucks]
+        # Get their type
+        worst_trucks_type = []
+        for i in range(len(self.curr_best_sol["type_vehicle"])):
+            if (
+                self.curr_best_sol["idx_vehicle"][i] in worst_trucks
+                and self.curr_best_sol["type_vehicle"][i] not in worst_trucks_type
+            ):
+                worst_trucks_type.append(self.curr_best_sol["type_vehicle"][i])
 
         print(worst_trucks)
 
@@ -1379,7 +1391,7 @@ class Solver22:
         best_sol_items = np.array(self.curr_best_sol["id_item"])
         # Isolate the list of truck IDs
         best_sol_trucks = np.array(self.curr_best_sol["idx_vehicle"])
-        for tr_id in worst_trucks:  # tr_id is an ID (string)
+        for tr_id in worst_trucks:  # tr_id is an ID (int)
             items_in_curr_truck = best_sol_items[
                 best_sol_trucks == tr_id
             ]  # Isolate items in current truck
@@ -1396,8 +1408,8 @@ class Solver22:
         # objects only
 
         old_cost = sum(
-            float(df_trucks.loc[df_trucks.id_truck == t_id[:2], "cost"].values)
-            for t_id in worst_trucks
+            float(df_trucks.loc[df_trucks.id_truck == t_id, "cost"].values)
+            for t_id in worst_trucks_type
         )
 
         print("######################")
@@ -1481,7 +1493,7 @@ class Solver22:
                 # if it.id_item == "I0283":
                 #     print("Incriminated element!")
                 self.curr_sol["type_vehicle"].append(truck["id_truck"][:2])
-                self.curr_sol["idx_vehicle"].append(truck["id_truck"])
+                self.curr_sol["idx_vehicle"].append(self.idx_vehicle)
                 self.curr_sol["id_stack"].append(sol_2D["stack"][i].id)
                 self.curr_sol["id_item"].append(it["id_item"])
                 self.curr_sol["x_origin"].append(sol_2D["x_sol"][i])
@@ -1490,12 +1502,15 @@ class Solver22:
                 if sol_2D["orient"][i] == 1:
                     self.curr_sol["orient"].append("w")
                 else:
-                    self.curr_sol["orient"].append("n")
+                    self.curr_sol["orient"].append("l")
                 j += 1
 
                 # Remove used items from the items DF
                 upd_items = upd_items[upd_items.id_item != it["id_item"]]
 
+        if i > 0:
+            # Only update if the truck was used
+            self.idx_vehicle += 1
         return upd_items
 
     def updateBestSol(self):
@@ -1617,7 +1632,8 @@ class Solver22:
             return valid
 
         # 2. Check non overlapping
-        used_trucks_id = np.unique(sol["idx_vehicle"])
+        used_trucks_idx = np.unique(sol["idx_vehicle"])
+        used_trucks_type = np.unique(sol["type_vehicle"])
 
         # for i in range(len(used_trucks_id)):
         #     truck_type = str(used_trucks_id[i][:2])
@@ -1637,21 +1653,27 @@ class Solver22:
 
         # 3. Check constraints
 
-        # 3.1 - Max area
-        for i in range(len(used_trucks_id)):
-            truck_type = str(used_trucks_id[i][:2])
+        for i in range(len(used_trucks_idx)):
+            truck_type = sol["type_vehicle"][i]
             curr_truck = trucks_df.loc[trucks_df.id_truck == truck_type]
 
+            # 3.1 - Max area
             # Assuming the items are not overlapped:
-            curr_items_ground = np.array(sol["id_item"])[
-                sol["idx_vehicle"] == used_trucks_id[i] and sol["z_origin"] == 0
-            ]
+            curr_items_ground = []
+            for j in range(len(sol["idx_vehicle"])):
+                if (
+                    sol["idx_vehicle"][j] == used_trucks_idx[i]
+                    and sol["z_origin"][i] == 0
+                ):
+                    curr_items_ground.append(sol["id_item"][i])
+
+            curr_items_ground = np.array(curr_items_ground)
 
             bool_items_ind = np.zeros((len(items_df.index),))
             items_id_list = items_df.id_item.tolist()
-            for i in range(len(items_id_list)):
-                if items_id_list[i] in curr_items_ground:
-                    bool_items_ind[i] = 1
+            for j in range(len(items_id_list)):
+                if items_id_list[j] in curr_items_ground:
+                    bool_items_ind[j] = 1
 
             items_gnd = items_df.loc[bool_items_ind == 1]
             items_gnd_area = pd.DataFrame()
@@ -1664,25 +1686,21 @@ class Solver22:
                 curr_truck.width.iloc[0]
             ):
                 valid = False
-                print(f"Truck {used_trucks_id[i]} includes too many elements!")
+                print(f"Truck {used_trucks_idx[i]} includes too many elements!")
                 return valid
 
-        # 3.2 - Max weight
-        for i in range(len(used_trucks_id)):
-            truck_type = str(used_trucks_id[i][:2])
-            curr_truck = trucks_df.loc[trucks_df.id_truck == truck_type]
-
+            # 3.2 - Max weight
             curr_tot_wt = curr_truck["max_weight"].values
 
             items_in_truck_id = np.array(sol["id_item"])[
-                sol["idx_vehicle"] == used_trucks_id[i]
+                sol["idx_vehicle"] == used_trucks_idx[i]
             ]
 
             bool_items_ind = np.zeros((len(items_df.index),))
             items_id_list = items_df.id_item.tolist()
-            for i in range(len(items_id_list)):
-                if items_id_list[i] in items_in_truck_id:
-                    bool_items_ind[i] = 1
+            for j in range(len(items_id_list)):
+                if items_id_list[j] in items_in_truck_id:
+                    bool_items_ind[j] = 1
 
             items_in_truck = items_df.loc[bool_items_ind == 1]
 
@@ -1690,7 +1708,7 @@ class Solver22:
             if tot_wt_items > curr_tot_wt:
                 valid = False
                 print(
-                    f"Truck {used_trucks_id[i]} has its max_weight constraint violated"
+                    f"Truck {used_trucks_idx[i]} has its max_weight constraint violated"
                 )
                 return valid
 

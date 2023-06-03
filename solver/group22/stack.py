@@ -289,10 +289,9 @@ class Stack:
 
         if len(self.items) > 1:
             for i in range(1, len(self.items)):
+                last_z = z_lst[-1]
                 z_lst.append(
-                    z_lst[-1]
-                    + self.items[i]["height"]
-                    - self.items[i - 1]["nesting_height"]
+                    self.items[i - 1]["height"] - self.items[i - 1]["nesting_height"]
                 )
 
         return z_lst
