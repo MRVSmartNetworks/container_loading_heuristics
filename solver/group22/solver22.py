@@ -128,6 +128,15 @@ class Solver22:
         ---
         Solution of the problem with the proposed heuristics.
 
+        Steps:
+        - Truck selection (decision rule - trucks ranked by score or selected to be
+        able to contain all items if there are a few left)
+        - Stack creation (either by heuristic approach - when refilling - or with
+        Gurobi) - stacks are recycled if the same truck is used as they are built to
+        satisfy constraints of the truck
+        - 2D packing (via 'peak filling slices push' method, stack selection based on
+        s)
+
         ### Input parameters:
         - df_items: dataframe containing all items
         - df_trucks: dataframe containing all trucks
@@ -415,9 +424,9 @@ class Solver22:
             was_improv = self.improveSolution(df_items, df_trucks, n_trucks)
 
             if was_improv == 1:
-                print(f"Improved objective value: {self.best_obj_value}")
+                print(f"\nImproved objective value: {self.best_obj_value}")
             else:
-                print(f"Optimal initial value: {self.best_obj_value}")
+                print(f"\nOptimal objective value: {self.best_obj_value}")
 
         # Append best solution for current truck
         # Need to make sure the items left have been updated
@@ -538,7 +547,7 @@ class Solver22:
         - df_items: pandas Dataframe of usable items.
         - truck: pandas Series object containing the truck information.
 
-        NOTE: this method is deprecated as it is far from ideal!
+        NOTE: this method is not used in the solution as it is far from ideal!
 
         Having isolated all stackability codes, iterate on all items for each code value.
         Place each item in a stack, until an item does not pass the checks for being added.
@@ -654,7 +663,7 @@ class Solver22:
         self.discarded_stacks = []
         while space_left and weight_left > 0:
             # 1. Assign prices to each stack:
-            self.priceStack(up_stacks, override=[0, 1, 2, 3])
+            self.priceStack(up_stacks, override=[0, 1, 2, 3, 5])
 
             curr_stacks_n = len(up_stacks)
 
@@ -752,15 +761,15 @@ class Solver22:
         Assign to each stack a price, which will be used to choose which
         one to place first when solving the 2D bin packing problem.
 
-        There are 4 different rules to assign the price, chosen randomly:
+        There are different rules to assign the price, chosen randomly:
         - Price = area
         - Price = length
         - Price = width
-        - Price = perimeter
+        - Price = perimeter (NOT USED)
         - Price = stack height ---- Not so good
-        - Price = total volume
-        - Price = 1 / density - as defined by the specs (weight / area)
-        - Price = height / weight
+        - Price = total volume (NOT USED)
+        - Price = 1 / density - as defined by the specs (weight / area) (NOT USED)
+        - Price = height / weight (NOT USED)
 
         The input variable 'stacks' is a list of Stack objects.
         This method updates the 'price' attribute inside each Stack object.
