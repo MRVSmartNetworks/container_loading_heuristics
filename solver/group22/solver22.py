@@ -452,7 +452,6 @@ class Solver22:
         the column "volume"
         - forbidden_trucks: list of IDs of trucks which have found to be not viable to store items
         """
-        # TODO (maybe): introduce some random behavior, as the current procedure may get stuck...
 
         if "volume" not in remaining_items.columns:
             remaining_items["volume"] = (
@@ -525,6 +524,7 @@ class Solver22:
                 ord_vehicles = trucks_df.sort_values(
                     by=["dim_wt_cost_ratio"], ascending=False
                 )
+
                 return ord_vehicles.iloc[0]
 
     def create_stack(self, df_items, truck):  # NOT USED!
@@ -1412,9 +1412,9 @@ class Solver22:
             for t_id in worst_trucks_type
         )
 
-        print("######################")
-        print("#  Solution Attempt  #")
-        print("######################")
+        print("#########################")
+        print("#  Improvement Attempt  #")
+        print("#########################")
 
         sub_solver = Solver22()
         sub_solver.solve(
