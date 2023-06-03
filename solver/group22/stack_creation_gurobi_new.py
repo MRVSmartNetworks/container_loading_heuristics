@@ -5,7 +5,7 @@ import os
 
 from solver.group22.stack_creation_heur import checkValidStacks
 
-DEBUG = True
+DEBUG = False
 DEBUG_MORE = False
 
 
@@ -43,7 +43,7 @@ def create_stack_gurobi(df_items, truck, id):
     tmp_items = df_items.copy()
 
     for code in stack_codes:
-        if DEBUG:
+        if True:
             print("Code: ", code)
             # if code == 1:
             #     print("Code is 1")
@@ -88,7 +88,7 @@ def create_stack_gurobi(df_items, truck, id):
         id += 1
 
     # Check validity of stacks
-    if checkValidStacks(stacks_list, df_items, truck, compareItems=True):
+    if checkValidStacks(stacks_list, truck, df_items, compareItems=True):
         return stacks_list, id
     else:
         raise ValueError("Invalid stacks have been created!")
