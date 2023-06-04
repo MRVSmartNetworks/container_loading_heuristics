@@ -18,7 +18,7 @@ MORE_VERB = False
 STATS = True
 
 # GUROBI is used to choose whether to use Gurobi to create stacks or not
-GUROBI = True
+GUROBI = False
 
 # Fraction (percentage) of deleted trucks when improving solution
 FRAC_DELETED_TRUCKS = 35  # %
@@ -27,7 +27,7 @@ FRAC_DELETED_TRUCKS = 35  # %
 N_DEBUG = False
 
 MAX_ITER = 10000
-MAX_TRIES = 3
+MAX_TRIES = 1
 
 
 class Solver22:
@@ -122,6 +122,7 @@ class Solver22:
         max_tries=MAX_TRIES,
         used_trucks_dict=None,
         recur=True,
+        implem="new",
     ):
         """
         solve
@@ -246,121 +247,131 @@ class Solver22:
                         f"> Truck type: {curr_truck.id_truck}\n> Truck ID: {curr_truck.idx_vehicle}"
                     )
 
-                ##################################
-                # Improved implementation
-                #
-                #
-                if self.curr_truck_type != self.last_truck_type:
-                    # Build stacks with the copied list of items 'tmp_items'
+                if implem.lower() == "new":
+                    ##################################
+                    # Improved implementation
+                    #
+                    if self.curr_truck_type != self.last_truck_type:
+                        # Shuffle items
+                        tmp_items = tmp_items.sample(frac=1, random_state=315054)
+                        # Build stacks
+                        if not GUROBI:
+                            self.stacks_list, self.stack_number = create_stack_heur(
+                                tmp_items, curr_truck, self.stack_number
+                            )
+                        else:
+                            self.stacks_list, self.stack_number = create_stack_gurobi(
+                                tmp_items, curr_truck, self.stack_number
+                            )
 
-                    if not GUROBI:
-                        self.stacks_list, self.stack_number = create_stack_heur(
-                            tmp_items, curr_truck, self.stack_number
-                        )
-                    else:
-                        self.stacks_list, self.stack_number = create_stack_gurobi(
-                            tmp_items, curr_truck, self.stack_number
-                        )
-
-                    tot_it_in_stacks = sum([len(st.items) for st in self.stacks_list])
-                    if N_DEBUG:
-                        assert tot_it_in_stacks == len(
-                            tmp_items.index
-                        ), f"Items in stack = {tot_it_in_stacks}, total items = {len(tmp_items.index)}"
-                else:
-                    # Destroy the worse stacks that are present in the list
-                    # (More than 30% height margin and no max stack)
-
-                    del_index = np.zeros(len(self.stacks_list))
-                    t_height = curr_truck["height"]
-                    thresh = 0.3 * t_height
-                    for k in range(len(self.stacks_list)):
-                        if (
-                            t_height - self.stacks_list[k].tot_height
-                        ) > thresh and not self.stacks_list[k].isMaxStack():
-                            del_index[k] = 1
-
-                    for k in list(range(len(del_index)))[::-1]:
-                        if del_index[k]:
-                            # Extract items from the stacks
-                            self.discarded_stacks.append(self.stacks_list[k])
-                            del self.stacks_list[k]
-
-                    # The stacks present in the current list are still valid!
-                    # Can create new stacks with the items in the discarded ones
-                    if len(self.discarded_stacks) > 0:
-                        # Extract items from stacks
-                        it_recycle = pd.DataFrame(columns=tmp_items.columns)
-                        for st in self.discarded_stacks:
-                            for it in st.items:
-                                it_recycle.loc[len(it_recycle)] = it
-
-                        # Check that there are no discarded elements among the ones in the solution
-                        for ind, row in it_recycle.iterrows():
-                            if N_DEBUG:
-                                for st in self.stacks_list:
-                                    assert row["id_item"] not in [
-                                        it["id_item"] for it in st.items
-                                    ], f"Item {row['id_item']} was discarded, but appears in valid stack {st.id}!"
-
-                        tot_it_not_in_sol = sum(
+                        tot_it_in_stacks = sum(
                             [len(st.items) for st in self.stacks_list]
-                        ) + len(it_recycle.index)
-
-                        if N_DEBUG:
-                            assert tot_it_not_in_sol == len(
-                                tmp_items.index
-                            ), "The items not in the solution do not match"
-
-                        self.stacks_list, self.stack_number = refill_stacks(
-                            self.stacks_list,
-                            it_recycle,
-                            curr_truck,
-                            self.stack_number,
-                            create_stack_heur,
                         )
+                        if N_DEBUG:
+                            assert tot_it_in_stacks == len(
+                                tmp_items.index
+                            ), f"Items in stack = {tot_it_in_stacks}, total items = {len(tmp_items.index)}"
+                    else:
+                        # Destroy the worse stacks that are present in the list
+                        # (More than 30% height margin and no max stack)
 
-                # Make sure all items left appear in the stacks
-                # (Code borrowed from stack_creation_heur.py)
+                        del_index = np.zeros(len(self.stacks_list))
+                        t_height = curr_truck["height"]
+                        thresh = 0.3 * t_height
+                        for k in range(len(self.stacks_list)):
+                            if (
+                                t_height - self.stacks_list[k].tot_height
+                            ) > thresh and not self.stacks_list[k].isMaxStack():
+                                del_index[k] = 1
 
-                # Isolate the single
-                n_unique_ids = len(tmp_items.index)
+                        for k in list(range(len(del_index)))[::-1]:
+                            if del_index[k]:
+                                # Extract items from the stacks
+                                self.discarded_stacks.append(self.stacks_list[k])
+                                del self.stacks_list[k]
 
-                stack_items_ids = []
-                for st in self.stacks_list:
-                    stack_items_ids += [it.id_item for it in st.items]
+                        # The stacks present in the current list are still valid!
+                        # Can create new stacks with the items in the discarded ones
+                        if len(self.discarded_stacks) > 0:
+                            # Extract items from stacks
+                            it_recycle = pd.DataFrame(columns=tmp_items.columns)
+                            for st in self.discarded_stacks:
+                                for it in st.items:
+                                    it_recycle.loc[len(it_recycle)] = it
 
-                stack_items_ids = np.array(stack_items_ids)
-                used_unique_ids, used_counts = np.unique(
-                    stack_items_ids, return_counts=True
-                )
+                            # Check that there are no discarded elements among the ones in the solution
+                            for ind, row in it_recycle.iterrows():
+                                if N_DEBUG:
+                                    for st in self.stacks_list:
+                                        assert row["id_item"] not in [
+                                            it["id_item"] for it in st.items
+                                        ], f"Item {row['id_item']} was discarded, but appears in valid stack {st.id}!"
 
-                tot_items_in_stacks = sum([len(st.items) for st in self.stacks_list])
+                            if N_DEBUG:
+                                tot_it_not_in_sol = sum(
+                                    [len(st.items) for st in self.stacks_list]
+                                ) + len(it_recycle.index)
+                                assert tot_it_not_in_sol == len(
+                                    tmp_items.index
+                                ), "The items not in the solution do not match"
 
-                if N_DEBUG:
-                    assert tot_items_in_stacks == len(
-                        used_unique_ids
-                    ), "The items in the stacks are not matching!"
+                            self.stacks_list, self.stack_number = refill_stacks(
+                                self.stacks_list,
+                                it_recycle,
+                                curr_truck,
+                                self.stack_number,
+                                create_stack_heur,
+                            )
 
-                    assert (
-                        len(used_unique_ids) == n_unique_ids
-                    ), f"The stacks contain {len(used_unique_ids)} elements, while the remaining items are {n_unique_ids}"
-                #
-                #
-                ##################################
+                    # Shuffle the list of stacks
+                    random.shuffle(self.stacks_list)
 
-                ##################################
-                # Original implementation:
-                # NOTE: with this approach, it is not possible to create
-                # stacks using gurobi due to time constraints, as it
-                # recreates all the stacks from scratch at each iteration
+                    # Make sure all items left appear in the stacks
+                    # (Code borrowed from stack_creation_heur.py)
 
-                # Build stacks with the copied list of items 'tmp_items'
-                # self.stacks_list, self.stack_number = create_stack_cs(
-                #     tmp_items, curr_truck, self.stack_number
-                # )
+                    # Isolate the single
+                    n_unique_ids = len(tmp_items.index)
 
-                ##################################
+                    stack_items_ids = []
+                    for st in self.stacks_list:
+                        stack_items_ids += [it.id_item for it in st.items]
+
+                    stack_items_ids = np.array(stack_items_ids)
+                    used_unique_ids, used_counts = np.unique(
+                        stack_items_ids, return_counts=True
+                    )
+
+                    tot_items_in_stacks = sum(
+                        [len(st.items) for st in self.stacks_list]
+                    )
+
+                    if N_DEBUG:
+                        assert tot_items_in_stacks == len(
+                            used_unique_ids
+                        ), "The items in the stacks are not matching!"
+
+                        assert (
+                            len(used_unique_ids) == n_unique_ids
+                        ), f"The stacks contain {len(used_unique_ids)} elements, while the remaining items are {n_unique_ids}"
+                    #
+                    #
+                    ##################################
+
+                elif implem.lower() == "old":
+                    ##################################
+                    # Original implementation:
+                    # NOTE: with this approach, it is not possible to create
+                    # stacks using gurobi due to time constraints, as it
+                    # recreates all the stacks from scratch at each iteration
+
+                    # Build stacks with the copied list of items 'tmp_items'
+                    self.stacks_list, self.stack_number = create_stack_heur(
+                        tmp_items, curr_truck, self.stack_number
+                    )
+
+                    # Shuffle the list of stacks
+                    random.shuffle(self.stacks_list)
+                    ##################################
 
                 # Cleanup stacks list
                 # self.stacks_list = self.cleanStackList(self.stacks_list)
@@ -663,7 +674,7 @@ class Solver22:
         self.discarded_stacks = []
         while space_left and weight_left > 0:
             # 1. Assign prices to each stack:
-            self.priceStack(up_stacks, override=[0, 1, 2, 3, 5])
+            self.priceStack(up_stacks, override=[0, 1, 2, 3])
 
             curr_stacks_n = len(up_stacks)
 
@@ -768,7 +779,7 @@ class Solver22:
         - Price = perimeter (NOT USED)
         - Price = stack height ---- Not so good
         - Price = total volume (NOT USED)
-        - Price = 1 / density - as defined by the specs (weight / area) (NOT USED)
+        - Price = 1 / density - as defined by the specs (weight / volume) (NOT USED)
         - Price = height / weight (NOT USED)
 
         The input variable 'stacks' is a list of Stack objects.
@@ -816,7 +827,9 @@ class Solver22:
         elif val == 6:
             for i in range(len(stacks)):
                 # Area / weight
-                stacks[i].assignPrice(stacks[i].area / stacks[i].tot_weight)
+                stacks[i].assignPrice(
+                    stacks[i].area * stacks[i].tot_height / stacks[i].tot_weight
+                )
         elif val == 7:
             for i in range(len(stacks)):
                 # Height / weight
@@ -1432,6 +1445,7 @@ class Solver22:
             max_tries=5,
             used_trucks_dict=used_trucks_dict,
             recur=False,
+            implem="old",
         )
 
         print("######################")

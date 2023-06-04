@@ -169,7 +169,8 @@ def cuboid_data(o, size=(1, 1, 1)):
 
 def set_axes_equal(ax):
     # From: https://stackoverflow.com/questions/13685386/how-to-set-the-equal-aspect-ratio-for-all-axes-x-y-z
-    """Make axes of 3D plot have equal scale so that spheres appear as spheres,
+    """
+    Make axes of 3D plot have equal scale so that spheres appear as spheres,
     cubes as cubes, etc..  This is one possible solution to Matplotlib's
     ax.set_aspect('equal') and ax.axis('equal') not working for 3D.
 

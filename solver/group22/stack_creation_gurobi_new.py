@@ -73,7 +73,7 @@ def create_stack_gurobi(df_items, truck, id):
         # max density is actually a weight constraint
         max_supported_wt = min(
             float(truck.max_weight_stack),
-            float(truck.max_density) * float(current_items.surface.iloc[0]),
+            float(truck.max_density) * float(current_items.volume.iloc[0]),
         )
 
         while len(current_items.index) > 0:
