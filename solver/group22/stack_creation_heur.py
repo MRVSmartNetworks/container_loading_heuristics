@@ -37,7 +37,7 @@ def create_stack_heur(df_items, truck, id):
     - If the item violated max weight stack, do the same as for max height, but
     considering the items weight
     - If the item violated max density, find the value of the weight associated with
-    the max density (given the stack surface) and treat the event as a max weight
+    the max density (given the stack volume) and treat the event as a max weight
     violation
     - If max stackability was violated, it is not possible to add any more items.
     The stack is then closed and a new one is started.
@@ -63,7 +63,7 @@ def create_stack_heur(df_items, truck, id):
         }
 
         new_stack = Stack()
-        curr_items_code = df_items[df_items.stackability_code == code].reset_index()
+        curr_items_code = df_items.loc[df_items.stackability_code == code].reset_index()
         all_weights = np.sort(list(curr_items_code.weight.unique()))
         all_weights = all_weights[::-1]  # Sorted in decreasing order
         all_heights = np.sort(list(curr_items_code.height.unique()))
@@ -135,14 +135,15 @@ def create_stack_heur(df_items, truck, id):
                     # Max weight was violated
                     if was_added == -2:
                         remaining_weight = (
-                            other_constraints["max_height"] - new_stack.tot_weight
+                            other_constraints["max_weight"] - new_stack.tot_weight
                         )
                     else:
                         # If constraint on the density
                         remaining_weight = (
-                            other_constraints["max_dens"] * new_stack.area
-                            - new_stack.tot_weight
-                        )
+                            other_constraints["max_dens"]
+                            * new_stack.tot_height
+                            * new_stack.area
+                        ) - new_stack.tot_weight
 
                     j = 0
                     new_stack_needed = True
@@ -281,7 +282,11 @@ def refill_stacks(stacks_list, df_items, truck, id, stack_creation):
                 wt_left = (
                     min(
                         truck["max_weight_stack"],
-                        stacks_list[i].area * truck["max_density"],
+                        (
+                            stacks_list[i].area
+                            * stacks_list[i].tot_height
+                            * truck["max_density"]
+                        ),
                     )
                     - stacks_list[i].tot_weight
                 )
@@ -350,7 +355,6 @@ def checkValidStacks(stacks_list, truck, df_items=None, compareItems=False):
         ), f"The stacks contain {len(used_unique_ids)} elements, while {len(unique_ids)} have been provided"
 
         # Check that of the provided elements each one has exactly been used once
-
         for i in range(len(items_ids)):
             if items_ids[i] in used_unique_ids:
                 assert (
