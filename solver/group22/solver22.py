@@ -18,7 +18,7 @@ MORE_VERB = False
 STATS = True
 
 # GUROBI is used to choose whether to use Gurobi to create stacks or not
-GUROBI = False
+GUROBI = True
 
 # Fraction (percentage) of deleted trucks when improving solution
 FRAC_DELETED_TRUCKS = 35  # %
@@ -27,7 +27,7 @@ FRAC_DELETED_TRUCKS = 35  # %
 N_DEBUG = False
 
 MAX_ITER = 10000
-MAX_TRIES = 1
+MAX_TRIES = 3
 
 
 class Solver22:
