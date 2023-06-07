@@ -165,3 +165,5 @@ Temporary Items
 
 logs/*
 !logs/.gitkeep 
+
+*/__pycache__/
