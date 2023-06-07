@@ -33,7 +33,9 @@ Group 22 - Davide Macario
 
 ## Reference system and solution representation
 
+<!-- markdownlint-disable -->
 <img src="./img_md/truck_ref_sys.png" alt="Truck reference system" style="width: 500px"/>
+<!-- markdownlint-restore -->
 
 The result of the optimization consists of the stacks.
 Stacks are identified by:
@@ -44,7 +46,9 @@ Stacks are identified by:
 - Coordinates of the *extremity point*: $(x_s^e, y_s^e, z_s^e)$ - point dfarthest from the truck origin
 - Stack height: $h_s = \sum_{i\in I_s} h_i - \sum_{i\in I_s,\ i≠bottom\,item} \bar{h}_s$
 
+<!-- markdownlint-disable -->
 <img src="./img_md/truck_stacks_info.png" alt="Stacks identification" style="width: 500px"/>
+<!-- markdownlint-restore -->
 
 Constraints:
 
@@ -58,7 +62,7 @@ Additionally, the truck must be filled starting from the origin (no spaces allow
 
 ## Model
 
-*TODO*
+> **TODO**
 
 The problem consists in a 3d extension of the knapsack problem. It is useful, however to look at it from the 2D perspective, as the $z$ dimension is developed according to the stacking of object of the same 2d size (e.g., stack until constraints are violated).
 
@@ -87,7 +91,9 @@ In order to solve it, the approach was the following:
 
 Stack creation is done following a simple heuristic algorithm, which solves the Cutting Stock problem.
 
+<!-- markdownlint-disable -->
 <img src="./img_md/perimeter_sol_represent.jpeg" alt="Definition of the perimeter" style="width: 500px"/>
+<!-- markdownlint-restore -->
 
 ### *Some possible decisions/approaches*
 
@@ -99,6 +105,10 @@ Possible optimizations of this require the widest elements to be placed first (l
 
 Optimal stacks can be created in the same way as the cutting stock problem - this way it is possible to minimize the number of stacks by reducing the z dimension left from the ceiling.
 See [here](https://developers.google.com/optimization/pack/knapsack).
+
+In order to introduce exploitation in the solution evaluation, the proposed approach is to assign a score to each 2D solution, corresponding to the product (/sum) of the surface utilization and maximum weight utilization of each truck.
+Then, having set a threshold (or maybe having selected a number of trucks), some (bad in terms of score) vehicles are destroyed and a new solution is performed on the destroyed vehicles only (sort of a recursion).
+Thanks to the random behavior, the new trucks may happen to yield a better solution than before - just check the cost of the new trucks against the old total cost of the destroyed trucks.
 
 ## Useful links
 

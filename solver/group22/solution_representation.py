@@ -3,7 +3,6 @@ import random
 import matplotlib.pyplot as plt
 from matplotlib import collections
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from solver.group22.utilities import cuboid_data, set_axes_equal
 
 
 def myStack3D(df_items, df_vehicles, df_sol, idx_vehicle):
@@ -19,7 +18,7 @@ def myStack3D(df_items, df_vehicles, df_sol, idx_vehicle):
     - idx_vehicle: string indicating the specific vehicle
     """
     # Isolate vehicle:
-    df_cons = df_sol[df_sol["idx_vehicle"] == str(idx_vehicle)]
+    df_cons = df_sol[df_sol["idx_vehicle"] == idx_vehicle]
 
     # NOTE: each stack ID is the same for all items that make it up
     idx_stacks = (
@@ -109,13 +108,19 @@ def myStack3D(df_items, df_vehicles, df_sol, idx_vehicle):
     ax.set_zlabel("Z")
 
     # Extract actual vehicle type ID
-    idx_vehicle_type = int(idx_vehicle[1])
+    vehicle_type = df_cons.type_vehicle.iloc[0]
 
     ax.set_title(f"Vehicle {idx_vehicle}")
     # Set axis limit, given from the dimensions of the vehicle
-    x_lim = ax.set_xlim(0, df_vehicles.iloc[idx_vehicle_type]["length"])
-    y_lim = ax.set_ylim(0, df_vehicles.iloc[idx_vehicle_type]["width"])
-    z_lim = ax.set_zlim(0, df_vehicles.iloc[idx_vehicle_type]["height"])
+    x_lim = ax.set_xlim(
+        0, df_vehicles[df_vehicles.id_truck == vehicle_type]["length"].values
+    )
+    y_lim = ax.set_ylim(
+        0, df_vehicles[df_vehicles.id_truck == vehicle_type]["width"].values
+    )
+    z_lim = ax.set_zlim(
+        0, df_vehicles[df_vehicles.id_truck == vehicle_type]["height"].values
+    )
 
     # ax.set_aspect('equal')
 
@@ -139,3 +144,55 @@ def myStack3D(df_items, df_vehicles, df_sol, idx_vehicle):
     set_axes_equal(ax)
 
     plt.show()
+
+
+def cuboid_data(o, size=(1, 1, 1)):
+    """
+    cuboid_data
+    ---
+
+    """
+    X = [
+        [[0, 1, 0], [0, 0, 0], [1, 0, 0], [1, 1, 0]],
+        [[0, 0, 0], [0, 0, 1], [1, 0, 1], [1, 0, 0]],
+        [[1, 0, 1], [1, 0, 0], [1, 1, 0], [1, 1, 1]],
+        [[0, 0, 1], [0, 0, 0], [0, 1, 0], [0, 1, 1]],
+        [[0, 1, 0], [0, 1, 1], [1, 1, 1], [1, 1, 0]],
+        [[0, 1, 1], [0, 0, 1], [1, 0, 1], [1, 1, 1]],
+    ]
+    X = np.array(X).astype(float)
+    for i in range(3):
+        X[:, :, i] *= size[i]
+    X += np.array(o)
+    return X
+
+
+def set_axes_equal(ax):
+    # From: https://stackoverflow.com/questions/13685386/how-to-set-the-equal-aspect-ratio-for-all-axes-x-y-z
+    """
+    Make axes of 3D plot have equal scale so that spheres appear as spheres,
+    cubes as cubes, etc..  This is one possible solution to Matplotlib's
+    ax.set_aspect('equal') and ax.axis('equal') not working for 3D.
+
+    Input
+    ax: a matplotlib axis, e.g., as output from plt.gca().
+    """
+
+    x_limits = ax.get_xlim3d()
+    y_limits = ax.get_ylim3d()
+    z_limits = ax.get_zlim3d()
+
+    x_range = abs(x_limits[1] - x_limits[0])
+    x_middle = np.mean(x_limits)
+    y_range = abs(y_limits[1] - y_limits[0])
+    y_middle = np.mean(y_limits)
+    z_range = abs(z_limits[1] - z_limits[0])
+    z_middle = np.mean(z_limits)
+
+    # The plot bounding box is a sphere in the sense of the infinity
+    # norm, hence I call half the max range the plot radius.
+    plot_radius = 0.5 * max([x_range, y_range, z_range])
+
+    ax.set_xlim3d([x_middle - plot_radius, x_middle + plot_radius])
+    ax.set_ylim3d([y_middle - plot_radius, y_middle + plot_radius])
+    ax.set_zlim3d([z_middle - plot_radius, z_middle + plot_radius])

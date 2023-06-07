@@ -121,7 +121,7 @@ class Stack:
             self.tot_height = self.tot_height + newitem["height"] - self.next_nesting
             self.tot_weight += newitem["weight"]
             self.next_nesting = newitem["nesting_height"]
-            self.tot_dens = self.tot_weight / (self.length * self.width)
+            self.tot_dens = self.tot_weight / (self.area * self.tot_height)
 
             return 1
 
@@ -141,7 +141,7 @@ class Stack:
             ]  # Nesting height of the topmost element
             self.tot_height = newitem["height"]
             self.tot_weight = newitem["weight"]
-            self.tot_dens = self.tot_weight / (self.length * self.width)
+            self.tot_dens = self.tot_weight / (self.area * self.tot_height)
             self.forced_orientation = newitem["forced_orientation"]
 
             self.items.append(newitem)
@@ -221,7 +221,7 @@ class Stack:
             self.tot_height = self.tot_height + newitem["height"] - self.next_nesting
             self.tot_weight += newitem["weight"]
             self.next_nesting = newitem["nesting_height"]
-            self.tot_dens = self.tot_weight / (self.length * self.width)
+            self.tot_dens = self.tot_weight / (self.area * self.tot_height)
 
             if (
                 newitem["forced_orientation"] != "n"
@@ -246,7 +246,7 @@ class Stack:
             ]  # Nesting height of the topmost element
             self.tot_height = newitem["height"]
             self.tot_weight = newitem["weight"]
-            self.tot_dens = self.tot_weight / (self.length * self.width)
+            self.tot_dens = self.tot_weight / (self.area * self.tot_height)
             self.forced_orientation = newitem["forced_orientation"]
 
             self.items.append(newitem)
@@ -289,10 +289,9 @@ class Stack:
 
         if len(self.items) > 1:
             for i in range(1, len(self.items)):
+                last_z = z_lst[-1]
                 z_lst.append(
-                    z_lst[-1]
-                    + self.items[i]["height"]
-                    - self.items[i - 1]["nesting_height"]
+                    self.items[i - 1]["height"] - self.items[i - 1]["nesting_height"]
                 )
 
         return z_lst
@@ -347,7 +346,13 @@ class Stack:
                 )
 
             self.tot_weight = self.tot_weight - rem_elem.weight
-            self.tot_dens = self.tot_weight / self.area
+            if self.tot_height == 0:
+                assert (
+                    self.tot_weight < 1e-5
+                ), "The stack has height = 0, but nonzero weight"
+                self.tot_dens = 0
+            else:
+                self.tot_dens = self.tot_weight / (self.area * self.tot_height)
 
             old_n = len(self.items)
 
