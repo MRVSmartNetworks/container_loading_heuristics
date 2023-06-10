@@ -3,18 +3,31 @@ import math
 import pandas as pd
 import numpy as np
 
-DEBUG = False
-N_DIGITS = 10
+from solver.group22.config import N_DEBUG
 
 
 class Stack:
+    """
+    Stack
+    ---
+    Class used to model stacks in the 3D bin packing problem.
+    Each stack is composed of multiple items sharing the same stackability
+    code, placed one on top of the other.
+
+    This class also contains a set of methods used to handle basic operations,
+    like item addition, removal and estimation of parameters.
+    """
+
     def __init__(self, item=None, other_constraints=None, stack_id=None):
         """
         Stack
         ---
         Class used to model stacks in the 3D bin packing problem.
-        Each stack is composed as multiple items sharing the same
-        stackability code placen one onto the other.
+        Each stack is composed of multiple items sharing the same stackability
+        code, placed one on top of the other.
+
+        This class also contains a set of methods used to handle basic operations,
+        like item addition, removal and estimation of parameters.
 
         ### Input parameters
         - item: pandas Series object containing the first item in the stack; if None
@@ -23,11 +36,12 @@ class Stack:
         - other_constraints (default None): dict containing the additional
         constraints, which may be ''max_weight', 'max_height' and 'max_dens'
         """
+        self.n_digits_id = 10
         self.items = []  # Elements on top are APPENDED
 
         self.id = None
         if stack_id is not None:
-            self.id = f"S{str(stack_id).zfill(N_DIGITS)}"
+            self.id = f"S{str(stack_id).zfill(self.n_digits_id)}"
 
         self.length = 0
         self.width = 0
@@ -53,28 +67,29 @@ class Stack:
             # To see if it was added, look at the length of
             # the 'items' list
 
-    # TODO: maybe remove...
     def add_item(self, newitem, other_constraints=None):
         """
         add_item
         ---
+        NOTE: this method is unused (see 'add_item_override')
+
         Add a new item to the stack.
-        The method also checks for compatibility of the new object.
+        The method checks for compatibility of the new object, both concerning the stackability
+        and other possible constraints (see input parameter 'other_constraints').
 
         In this method, if the stack has no forced orientation, but the new
-        item has, the object is not added!
+        item has, the object is NOT added.
 
         This method also works if the stack was empty.
-
         It is also possible to add further constraints to be checked here, e.g.,
         max_weight, max_height, max_density.
 
-        ### Inputs
+        ### Input parameters
         - newitem: Pandas Series containing the item
         - other_constraints (default None): dict containing the additional
         constraints, which may be ''max_weight', 'max_height' and 'max_dens'
 
-        ### Output
+        ### Output values
         - 1: item was correctly added
         - 0: unable to add item (constraints were violated)
         - -1: item was not added because it would have constrained rotation (but other items may be added...)
@@ -121,7 +136,7 @@ class Stack:
             self.tot_height = self.tot_height + newitem["height"] - self.next_nesting
             self.tot_weight += newitem["weight"]
             self.next_nesting = newitem["nesting_height"]
-            self.tot_dens = self.tot_weight / (self.area * self.tot_height)
+            self.tot_dens = self.tot_weight / (self.area)
 
             return 1
 
@@ -141,7 +156,7 @@ class Stack:
             ]  # Nesting height of the topmost element
             self.tot_height = newitem["height"]
             self.tot_weight = newitem["weight"]
-            self.tot_dens = self.tot_weight / (self.area * self.tot_height)
+            self.tot_dens = self.tot_weight / (self.area)
             self.forced_orientation = newitem["forced_orientation"]
 
             self.items.append(newitem)
@@ -155,7 +170,8 @@ class Stack:
         add_item_override
         ---
         Add a new item to the stack.
-        The method also checks for compatibility of the new object.
+        The method checks for compatibility of the new object, both concerning the stackability
+        and other possible constraints (see input parameter 'other_constraints').
 
         In this method, if the stack has no forced orientation, but the new
         item has, the object IS added!
@@ -185,14 +201,14 @@ class Stack:
                 if "max_height" in list(other_constraints.keys()):
                     tmp_new_h = self.tot_height + newitem["height"] - self.next_nesting
                     if tmp_new_h > other_constraints["max_height"]:
-                        if DEBUG:
+                        if N_DEBUG:
                             print("Max_height violated!")
                         return -1
 
                 if "max_weight" in list(other_constraints.keys()):
                     tmp_new_w = self.tot_weight + newitem["weight"]
                     if tmp_new_w > other_constraints["max_weight"]:
-                        if DEBUG:
+                        if N_DEBUG:
                             print("Max_weight_stack violated!")
                         return -2
 
@@ -203,7 +219,7 @@ class Stack:
                         tmp_new_w = self.tot_weight + newitem["weight"]
                         tmp_new_d = tmp_new_w / (self.area)
                         if tmp_new_d > other_constraints["max_dens"]:
-                            if DEBUG:
+                            if N_DEBUG:
                                 print("Max_density violated!")
                             return -3
             else:
@@ -221,7 +237,7 @@ class Stack:
             self.tot_height = self.tot_height + newitem["height"] - self.next_nesting
             self.tot_weight += newitem["weight"]
             self.next_nesting = newitem["nesting_height"]
-            self.tot_dens = self.tot_weight / (self.area * self.tot_height)
+            self.tot_dens = self.tot_weight / (self.area)
 
             if (
                 newitem["forced_orientation"] != "n"
@@ -246,7 +262,7 @@ class Stack:
             ]  # Nesting height of the topmost element
             self.tot_height = newitem["height"]
             self.tot_weight = newitem["weight"]
-            self.tot_dens = self.tot_weight / (self.area * self.tot_height)
+            self.tot_dens = self.tot_weight / (self.area)
             self.forced_orientation = newitem["forced_orientation"]
 
             self.items.append(newitem)
@@ -257,7 +273,17 @@ class Stack:
         return 0
 
     def assignPrice(self, val):
-        self.price = val
+        """
+        assignPrice
+        ---
+        Assign the price specified in 'val' to the stack.
+        """
+        if isinstance(val, int) or isinstance(val, float) or isinstance(val, np.int64):
+            self.price = val
+        else:
+            raise ValueError(
+                f"The price of the stack has to be either an int or a float! {val} is not valid!"
+            )
 
     def rot90deg(self):
         """
@@ -301,8 +327,14 @@ class Stack:
         assignID
         ---
         Method used to assign the ID to the stack.
+        The format of the ID is "S__...__", where the '_' represent
+        a number which is left-side padded with zeros to reach the
+        length specified in 'self.n_digits_id'
+
+        ### Input parameter:
+        - id_int: value to be used as ID.
         """
-        self.id = f"S{str(id_int).zfill(N_DIGITS)}"
+        self.id = f"S{str(id_int).zfill(self.n_digits_id)}"
 
     def isMaxStack(self):
         """
@@ -325,7 +357,7 @@ class Stack:
         ---
         Remove the heaviest element in the stack.
 
-        The removed element is returned as Series object.
+        The removed element is returned as a Pandas.Series object.
         """
         if len(self.items) > 0:
             wt_vec = [it["weight"] for it in self.items]
@@ -352,7 +384,7 @@ class Stack:
                 ), "The stack has height = 0, but nonzero weight"
                 self.tot_dens = 0
             else:
-                self.tot_dens = self.tot_weight / (self.area * self.tot_height)
+                self.tot_dens = self.tot_weight / (self.area)
 
             old_n = len(self.items)
 

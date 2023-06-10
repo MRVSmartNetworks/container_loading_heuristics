@@ -11,27 +11,21 @@ from solver.group22.stack import Stack
 from solver.group22.stack_creation_heur import create_stack_heur, refill_stacks
 from solver.group22.stack_creation_gurobi_new import create_stack_gurobi
 
-# VERB and MORE_VERB are used to print more information during runs
-VERB = False
-MORE_VERB = False
-# STATS prints scores of 2D solutions
-STATS = True
-
-# GUROBI is used to choose whether to use Gurobi to create stacks or not
-GUROBI = True
-
-# Fraction (percentage) of deleted trucks when improving solution
-FRAC_DELETED_TRUCKS = 35  # %
-
-# N_DEBUG is used to decide whether to execute assertions (much faster solution without)
-N_DEBUG = False
-
-MAX_ITER = 10000
-MAX_TRIES = 3
+from solver.group22.config import (
+    VERB,
+    MORE_VERB,
+    STATS,
+    GUROBI,
+    IMPROVE,
+    FRAC_DELETED_TRUCKS,
+    N_DEBUG,
+    MAX_ITER,
+    MAX_TRIES,
+)
 
 
 class Solver22:
-    def __init__(self, df_items=None, df_vehicles=None):
+    def __init__(self):
         """
         Solver22
         ---------------------------------------------------------------
@@ -43,6 +37,12 @@ class Solver22:
         and open a new one. The process stops when all items have been
         allocated.
         ---------------------------------------------------------------
+        Possible heuristics allowed:
+        - Truck selection: decision rule
+        - Stack creation: Gurobi (solver) or heuristic approach to
+        cutting stock problem
+        - Truck filling: peak filling slice push
+          - Slice creation: decision rule-based heuristics
         """
         self.name = "solver22"
 
@@ -121,13 +121,14 @@ class Solver22:
         df_trucks,
         max_tries=MAX_TRIES,
         used_trucks_dict=None,
-        recur=True,
+        recur=IMPROVE,
+        gurobi=GUROBI,
         implem="new",
     ):
         """
         solve
         ---
-        Solution of the problem with the proposed heuristics.
+        Solution of the problem with the proposed set of heuristics.
 
         Steps:
         - Truck selection (decision rule - trucks ranked by score or selected to be
@@ -215,8 +216,11 @@ class Solver22:
             self.curr_truck_type = ""
             self.last_truck_type = ""
             while len(tmp_items.index) > 0 and self.iter < MAX_ITER:
-                print(f"\nIter {self.iter}")
                 if VERB:
+                    print("")
+
+                print(f"> Iter {self.iter}")
+                if N_DEBUG:
                     print(f"> Items left: {len(tmp_items.index)}")
 
                 if self.last_truck_was_empty:
@@ -242,10 +246,9 @@ class Solver22:
 
                 all_trucks_id.append(curr_truck.id_truck)
 
-                if True:
-                    print(
-                        f"> Truck type: {curr_truck.id_truck}\n> Truck ID: {curr_truck.idx_vehicle}"
-                    )
+                if VERB:
+                    print(f"> Truck type: {curr_truck.id_truck}")
+                    print(f"> Truck ID: {curr_truck.idx_vehicle}")
 
                 if implem.lower() == "new":
                     ##################################
@@ -255,7 +258,7 @@ class Solver22:
                         # Shuffle items
                         tmp_items = tmp_items.sample(frac=1, random_state=315054)
                         # Build stacks
-                        if not GUROBI:
+                        if not gurobi:
                             self.stacks_list, self.stack_number = create_stack_heur(
                                 tmp_items, curr_truck, self.stack_number
                             )
@@ -1445,7 +1448,8 @@ class Solver22:
             max_tries=5,
             used_trucks_dict=used_trucks_dict,
             recur=False,
-            implem="old",
+            gurobi=False,
+            implem="new",
         )
 
         print("######################")
@@ -1608,7 +1612,7 @@ class Solver22:
 
         return best_cost, n_trucks_min
 
-    def checkValidSolution(self, sol, items_df, trucks_df, verb=False):
+    def checkValidSolution(self, sol, items_df, trucks_df, verb=MORE_VERB):
         """
         checkValidSolution
         ---

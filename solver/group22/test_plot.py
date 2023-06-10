@@ -8,6 +8,8 @@ Display solution for specific truck, given ID.
 
 This script accepts the truck ID as a command line 
 argument when launching the program.
+
+It is suggested to launch this program from the project root
 """
 
 if __name__ == "__main__":

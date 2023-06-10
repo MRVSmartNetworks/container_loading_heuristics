@@ -2,21 +2,37 @@ import gurobipy as gp
 from gurobipy import GRB
 from solver.group22.stack import Stack
 import os
+import itertools
+import threading
+import time
+import sys
 
 from solver.group22.stack_creation_heur import checkValidStacks
 
-VERB = False
-MORE_VERB = False
+from solver.group22.config import VERB, MORE_VERB, N_DEBUG
 
-N_DEBUG = False
+done = False
+
+
+def animate():
+    # Animation for loading
+    for c in itertools.cycle(["|", "/", "-", "\\"]):
+        if done:
+            break
+        sys.stdout.write("\rCreating stacks " + c)
+        sys.stdout.flush()
+        time.sleep(0.1)
+    sys.stdout.write("\rDone!                      \n")
 
 
 def create_stack_gurobi(df_items, truck, id):
     """
-    create_stack_cs
+    create_stack_gurobi
     ---
-    Given an object dataframe and a truck, create stacks which
-    can be placed into the truck.
+    Given an items dataframe and a truck, create stacks which
+    can be placed into the truck, i.e., which follow the constraints
+    related to the individual stacks (stack height, weight and
+    'density' - pressure).
 
     ### Input parameters
     - df_items: pandas Dataframe of usable items.
@@ -29,11 +45,15 @@ def create_stack_gurobi(df_items, truck, id):
 
     ### Approach
 
-    Having isolated items with the same stackability code,
-    create stacks by solving the maximization problem of the
-    stack height and the truck height, until all items have
-    been used.
+    Iterating on the stackability codes, isolate the corresponding items
+    and, at each iteration build the 'best' stack which agrees with the
+    given constraints and maximizes the stack height.
+    The problem is an integer linear optimization solved via Gurobi.
+    The procedure is repeated iteratively until all items have been
+    used.
     """
+    global done
+
     # If the path exists, delete the log file (avoid building up large file)
     if os.path.exists(os.path.join(".", "logs", "stack_logs_g22.txt")):
         os.remove(os.path.join(".", "logs", "stack_logs_g22.txt"))
@@ -44,8 +64,11 @@ def create_stack_gurobi(df_items, truck, id):
     # Use a copy of the dataframe in order not to delete the original items
     tmp_items = df_items.copy()
 
+    t = threading.Thread(target=animate)
+    t.start()
+
     for code in stack_codes:
-        if True:
+        if VERB:
             print("Code: ", code)
             # if code == 1:
             #     print("Code is 1")
@@ -73,11 +96,14 @@ def create_stack_gurobi(df_items, truck, id):
         # max density is actually a weight constraint
         max_supported_wt = min(
             float(truck.max_weight_stack),
-            float(truck.max_density) * float(current_items.volume.iloc[0]),
+            float(truck.max_density) * float(current_items.surface.iloc[0]),
         )
 
         while len(current_items.index) > 0:
             # For each stackability code, launch optimization with OR Tools
+            env = gp.Env(empty=True)
+            env.setParam("OutputFlag", 0)
+            env.start()
             new_stack = solve_knapsack_stack(
                 current_items, truck.height, max_supported_wt, other_constraints
             )
@@ -90,6 +116,8 @@ def create_stack_gurobi(df_items, truck, id):
     for j in range(len(stacks_list)):
         stacks_list[j].assignID(id)
         id += 1
+
+    done = True
 
     # Check validity of stacks
     if checkValidStacks(stacks_list, truck, df_items, compareItems=True):

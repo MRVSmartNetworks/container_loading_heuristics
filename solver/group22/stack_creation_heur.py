@@ -1,16 +1,16 @@
 from solver.group22.stack import Stack
 import numpy as np
 
-VERB = False
-N_DEBUG = False
+from solver.group22.config import VERB, N_DEBUG
 
 
 def create_stack_heur(df_items, truck, id):
     """
-    create_stack_cs
+    create_stack_heur
     ---
     Given an object dataframe and a truck, create stacks which
     can be placed into the truck.
+    Heuristic approach to the solution of the 'Cutting Stock' problem.
 
     ### Input parameters
     - df_items: pandas Dataframe of usable items.
@@ -20,26 +20,25 @@ def create_stack_heur(df_items, truck, id):
     - stacks_list: list containing the created stack objects
 
     ---
-    The creation of the stack follows what is called the 'Cutting Stock' problem.
-    This function implements an heuristic approach to the solution of this problem.
+    ### Rationale
 
     Having isolated all stackability codes, iterate on all items for each code value.
     Place each item in a stack, until an item does not pass the checks for being added.
     Once this happens, depending on the reason why the item was not added, choose how
-    proceed:
+    to proceed:
 
-    - If the item violated the max height constraint of the truck, look for the biggest
+    - If the item violated the "max_height" constraint of the truck, look for the biggest
     valid height in the list containing all the unique height values of the items.
     Having found the viable height, try to add items of this height to the stack, else
     iterate on smaller height values, until either all items are analyzed or a valid
     item was found. If no items were added, the stack needs to be closed and a new one
     is started
-    - If the item violated max weight stack, do the same as for max height, but
-    considering the items weight
-    - If the item violated max density, find the value of the weight associated with
+    - If the item violated "max_weight_stack", do the same as for max height, but
+    considering the items' weight
+    - If the item violated "max_density", find the value of the weight associated with
     the max density (given the stack volume) and treat the event as a max weight
     violation
-    - If max stackability was violated, it is not possible to add any more items.
+    - If "max_stackability" was violated, it is not possible to add any more items.
     The stack is then closed and a new one is started.
 
     Stacks can be created only for items with the same stackability code.
@@ -140,9 +139,7 @@ def create_stack_heur(df_items, truck, id):
                     else:
                         # If constraint on the density
                         remaining_weight = (
-                            other_constraints["max_dens"]
-                            * new_stack.tot_height
-                            * new_stack.area
+                            other_constraints["max_dens"] * new_stack.area
                         ) - new_stack.tot_weight
 
                     j = 0
@@ -234,7 +231,7 @@ def refill_stacks(stacks_list, df_items, truck, id, stack_creation):
     The idea is that during slice creation, some stacks are broken and
     it may be more effective to take the removed items and try to fill
     up stacks which had been created in a non-efficient manner before
-    (e.g., they would allow for some other items on top).
+    (e.g., that would allow for some other items on top).
     This way it is possible to achieve better stacks without having
     to rebuild all stacks from scratch at each truck.
 
@@ -248,7 +245,7 @@ def refill_stacks(stacks_list, df_items, truck, id, stack_creation):
     - truck: Series object containing truck information
     - id: ID of last stack (to avoid duplicate IDs)
     - stack_creation: method used to build the stacks (e.g.,
-    create_stacks_cs)
+    create_stacks_heur); it has to return a list of Stack objects
 
     ### Output parameters:
     - stacks_list: updated list of stacks
@@ -282,11 +279,7 @@ def refill_stacks(stacks_list, df_items, truck, id, stack_creation):
                 wt_left = (
                     min(
                         truck["max_weight_stack"],
-                        (
-                            stacks_list[i].area
-                            * stacks_list[i].tot_height
-                            * truck["max_density"]
-                        ),
+                        (stacks_list[i].area * truck["max_density"]),
                     )
                     - stacks_list[i].tot_weight
                 )
@@ -329,8 +322,14 @@ def checkValidStacks(stacks_list, truck, df_items=None, compareItems=False):
     ---
     Check the created stacks are valid.
 
-    The requirements are that, if the stacks contain objects from 'items',
-    each item has exactly been used once.
+    Requirements for validity:
+    - Check that the provided items list (if any) contains no duplicates
+    (concerning the item ID)
+    - If a list of items is provided and 'compareItems' is True, check
+    that out of the list all items have been used
+    - Check that each item appearing in the stacks has been used exactly
+    once
+    - Check max stack height, weight and density.
     """
     if df_items is not None:
         # print(df_items.columns)
@@ -374,5 +373,15 @@ def checkValidStacks(stacks_list, truck, df_items=None, compareItems=False):
     assert all(
         st.tot_height <= truck_height for st in stacks_list
     ), "Some stacks are higher than allowed!"
+
+    # Check that each stack weights less than allowed
+    assert all(
+        st.tot_weight <= truck.max_weight_stack for st in stacks_list
+    ), "Some stacks are heavier than allowed"
+
+    # Check density
+    assert all(
+        st.tot_dens <= truck.max_density for st in stacks_list
+    ), "Some stacks have a higher density than allowed"
 
     return True
