@@ -119,6 +119,8 @@ class Solver22:
         self,
         df_items,
         df_trucks,
+        sol_file_name,
+        plot_result=False,
         max_tries=MAX_TRIES,
         used_trucks_dict=None,
         recur=IMPROVE,
@@ -445,17 +447,18 @@ class Solver22:
         # Append best solution for current truck
         # Need to make sure the items left have been updated
         df_sol = pd.DataFrame.from_dict(self.curr_best_sol)
-        df_sol.to_csv(os.path.join("results", f"{self.name}_sol.csv"), index=False)
+        df_sol.to_csv(os.path.join("results", sol_file_name), index=False)
 
         ### PLOTS:
-        if used_trucks_dict is None:
-            # Only plot if the trucks dictionary has been created from scratch
-            for t_id in print_trucks_ID:
-                myStack3D(self.df_items, self.df_vehicles, df_sol, t_id)
+        if plot_result:
+            if used_trucks_dict is None:
+                # Only plot if the trucks dictionary has been created from scratch
+                for t_id in print_trucks_ID:
+                    myStack3D(self.df_items, self.df_vehicles, df_sol, t_id)
 
-            # Get last used truck
-            last_truck_id = df_sol.idx_vehicle.iloc[-1]
-            myStack3D(self.df_items, self.df_vehicles, df_sol, last_truck_id)
+                # Get last used truck
+                last_truck_id = df_sol.idx_vehicle.iloc[-1]
+                myStack3D(self.df_items, self.df_vehicles, df_sol, last_truck_id)
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
