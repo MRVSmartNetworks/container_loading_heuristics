@@ -97,7 +97,7 @@ Stack creation is done following a simple heuristic algorithm, which solves the 
 
 ### *Some possible decisions/approaches*
 
-Choice of trucks: evaluate the *volume/cost* ratio for each truck and choose trucks based on higher value.
+Choice of trucks: evaluate the *(volume $\cdot$ weigth)/cost* ratio for each truck and choose trucks based on higher value.
 (**Decision rule**)
 
 In general, maximize the amount of 'y' dimension occupied, e.g., when choosing the objects, evaluate all the possible stacking options and choose the one which minimizes the difference between $W_i$ (truck width) and the total width of the stacks.
@@ -106,9 +106,27 @@ Possible optimizations of this require the widest elements to be placed first (l
 Optimal stacks can be created in the same way as the cutting stock problem - this way it is possible to minimize the number of stacks by reducing the z dimension left from the ceiling.
 See [here](https://developers.google.com/optimization/pack/knapsack).
 
+The issue with this approach is the time needed for the solution.
+As a result, the chosen technique for constructing the stacks has been to build stacks individually in an optimal way using Gurobi.
+Indeed, by building optimal stacks, it is possible to achieve the same result as with building them all at once solving the c.s. problem, but with a significantly lower computational cost.
+
 In order to introduce exploitation in the solution evaluation, the proposed approach is to assign a score to each 2D solution, corresponding to the product (/sum) of the surface utilization and maximum weight utilization of each truck.
 Then, having set a threshold (or maybe having selected a number of trucks), some (bad in terms of score) vehicles are destroyed and a new solution is performed on the destroyed vehicles only (sort of a recursion).
 Thanks to the random behavior, the new trucks may happen to yield a better solution than before - just check the cost of the new trucks against the old total cost of the destroyed trucks.
+
+## Tested datasets
+
+- [x] dataset_small
+- [x] dataset A
+- [x] dataset B
+- [x] dataset C
+- [x] dataset D
+- [x] dataset E
+- [x] dataset F - item IDs are integers, required fixing some code
+- [x] dataset G (some items are problematic, as their weight is higher than the maximum stack weight for some trucks, but this has been fixed in the truck selection strategy)
+- [x] dataset H
+- [x] dataset I
+- [x] dataset J - dataset was corrected
 
 ## Useful links
 

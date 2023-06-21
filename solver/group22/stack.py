@@ -54,7 +54,7 @@ class Stack:
         self.tot_height = 0
         self.tot_weight = 0
         self.tot_dens = 0
-        self.forced_orientation = "n"
+        self.forced_orientation = "n"  # Possible values: n, l, w
 
         # Some other parameters which are used
         self.price = 0
@@ -230,6 +230,10 @@ class Stack:
             newitem["stackability_code"] == self.stack_code
             and len(self.items) + 1 <= self.max_stack
         ):
+            assert (
+                newitem.width * newitem.length == self.area
+            ), "The item cannot be added since the base dimensions are different (the stackability code is right) --> The dataset contains errors!"
+
             # Can add
             self.items.append(newitem)
             assert len(self.items) > 0
@@ -317,8 +321,14 @@ class Stack:
             for i in range(1, len(self.items)):
                 last_z = z_lst[-1]
                 z_lst.append(
-                    self.items[i - 1]["height"] - self.items[i - 1]["nesting_height"]
+                    last_z
+                    + self.items[i - 1]["height"]
+                    - self.items[i - 1]["nesting_height"]
                 )
+
+        assert len(z_lst) == len(
+            np.unique(z_lst)
+        ), "There are some duplicates in the z list"
 
         return z_lst
 

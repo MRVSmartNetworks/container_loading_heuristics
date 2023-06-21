@@ -1,7 +1,7 @@
 from solver.group22.stack import Stack
 import numpy as np
 
-from solver.group22.config import VERB, N_DEBUG
+from solver.group22.config import VERB, MORE_VERB, N_DEBUG
 
 
 def create_stack_heur(df_items, truck, id):
@@ -51,15 +51,19 @@ def create_stack_heur(df_items, truck, id):
     if len(df_items.index) == 0:
         return [], id
 
+    if MORE_VERB:
+        print(f"Provided elements: {n_items_init}")
+
+    other_constraints = {  # Enforce constraints at stack creation rather than after
+        "max_height": truck["height"],
+        "max_weight": truck["max_weight_stack"],
+        "max_dens": truck["max_density"],
+    }
+
     for code in stack_codes:
         if VERB:
             print(f"CODE: {code}")
         new_stack_needed = False
-        other_constraints = {  # Enforce constraints at stack creation rather than after
-            "max_height": truck["height"],
-            "max_weight": truck["max_weight_stack"],
-            "max_dens": truck["max_density"],
-        }
 
         new_stack = Stack()
         curr_items_code = df_items.loc[df_items.stackability_code == code].reset_index()
@@ -68,24 +72,39 @@ def create_stack_heur(df_items, truck, id):
         all_heights = np.sort(list(curr_items_code.height.unique()))
         all_heights = all_heights[::-1]  # Sorted in decreasing order
 
-        # Keep track of used items:
+        # Check dataset validity (some issues with stackability code were found)
+        assert all(
+            curr_items_code.width == curr_items_code["width"].iloc[0]
+        ), "The dataset contains items with same stackability code and different width"
+        assert all(
+            curr_items_code.length == curr_items_code["length"].iloc[0]
+        ), "The dataset contains items with same stackability code and different length"
+        assert all(
+            curr_items_code.max_stackability > 0
+        ), "The dataset contains elements with max. stackability = 0"
+
+        # Keep track of used items: this array contains 0 if the corresponding
+        # item in 'curr_items_code' has not been used yet
         used_items_arr = np.zeros((len(curr_items_code.index),))
 
-        # Make sure there is 1 item per ID
-        all_items_ids, counts_current_items = np.unique(
-            curr_items_code.id_item, return_counts=True
-        )
         if N_DEBUG:
+            # Make sure there is 1 item per ID
+            all_items_ids, counts_current_items = np.unique(
+                curr_items_code.id_item, return_counts=True
+            )
+            print("Number of provided items: ", len(curr_items_code.index))
             assert all(counts_current_items == 1), "Duplicate items are present!"
 
         for i, row in curr_items_code.iterrows():
             # Check the item was not added to a stack already
-
-            # If the item has not been used yet
             if used_items_arr[i] == 0:
+                # If the item has not been used yet:
                 was_added = new_stack.add_item_override(row, other_constraints)
 
-                # The value of 'new_stack_needed' can be:
+                if MORE_VERB:
+                    print(f"Result of item {i} addition: {was_added}")
+
+                # The return value of 'was_added' can be:
                 # 1: success
                 # 0: cannot add item as it won't satisfy max stackability constraint
                 # -1: cannot add item as it won't satisfy max height constraint
@@ -124,6 +143,10 @@ def create_stack_heur(df_items, truck, id):
                                     # If success, break cycle
                                     j = len(all_heights)
                                     k = len(valid_df.index)
+                                    remaining_height = (
+                                        other_constraints["max_height"]
+                                        - new_stack.tot_height
+                                    )
                                 # Else: keep on iterating
                             # TODO: try to iterate in a 'smart' way - avoid '+= 1' and try adding more
                             # if many elements in 'possib_elem'
@@ -171,9 +194,8 @@ def create_stack_heur(df_items, truck, id):
 
                 elif was_added == 0:
                     # Max stackability was violated, stop
-
-                    # if VERB:
-                    #     print("-> Reached max stackability!")
+                    if MORE_VERB:
+                        print("-> Reached max stackability!")
                     new_stack_needed = True
                 elif was_added == 1:
                     # SUCCESS - mark the item as used
@@ -181,7 +203,7 @@ def create_stack_heur(df_items, truck, id):
 
                 # if a new stack is needed (unable to add elements):
                 if new_stack_needed:
-                    if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
+                    if len(new_stack.items) > 0:
                         stacks_list.append(new_stack)
                     # Open new stack (with current element as first)
                     new_stack = Stack(row, other_constraints)
@@ -190,10 +212,12 @@ def create_stack_heur(df_items, truck, id):
 
             else:
                 # The item has been used already
+                if MORE_VERB:
+                    print(f"Item n. {i} - {row.id_item} - has already been used")
                 pass
 
         # Need to add last stack to the list (if not empty)
-        if len(new_stack.items) > 0 and new_stack.tot_weight > 0:
+        if len(new_stack.items) > 0:
             stacks_list.append(new_stack)
 
         if N_DEBUG:
@@ -206,7 +230,7 @@ def create_stack_heur(df_items, truck, id):
         id += 1
 
     if N_DEBUG:
-        assert all([s.tot_weight for s in stacks_list]) > 0
+        assert all([s.tot_weight for s in stacks_list]) >= 0
 
     n_items_post = len(df_items.index)
 

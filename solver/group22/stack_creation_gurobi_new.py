@@ -54,6 +54,8 @@ def create_stack_gurobi(df_items, truck, id):
     """
     global done
 
+    done = False
+
     # If the path exists, delete the log file (avoid building up large file)
     if os.path.exists(os.path.join(".", "logs", "stack_logs_g22.txt")):
         os.remove(os.path.join(".", "logs", "stack_logs_g22.txt"))
@@ -65,7 +67,6 @@ def create_stack_gurobi(df_items, truck, id):
     tmp_items = df_items.copy()
 
     t = threading.Thread(target=animate)
-    t.start()
 
     for code in stack_codes:
         if VERB:
@@ -86,10 +87,24 @@ def create_stack_gurobi(df_items, truck, id):
         current_items = tmp_items[tmp_items.stackability_code == code]
         nest_h = current_items.nesting_height.values[0]
 
+        # Check dataset validity (some issues with stackability code were found)
+        assert all(
+            current_items.width == current_items["width"].iloc[0]
+        ), "The dataset contains items with same stackability code and different width"
+        assert all(
+            current_items.length == current_items["length"].iloc[0]
+        ), "The dataset contains items with same stackability code and different length"
+        assert all(
+            current_items.max_stackability > 0
+        ), "The dataset contains elements with max. stackability = 0"
+
         if N_DEBUG:
             assert all(
                 current_items.nesting_height.values == nest_h
             ), "Nesting heights are not always the same!"
+
+        if code == stack_codes[0] and not VERB and not MORE_VERB:
+            t.start()
 
         # Evaluate most bounding weight constraint
         # Since for each stack. code the base dimensions have to be the same,
@@ -100,18 +115,23 @@ def create_stack_gurobi(df_items, truck, id):
         )
 
         while len(current_items.index) > 0:
-            # For each stackability code, launch optimization with OR Tools
-            env = gp.Env(empty=True)
-            env.setParam("OutputFlag", 0)
-            env.start()
+            # For each stack, launch optimization with gurobi
             new_stack = solve_knapsack_stack(
                 current_items, truck.height, max_supported_wt, other_constraints
             )
-            stacks_list.append(new_stack)
-            current_items = updateItemsList(new_stack, current_items)
+            if len(new_stack.items) > 0:
+                stacks_list.append(new_stack)
+                current_items = updateItemsList(new_stack, current_items)
+            else:
+                raise ValueError(
+                    "Some items cannot be placed in current truck! Error at truck selection"
+                )
+                # Current items now contains objects which can't fulfill constraints of current truck
+                # This part of code should never run... (for how trucks are selected )
 
-            if VERB:
-                print(f"Remaining items, type {code}: {len(current_items.index)}")
+            if MORE_VERB:
+                print(f"- Remaining items, type {code}: {len(current_items.index)}")
+                print(f"Added items: {new_stack.items}")
 
     for j in range(len(stacks_list)):
         stacks_list[j].assignID(id)
@@ -224,7 +244,7 @@ def solve_knapsack_stack(items, truck_height, weight, other_constraints):
         for i in data["items"]:
             solver.addConstr(j * x[i, j] <= data["max_stack"][i] - 1)
 
-    ## Objective: minimization of the total number of stacks produced
+    ## Objective: maximization of stack height
     solver.setObjective(
         gp.quicksum(
             x[i, j] * data["heights"][i] for i in data["items"] for j in data["bins"]
@@ -246,7 +266,8 @@ def solve_knapsack_stack(items, truck_height, weight, other_constraints):
     solver.optimize()
 
     if MORE_VERB:
-        print(f"  Obj. val: {solver.getObjective().getValue()}")
+        # The 'height constraint' value is the same as the objective value...
+        # print(f"  Obj. val: {solver.getObjective().getValue()}")
         print(
             f"  Height constraint value: {solver.getRow(tot_height_constr).getValue()}"
         )
