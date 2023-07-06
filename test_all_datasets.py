@@ -8,8 +8,8 @@ from sol_representation import *
 
 if __name__ == "__main__":
     datasets = [
-        'datasetA','datasetB', 'datasetC',
-        'datasetD','datasetE','datasetF',
+        # 'datasetA','datasetB', 'datasetC',
+        # 'datasetD','datasetE','datasetF',
         'datasetG', 'datasetH', 'datasetI',
         'datasetJ', 'dataset_small'
     ]
