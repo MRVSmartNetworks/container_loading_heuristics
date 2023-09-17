@@ -1,0 +1,20 @@
+ALPHA = 0.25   BETA = 0.25   Avg_cost = 277466.71400000004   std = 1232.1599850055534   best_value = 275831.27
+ALPHA = 0.5   BETA = 0.25   Avg_cost = 270533.748   std = 1523.9139710247646   best_value = 267590.99
+ALPHA = 0.75   BETA = 0.25   Avg_cost = 255324.571   std = 1192.007684394037   best_value = 253142.40000000002
+ALPHA = 1.0   BETA = 0.25   Avg_cost = 243463.322   std = 1070.5881795515766   best_value = 242359.19
+ALPHA = 0.25   BETA = 0.5   Avg_cost = 269639.36400000006   std = 1539.0659686041877   best_value = 267792.79
+ALPHA = 0.5   BETA = 0.5   Avg_cost = 257552.169   std = 1012.6534002362354   best_value = 256053.0
+ALPHA = 0.75   BETA = 0.5   Avg_cost = 243954.91400000002   std = 862.3450219437221   best_value = 242821.2
+ALPHA = 1.0   BETA = 0.5   Avg_cost = 242988.39500000002   std = 601.5851403537564   best_value = 242061.48
+ALPHA = 0.25   BETA = 0.75   Avg_cost = 260279.99599999998   std = 1437.3133693202237   best_value = 257731.8
+ALPHA = 0.5   BETA = 0.75   Avg_cost = 247785.84100000001   std = 1312.7801151707677   best_value = 245910.6
+ALPHA = 0.75   BETA = 0.75   Avg_cost = 243133.292   std = 621.6440241953409   best_value = 242269.79
+ALPHA = 1.0   BETA = 0.75   Avg_cost = 241006.21899999998   std = 681.1318273196233   best_value = 239936.19
+ALPHA = 0.25   BETA = 1.0   Avg_cost = 252021.412   std = 981.9929867909719   best_value = 250321.2
+ALPHA = 0.5   BETA = 1.0   Avg_cost = 243694.24000000005   std = 1242.35904717151   best_value = 242471.59
+ALPHA = 0.75   BETA = 1.0   Avg_cost = 241283.97400000002   std = 720.2051638125204   best_value = 239910.6
+ALPHA = 1.0   BETA = 1.0   Avg_cost = 241310.65900000004   std = 578.4998881100427   best_value = 240524.59000000003
+
+
+Best ALPHA: 1.0 
+Best BETA: 0.75
