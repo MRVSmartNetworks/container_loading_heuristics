@@ -8,12 +8,19 @@ from sol_representation import *
 
 if __name__ == "__main__":
     datasets = [
-        # 'datasetA','datasetB', 'datasetC',
-        # 'datasetD','datasetE','datasetF',
-        'datasetG', 'datasetH', 'datasetI',
-        'datasetJ', 'dataset_small'
+        'datasetA',
+        'datasetB',
+        'datasetC',
+        'datasetD',
+        'datasetE',
+        'datasetF',
+        'datasetG',
+        'datasetH',
+        'datasetI',
+        'datasetJ',
+        'dataset_small'
     ]
-    solver = Solver22()
+    solver = Solver24()
     f = open(
         os.path.join(".", "results", f"{solver.name}_summary.csv"),
         "a"
@@ -37,6 +44,6 @@ if __name__ == "__main__":
         try:
             of = sol_check(df_sol, df_vehicles, df_items)
         except Exception as e:
-            of = -1
+            of = f"{e}"
         f.write(f"{dataset},{(stop - start):.2f},{of}\n")
     f.close()
