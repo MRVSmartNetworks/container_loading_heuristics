@@ -36,7 +36,7 @@ class Solver23():
             "orient": []
         }
     
-    def solve(self, df_items, df_vehicles, sol_file_name, time_limit):
+    def solve(self, df_items, df_vehicles, sol_file_name, time_limit=300):
         """ 
         solve
         -----
