@@ -11,16 +11,16 @@ if __name__ == "__main__":
         'datasetA',
         'datasetB',
         'datasetC',
-        'datasetD',
-        'datasetE',
-        'datasetF',
-        'datasetG',
-        'datasetH',
-        'datasetI',
-        'datasetJ',
-        'dataset_small'
+        # 'datasetD',
+        # 'datasetE',
+        # 'datasetF',
+        # 'datasetG',
+        # 'datasetH',
+        # 'datasetI',
+        # 'datasetJ',
+        # 'dataset_small'
     ]
-    solver = Solver16()
+    solver = Solver2()
     f = open(
         os.path.join(".", "results", f"{solver.name}_summary.csv"),
         "a"
