@@ -20,7 +20,7 @@ if __name__ == "__main__":
         'datasetJ',
         'dataset_small'
     ]
-    solver = Solver24()
+    solver = Solver16()
     f = open(
         os.path.join(".", "results", f"{solver.name}_summary.csv"),
         "a"
