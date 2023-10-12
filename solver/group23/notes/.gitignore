@@ -1,4 +1,4 @@
 # Only keep folder and notes
 *
 !.gitignore
-!my_notes.md
+!share_notes.md
