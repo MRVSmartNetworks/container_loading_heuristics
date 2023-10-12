@@ -189,3 +189,5 @@ tags
 # Persistent undo
 [._]*.un~
 
+# Do not sync editor settings file
+.vscode
