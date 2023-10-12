@@ -23,3 +23,7 @@ $$
 - Perchè il modello dovrebbe essere infeasible solo se la matrice W ha delle colonne a zero?  E come fa ad avere una colonna a zero? Significherebbe che ACO non ha messo nessun item nel veicolo. 
 - Perchè il constrain >=? Non dovrebbe essere =?
 - Il numero di variabili (*addVars()*) lo definiamo a priori?
+- Le colonne vengono aggiunte dinamicamente?
+
+## Ideas
+- Cambiare *attractiveness* ad ogni iterazione considerando l'output precedente del modello.
