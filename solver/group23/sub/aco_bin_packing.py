@@ -3,7 +3,7 @@
 import numpy as np
 from solver.group23.sub.utilities import *
 from solver.group23.config import *
-from copy import deepcopy
+from copy import copy
 
 class ACO:
     """  
@@ -91,7 +91,7 @@ class ACO:
             # Iteration over all the ants. Every ants will find its own solution putting the stack as they want.
             # At the end only the best solution of all the ants will be taken into account.
             for _ in range(self.n_ants):
-                stack_lst_ant = [stack for stack in self.stack_lst] #NOTE: [ele for ele in stack_lst] better????
+                stack_lst_ant = [stack for stack in self.stack_lst] 
                 stack_quantity_ant = self.stack_quantity.copy()
                 pr_move = self.pr_move.copy()
                 
@@ -449,8 +449,6 @@ class ACO:
         self.pr_move = np.full((self.dim_matr,self.dim_matr), 1./(self.dim_matr-code_sub)) * pr_mat
         self.attractiveness = np.full((len(self.pr_move),len(self.pr_move)), 0.5) * attr_mat * pr_mat
         self.prMoveUpdate()
-        #NOTE: Items preferred lengthwise (longest side in respect to the length of the truck)
-        #self.attractiveness[:,:self.n_code] = self.attractiveness[:,:self.n_code]*1.5
         
     def choose_move(self, prev_state, pr_move=None):
         """ 
@@ -579,11 +577,10 @@ class ACO:
         # Iterate until a stack with the correct code is found
         for i,stack in enumerate(stack_lst):
             if stack.stack_code == self.state_to_code(code):
-                #FIXME: deepcopy
-                stack_copy = stack_lst[i]
                 stack_lst.pop(i)
                 stack_quantity[self.state_to_code(code)] -= 1
-                stack_copy = deepcopy(stack)
+                # stack_copy = deepcopy(stack)
+                stack_copy = copy(stack)
                 stack_copy.state = code
 
                 # If the orientation is widhwise length and width must be switched
