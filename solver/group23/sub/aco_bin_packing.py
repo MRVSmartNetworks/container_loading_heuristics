@@ -105,7 +105,7 @@ class ACO:
                 totArea = 0
                 totWeight = 0
                 totVolume = 0
-                ant_k = []
+                ant_k = []  # It will contain the list of stacks used by current ant
                 first_line = True
                 n_1_line = 0
                 # Loop until free space available in vehicle
@@ -236,7 +236,7 @@ class ACO:
         addStack
         --------
 
-        Method to add a new stuck in vehicle. \n
+        Method to add a new stack in vehicle. \n
         Initially the stacks are added on the X axis until the max length 
         of the vehicle is reached. Then on the next line the stacks are postioned
         by looking at the vertexes the first line stacks to not overlap them.
