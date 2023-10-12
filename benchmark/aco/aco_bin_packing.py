@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from .config import AREA_RATIO, WEIGHT_RATIO, PRINT
-from copy import deepcopy
+import copy
 
 class ACO:
     """  
@@ -589,11 +589,11 @@ class ACO:
         # Iterate until a stack with the correct code is found
         for i,stack in enumerate(stack_lst):
             if stack.stack_code == self.state_to_code(code):
-                #FIXME: deepcopy
+                
                 stack_copy = stack_lst[i]
                 stack_lst.pop(i)
                 stack_quantity[self.state_to_code(code)] -= 1
-                stack_copy = deepcopy(stack)
+                stack_copy = copy(stack)
                 stack_copy.state = code
 
                 # If the orientation is widhwise length and width must be switched
