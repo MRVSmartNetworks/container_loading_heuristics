@@ -147,6 +147,9 @@ class ACO:
                         if next_s_code >= self.n_code:
                             code = code - self.n_code
 
+                        if DEBUG and code == 7:
+                            print(f"Current code: {next_s_code}, i.e., {code}")
+
                         # If there are no more stacks of a certain code then set the pr_move to that specific 
                         # code to zero and distribute the probability over the others rows(stackability codes)
                         if stack_quantity_ant[self.state_to_code(code)] == 0: 
