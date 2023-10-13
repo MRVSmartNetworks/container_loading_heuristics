@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from solver.group23.sub.utilities import *
+from solver.group23.sub.stack import Stack
 from solver.group23.config import *
-from copy import deepcopy
+from copy import deepcopy, copy
 
 class ACO:
     """  
@@ -108,26 +109,46 @@ class ACO:
                 ant_k = []  # It will contain the list of stacks used by current ant
                 first_line = True
                 n_1_line = 0
+
+                """
+                Slice definition:
+                It is a list of stacks that are placed along the y direction.
+                """
+                bound = [[0, 0], [0, self.vehicle["width"]]]
+                                
+
                 # Loop until free space available in vehicle
                 while(free_space):  
-                    # Choose of the next state and taking the stack selected
-                    next_s_code = self.choose_move(prev_s_code, pr_move)    
-                    new_stack, stack_lst_ant, stack_quantity_ant = self.popStack(stack_lst_ant, stack_quantity_ant, next_s_code)
-                    toAddStack, first_line, x_pos = self.addStack(new_stack, ant_k[:n_1_line], first_line, x_pos)
-                    if first_line:
-                        n_1_line = len(ant_k) + 1
-                    # Check if a stack can be added due tue the vehicle weight constrain
-                    if toAddStack is not None and (totWeight + toAddStack.weight <= self.vehicle["max_weight"]):
-                        ant_k.append(toAddStack)
-                        totArea += (toAddStack.length*toAddStack.width)
-                        totVolume +=(toAddStack.length*toAddStack.width*toAddStack.height)
-                        totWeight += toAddStack.weight
-                        prev_s_code = next_s_code
+                    # Choose of the next state and taking the stack selected:
+                    # next_s_code = self.choose_move(prev_s_code, pr_move)    
+                    # new_stack, stack_lst_ant, stack_quantity_ant = self.popStack(stack_lst_ant, stack_quantity_ant, next_s_code)
+                    # toAddStack, first_line, x_pos = self.addStack(new_stack, ant_k[:n_1_line], first_line, x_pos)
+
+                    ###
+
+                    # TODO:
+                    new_slice, stack_lst_ant, stack_quantity_ant, next_s_code = self.buildSlice(prev_s_code, pr_move, bound, stack_lst_ant, stack_quantity_ant, totWeight)
+
+                    if new_slice != []:
+                        # Some element was placed!
+                        for s in new_slice:
+                            st = s[0]
+                            ant_k.append(st)
+
+                            # Update the measurements
+                            totArea += (st.length*st.width)
+                            totVolume +=(st.length*st.width*st.height)
+                            totWeight += st.weight
+                            
+                        # Push the slice
+                        bound = self.pushSlice(bound, new_slice)
                     else:
-                        # If not, no more stack can be added to the vehicle
+                        # No element could be placed - there is no space left
                         free_space = False
 
-                    # Check if there are staks left
+                    ####
+
+                    # Check if there are stacks left
                     if sum(stack_quantity_ant.values()) > 0:
                         code = next_s_code 
                         
@@ -186,6 +207,72 @@ class ACO:
         if PRINT:    
             print(f"Area ratio: {bestArea},\n Weight ratio: {weightRatio} vehicle: {self.vehicle['id_truck']}")
         return bestAnt, area_ratio, weightRatio
+    
+    def buildSlice(self, prev_code: int, prob_move_mat, boundary: list, stack_list, stack_quantity_ant, tot_weight) -> [list, list, int]:
+        """
+        buildSlice
+        ---
+        Build the new slice to be placed in the truck for the current ant.
+
+        ### Procedure
+        - Choose the next code for the stack (choose_move)
+        - Extract the first stack with the selected code
+        - Add the stack to the slice
+
+        ### Input parameters:
+        - prev_code: last selected stackability code
+        - prob_move_mat: matrix of transition probabilities
+        - boundary: boundary for filling truck (in this case: lay stacks on 'y' axis)
+        - stack_list: list of stacks that the current ant can use (stack_lst_ant in aco_2D_bin)
+        - tot_weight: total sum of weights of placed stacks (before new slice)
+
+        ### Output parameters:
+        - new_slice: list of pairs [Stack, y_coordinate] resulting in the 
+        - stack_list: [to be assigned to stack_lst_ant] - the updated list of stacks available to 
+        the ant
+        - next_s_code: code of the last stack in the slice
+        """
+        new_slice = []
+        y_low = boundary[0][0] # Starting y coordinate
+        assert y_low == 0, f"The first element of the boundary is not at y=0 (y={y_low})"
+        max_width = boundary[-1][1] # The truck width 
+        assert max_width == self.vehicle["width"], f"The last bound point has not y = vehicle['width'] ({max_width} vs {self.vehicle['width']})"
+
+        x_0 = max([p[0] for p in boundary]) # Starting coordinate of slice (before pushing) - sub-optimal
+        # Maximum available length (TODO: find some room for improvement... 
+        # the bound can be used to find 'holes')
+        max_length = self.vehicle["length"] - x_0
+
+        slice_full = False  # Considering: y dimension, total weight of added stacks
+        while not slice_full:
+            # Used to track the chosen codes - 0 if not already chosen, 1 if chosen
+            toAddStack = None
+            track_codes = np.ones((len(prob_move_mat[0]),), dtype=np.int32)
+            no_more_ok_stacks = False
+            next_s_code = 0
+            while toAddStack is None and sum(track_codes) > 0:
+                # Choice of the next state (stackability code)
+                next_s_code = self.choose_move(prev_code, prob_move_mat, track_codes)
+
+                # Extract the first stack with the chosen code - without removing it from the list
+                new_stack = self.getFirstStack(stack_list, stack_quantity_ant, next_s_code) # OK
+
+                # Now, make sure that the stack can be added to the current slice
+                toAddStack, y_upd = self.addStack2Slice(new_stack, y_low, max_length)
+
+                if toAddStack is None:
+                    track_codes[next_s_code] = 0
+
+            # Check if a stack can be added due tue the vehicle weight constrain
+            if toAddStack is not None and (tot_weight + toAddStack.weight <= self.vehicle["max_weight"]):
+                # Can add stack to the slice
+                new_stack, stack_list, stack_quantity_ant = self.popStack(stack_list, stack_quantity_ant, next_s_code)
+                new_slice.append([toAddStack, y_upd])                
+            else:
+                # If not, no more stack can be added to the vehicle (either stack is none, or it would exceed wt.)
+                slice_full = True
+
+        return new_slice, stack_list, stack_quantity_ant, next_s_code
 
     def addStack_simple(self, toAddStack, x_pos, y_pos, y_max):
         """  
@@ -310,7 +397,164 @@ class ACO:
     
         return toAddStack, first_line, x_pos
 
+    def addStack2Slice(self, toAddStack: Stack, y_pos: float, x_avail: float):
+        """
+        addStack2Slice
+        ---
+        Try to add the newly selected stack to the current slice.
+        The function returns the stack and its upper y coordinate if successful.
+
+        Notice that this function does not check for the weight constraint (this 
+        has to be done after).
+
+        If the stack could not fit inside the slice, the function returns Null, y_0.
+
+        ### Input parameters
+        - toAddStack: stack that needs to be added to the slice (chosen with 
+        transition matrix).
+        - y_pos: y coordinate where to add the stack
+        - x_avail: available length along the x direction
+
+        ### Output parameters
+        - toAddStack/None: if the stack can fit in the slice, return it, else return None
+        - y_up/y_pos: if the stack can fit, return the new upper bound for the y coordinate
+        """
+        if toAddStack.length <= x_avail and y_pos + toAddStack.width <= self.vehicle['width']:
+            return toAddStack, y_pos + toAddStack.width
+        else:
+            return None, y_pos
+
+    def pushSlice(self, bound, new_slice):
+        """
+        pushSlice
+        ---
+
+        [Adapted from solver22]
+
+        Perform the 'push' operation on the new slice and assign the used stacks the 
+        coordinates in the solution.
+
+        ### Input parameters
+        - bound: current bound - will be updated by the function (NOTE: property of Python
+        language - modifying strings in a method also modifies them outside, for how they
+        are referenced)
+        - new_slice: slice to be pushed; the format is:
+          - new_slice[i][0]: Stack object
+          - new_slice[i][1]: y coordinate of the object
+
+        ### Return values
+        - new_bound: updated bound
+
+        ### Push operation
+        - For each new stack 'i':
+          - Isolate the points in the current bound which have y coordinates in the range
+          [y_origin[i], y_origin[i] + y_dim[i]], being y_origin the y coordinate of the origin
+          of the stack (fixed at slice creation) and y_dim the dimension of the stack along
+          the y direction (it is the width if not rotated, the length if rotated)
+          - The x coordinate of the origin in the stack will be the max value of x for the
+          isolated points
+
+        ### Updating the bound
+        The new boundary is obtained by determining the vertices of all elements which have been
+        placed in last slice.
+        Since by definition the boundary has to have as last item a point having as y coordinate
+        the truck width, to prevent missing points, a check is performed to possibly add points
+        to the new bound to fill the gap.
+        """
+        new_bound = []
+
+        # Store the index of the first element in the bound which is valid
+        for new_stack in new_slice:
+            y_i = new_stack[1]
+            w_i = new_stack[0].width
             
+            # Find lower bound starting from 0
+            ind_bound = 0
+            while ind_bound < len(bound) and bound[ind_bound][1] <= y_i:
+                ind_bound += 1
+
+            if ind_bound < len(bound):
+                assert bound[ind_bound][1] > y_i
+                ind_bound -= 1
+                # This point has the same x coordinate as the one at which
+                # the loop was broken and it is for sure not 'above' the
+                # current stack
+            else:
+                raise ValueError("Out of boundary array bounds!")
+
+            # Search for valid points
+            ind_top = ind_bound + 0
+            # (Needed to prevent to just copy the reference and update both indices...)
+            while ind_top < len(bound) and bound[ind_top][1] < y_i + w_i:
+                ind_top += 1
+            # When the loop finishes, the element bound[ind_top] contains the upper end
+
+            if ind_top >= len(bound):
+                assert (
+                    bound[ind_top - 1][1] == y_i + w_i
+                ), f"The truck width is {bound[-1][1]}, but the item would reach width {y_i + w_i}"
+                ind_top -= 1
+
+            # This could happen, e.g., at the beginning
+            # assert (
+            #     len(bound[ind_bound : ind_top + 1]) > 1
+            # ), "The considered elements of the bound are less than 2! Something went wrong"
+
+            # The x coordinate is the max between the x coord of the elements of
+            # index between ind_bound and ind_top
+            x_i = max([p[0] for p in bound[ind_bound : ind_top + 1]])
+
+            # Update position of stacks
+            new_stack.position(x_i, y_i)
+
+            # Update the bound
+            # Simply add the points of the 'rightmost' points of the current stack
+            l_i = new_stack[0].length
+            x_br = x_i + l_i
+            y_br = y_i
+
+            x_tr = x_i + l_i
+            y_tr = y_i + w_i
+            new_bound.append([x_br, y_br])
+            new_bound.append([x_tr, y_tr])
+
+        # Fill the bound if the current slice does not reach the full width
+        if new_bound[-1][1] < bound[-1][1]:
+            # Increase the index from 0 until the element of the old bound is bigger
+            ind_extra = 0
+
+            while bound[ind_extra][1] < new_bound[-1][1] and ind_extra < len(bound):
+                ind_extra += 1
+
+            # ind_extra locates the 1st corner in the old bound which has y bigger
+            # than the current last element in the new bound
+
+            # Add adjustment point:
+            # x is the one of the old bound
+            # y is the same as the last element in the current bound
+            if ind_extra < len(bound):
+                new_bound.append([bound[ind_extra][0], new_bound[-1][1]])
+
+                for p in bound[ind_extra:]:
+                    new_bound.append(p)
+
+                # if N_DEBUG:
+                #     assert (
+                #         bound[-1][1] == new_bound[-1][1]
+                #     ), f"The last y of the bound does not match - {bound[ind_extra - 1][1]} (old) vs. {new_bound[-1][1]}"
+
+            elif bound[ind_extra - 1][1] < new_bound[-1][1]:
+                raise ValueError("The last point of the bound was lost!")
+
+            #else:
+                # Ind_extra == len(bound)
+                # if N_DEBUG:
+                #     assert (
+                #         bound[ind_extra - 1][1] == new_bound[-1][1]
+                #     ), f"The last y of the bound should have been {bound[ind_extra - 1][1]}, it is instead {new_bound[-1][1]}"
+
+        return new_bound
+
 
     #####################################################################################################
     ######### Utilities
@@ -452,7 +696,7 @@ class ACO:
         #NOTE: Items preferred lengthwise (longest side in respect to the length of the truck)
         #self.attractiveness[:,:self.n_code] = self.attractiveness[:,:self.n_code]*1.5
         
-    def choose_move(self, prev_state, pr_move=None):
+    def choose_move(self, prev_state, pr_move=None, track_choice=None):
         """ 
         choose_move
         -----------
@@ -461,21 +705,37 @@ class ACO:
         #### INPUT PARAMETERS:
             - pr_move: matrix of probabilities of moves from i to j 
             - prev_state: state of the ant
+            - track_choice: [default None] if specified, it indicates which codes can 
+            be considered (value = 1)
         #### OUTPUT PARAMETERS:
             - next_state: state where the ant will move
         """
-
         # At the start the first initialization 
         if pr_move is None: 
             pr_move = self.pr_move
+        
+        if track_choice is None:
+            track_choice = np.ones((pr_move.shape[0],))
 
         # Select the row from the state the ant was
         row_to_choose = pr_move[prev_state][:] 
 
         # Selecting the next state where the ant will move
-        next_state = int(np.random.choice(range(len(row_to_choose)), p=row_to_choose)) 
+        # The 'track_choice' variable is 1 if the associated code (index) can be considered
+        considered_prob = np.zeros((2, sum(track_choice)))  # elements - row 0: indices of nonzero values in track_choice
+        j = 0
+        for i in range(len(track_choice)):
+            if track_choice[i] == 1:
+                considered_prob[0, j] = i
+                considered_prob[1, j] = row_to_choose[i]
+                j += 1
+
+        sum_sel_probs = sum(considered_prob[1, :])
+        considered_prob[1, :] = considered_prob[1, :]/sum_sel_probs
+
+        next_state = int(np.random.choice(considered_prob[0, :], p=considered_prob[1, :])) 
         
-        return next_state 
+        return next_state
     
     def prMoveUpdate(self):
         """
@@ -595,7 +855,40 @@ class ACO:
                     stack_copy.orient = 'l'
                 
                 return stack_copy, stack_lst, stack_quantity
-        raise Exception("No more stacks with specified code")
+        raise Exception(f"[popStack]: No more stacks with specified code {code}")
+    
+    def getFirstStack(self, stack_lst, stack_quantity, code):
+        """
+        getFirstStack
+        ---
+        Retrieve the first stack in the list having the specified code.
+
+        ### Input parameters:
+            - stack_lst: full list containing all the stacks created
+            - stack_quantity: dictionary containing all the numbers of the items divided in stackability codes 
+            - code: stackability code of the selected item
+        """
+        widthwise = False
+        if code >= self.n_code:
+            code = code - self.n_code
+            widthwise = True
+
+        # Iterate until a stack with the correct code is found
+        for i,stack in enumerate(stack_lst):
+            if stack.stack_code == self.state_to_code(code):
+                stack_copy = copy(stack)
+                stack_copy.state = code
+                if widthwise:
+                    stack_copy.state += self.n_code
+                    stack_copy.orient = 'w'
+                    tmp = stack_copy.width
+                    stack_copy.width = stack_copy.length
+                    stack_copy.length = tmp
+                else:
+                    stack_copy.orient = 'l'
+                return stack_copy
+            
+        raise Exception(f"[getStack]: No more stacks with specified code {code}")
     
     def state_to_code(self, index):
         return self.index_code[index]
