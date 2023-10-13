@@ -100,34 +100,24 @@ class ACO:
                 # Bool to check if free space available in vehicle
                 free_space = True 
                 # The first code is the empty vehicle state
-                prev_s_code = 2*self.n_code 
-                # Position initialization at all 0
-                x_pos= y_pos = y_max = 0    
+                prev_s_code = 2*self.n_code
                 totArea = 0
                 totWeight = 0
                 totVolume = 0
                 ant_k = []  # It will contain the list of stacks used by current ant
-                first_line = True
-                n_1_line = 0
 
                 """
-                Slice definition:
-                It is a list of stacks that are placed along the y direction.
+                Slice definition: list of stacks that are placed along the y direction.
                 """
                 bound = [[0, 0], [0, self.vehicle["width"]]]
                                 
-
                 # Loop until free space available in vehicle
-                while(free_space):  
-                    # Choose of the next state and taking the stack selected:
-                    # next_s_code = self.choose_move(prev_s_code, pr_move)    
-                    # new_stack, stack_lst_ant, stack_quantity_ant = self.popStack(stack_lst_ant, stack_quantity_ant, next_s_code)
-                    # toAddStack, first_line, x_pos = self.addStack(new_stack, ant_k[:n_1_line], first_line, x_pos)
+                while(free_space):
+                    # Build the slice
+                    new_slice, stack_lst_ant, stack_quantity_ant, next_s_code, pr_move = self.buildSlice(prev_s_code, pr_move, bound, stack_lst_ant, stack_quantity_ant, totWeight)
 
-                    ###
-
-                    # TODO:
-                    new_slice, stack_lst_ant, stack_quantity_ant, next_s_code = self.buildSlice(prev_s_code, pr_move, bound, stack_lst_ant, stack_quantity_ant, totWeight)
+                    if DEBUG:
+                        print("> New slice", new_slice)
 
                     if new_slice != []:
                         # Some element was placed!
@@ -142,6 +132,8 @@ class ACO:
                             
                         # Push the slice
                         bound = self.pushSlice(bound, new_slice)
+                        if DEBUG:
+                            print("> Updated bound: ", bound)
                     else:
                         # No element could be placed - there is no space left
                         free_space = False
@@ -233,12 +225,12 @@ class ACO:
         - next_s_code: code of the last stack in the slice
         """
         new_slice = []
-        y_low = boundary[0][0] # Starting y coordinate
+        y_low = boundary[0][1] # Starting y coordinate
         assert y_low == 0, f"The first element of the boundary is not at y=0 (y={y_low})"
         max_width = boundary[-1][1] # The truck width 
         assert max_width == self.vehicle["width"], f"The last bound point has not y = vehicle['width'] ({max_width} vs {self.vehicle['width']})"
 
-        x_0 = max([p[0] for p in boundary]) # Starting coordinate of slice (before pushing) - sub-optimal
+        x_0 = max([p[0] for p in boundary]) # Starting coordinate of slice (before pushing)
         # Maximum available length (TODO: find some room for improvement... 
         # the bound can be used to find 'holes')
         max_length = self.vehicle["length"] - x_0
@@ -254,25 +246,61 @@ class ACO:
                 # Choice of the next state (stackability code)
                 next_s_code = self.choose_move(prev_code, prob_move_mat, track_codes)
 
-                # Extract the first stack with the chosen code - without removing it from the list
-                new_stack = self.getFirstStack(stack_list, stack_quantity_ant, next_s_code) # OK
+                if next_s_code is not None:
+                    assert prob_move_mat[prev_code, next_s_code] > 0 and track_codes[next_s_code] != 0, f"A code with null probability was chosen"
+                    
+                    cd = next_s_code - (self.n_code * (next_s_code >= self.n_code))
+                    assert stack_quantity_ant[self.state_to_code(cd)] > 0, f"A code for which there are no items left was chosen!"
 
-                # Now, make sure that the stack can be added to the current slice
-                toAddStack, y_upd = self.addStack2Slice(new_stack, y_low, max_length)
+                    # Extract the first stack with the chosen code - without removing it from the list
+                    new_stack = self.getFirstStack(stack_list, stack_quantity_ant, next_s_code) # OK
 
-                if toAddStack is None:
-                    track_codes[next_s_code] = 0
+                    # Now, make sure that the stack can be added to the current slice
+                    toAddStack, y_upd = self.addStack2Slice(new_stack, y_low, max_length)
+
+                    if toAddStack is None:
+                        track_codes[next_s_code] = 0
+                else:
+                    # Set all other track codes to 0
+                    track_codes = np.zeros((len(prob_move_mat[0]),), dtype=np.int32)
+                    toAddStack = None
 
             # Check if a stack can be added due tue the vehicle weight constrain
             if toAddStack is not None and (tot_weight + toAddStack.weight <= self.vehicle["max_weight"]):
                 # Can add stack to the slice
                 new_stack, stack_list, stack_quantity_ant = self.popStack(stack_list, stack_quantity_ant, next_s_code)
-                new_slice.append([toAddStack, y_upd])                
+                # Since the procedure to get the stack is the same, the extracted stack 
+                # should correspond to the one obtained previously
+                assert toAddStack.items == new_stack.items
+                new_slice.append([toAddStack, y_low])                
+                prev_code = next_s_code
+                y_low = y_upd
             else:
                 # If not, no more stack can be added to the vehicle (either stack is none, or it would exceed wt.)
                 slice_full = True
 
-        return new_slice, stack_list, stack_quantity_ant, next_s_code
+            # If stacks of a certain code finished, set the probability to choose them to 0
+            if sum(stack_quantity_ant.values()) > 0 and next_s_code is not None:
+                code = next_s_code 
+                
+                if next_s_code >= self.n_code:
+                    code = code - self.n_code
+
+                # If there are no more stacks of a certain code then set the pr_move to that specific 
+                # code to zero and distribute the probability over the others rows(stackability codes)
+                if stack_quantity_ant[self.state_to_code(code)] == 0: 
+                    prob_to_distr = prob_move_mat[:,code] + prob_move_mat[:,code+self.n_code]
+                    prob_move_mat[:,[code, code + self.n_code]] = 0
+                    if np.any(prob_move_mat):
+                        prob_to_distr = prob_to_distr/prob_move_mat[:, prob_move_mat.any(0)].shape[1]
+                        prob_move_mat[:, prob_move_mat.any(0)] +=  prob_to_distr.reshape(-1,1)
+            else:
+                slice_full = True
+        
+        if next_s_code is not None:
+            return new_slice, stack_list, stack_quantity_ant, next_s_code, prob_move_mat
+        else:
+            return new_slice, stack_list, stack_quantity_ant, prev_code, prob_move_mat
 
     def addStack_simple(self, toAddStack, x_pos, y_pos, y_max):
         """  
@@ -505,7 +533,7 @@ class ACO:
             x_i = max([p[0] for p in bound[ind_bound : ind_top + 1]])
 
             # Update position of stacks
-            new_stack.position(x_i, y_i)
+            new_stack[0].position(x_i, y_i)
 
             # Update the bound
             # Simply add the points of the 'rightmost' points of the current stack
@@ -716,6 +744,8 @@ class ACO:
         
         if track_choice is None:
             track_choice = np.ones((pr_move.shape[0],))
+        
+        assert sum(track_choice) > 0
 
         # Select the row from the state the ant was
         row_to_choose = pr_move[prev_state][:] 
@@ -731,11 +761,14 @@ class ACO:
                 j += 1
 
         sum_sel_probs = sum(considered_prob[1, :])
-        considered_prob[1, :] = considered_prob[1, :]/sum_sel_probs
-
-        next_state = int(np.random.choice(considered_prob[0, :], p=considered_prob[1, :])) 
         
-        return next_state
+        if sum_sel_probs > 0:
+            considered_prob[1, :] = considered_prob[1, :]/sum_sel_probs
+            next_state = int(np.random.choice(considered_prob[0, :], p=considered_prob[1, :])) 
+            return next_state
+        else:
+            # The allowed codes have total probability = 0
+            return None
     
     def prMoveUpdate(self):
         """
