@@ -75,30 +75,27 @@ class model_col_gen:
         """  
         model
         ------------
-        Contains the restricted master problem of the Column Generation\n
-        which is defined using Guroby. The colums are added using the\n
+        Contains the model of the Column Generation which is \n
+        defined using Guroby. The colums are added using the\n
         pattern given by the ACO solution.
         """
 
-        m = gp.Model("ColumnGeneration")
-
+        m = gp.Model("ColumnGeneration")       
+        
+        #TODO: loop to add columns at every iteration
         x = m.addVars(N_VARS, 1, vtype=GRB.INTEGER, name="x")
         
-        columns = np.zeros([self.items_type, N_VARS])
-        #TODO: loop to add columns at every iteration
-        for i in range(0, N_VARS, N_COLS):
-            if i != 0:
-                removeRandStacks(self.aco.stack_lst, self.aco.stack_quantity, 0.1)
-            columns[:, i:i+N_COLS] = self.add_columns(n_cols = N_COLS)
+        # Create new columns from the ACO solution 
+        columns = self.add_columns(n_cols = N_COLS)
 
         # Adding constraint to the model
         for i in range(self.items_type):
-            constr = 0
+            constr_i = 0
             for n in range(columns.shape[1]):
-                constr += columns[i, n] * x[n, 0]
+                constr_i += columns[i, n] * x[n, 0]
 
             m.addConstr(
-                constr >= self.n_items_type[i],
+                constr_i >= self.n_items_type[i],
                 f"Constraint {i}"
             )
         
@@ -111,12 +108,25 @@ class model_col_gen:
         
         m.optimize()
 
-        # Output decision variable values (only if > 0)
-        for v in m.getVars():
-            if v.X > 0:
-                print('%s %g' % (v.VarName, v.X))
-        
+        # Check if the model is infeasible 
+        if m.Status != 3:
+            # Creation of the fixed model in order to access dual variables
+            fixed = m.fixed()
+            fixed.optimize()
 
+            cons = fixed.getConstrs()
+
+            # Print the values of the dual variables
+            for i in range(self.items_type): 
+                print(f"The dual of constr {i} is :{cons[i].getAttr('Pi')}")
+
+            # Output decision variable values of the MIP and Fixed model (only if > 0)
+            m_vars = m.getVars()
+            f_vars = fixed.getVars()
+            for i in range(len(m_vars)):
+                if m_vars[i].X > 0:
+                    print('\nMIP model: %s %g' % (m_vars[i].VarName, m_vars[i].X))
+                    print('FIXED model: %s %g' % (f_vars[i].VarName, f_vars[i].X))
 
 
 

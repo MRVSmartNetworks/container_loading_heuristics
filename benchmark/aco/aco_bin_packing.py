@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from .config import AREA_RATIO, WEIGHT_RATIO, PRINT
-import copy
+from copy import copy
 
 class ACO:
     """  
