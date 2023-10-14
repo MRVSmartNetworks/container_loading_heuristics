@@ -38,8 +38,10 @@ class model_col_gen:
             self.n_items_type[i] =  len(df_items.loc[df_items['stackability_code'] == i])
         
         # Ant Colony Optimizazion initialization
-        self.aco = ACO(self.stackInfo, alpha=ALPHA, beta=BETA, 
-                  n_ants=N_ANTS, n_iter=N_ITER)
+        self.aco = ACO(
+            self.stackInfo, alpha=ALPHA, beta=BETA, 
+            n_ants=N_ANTS, n_iter=N_ITER
+        )
         self.aco.getVehicle(self.vehicle)
 
         # Stacks building
