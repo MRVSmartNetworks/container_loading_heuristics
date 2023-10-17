@@ -3,9 +3,10 @@
 import numpy as np
 import gurobipy as gp
 from gurobipy import GRB
-from aco.config import ALPHA, BETA, N_ANTS, N_ITER, N_COLS, N_VARS
+from aco.config import *
 from aco.aco_bin_packing import ACO
-from aco.utilities import buildStacks, stackInfo_creation, removeRandStacks
+from aco.utilities import buildStacks, stackInfo_creation
+import time
 
 class model_col_gen:
     
@@ -46,7 +47,7 @@ class model_col_gen:
         stack_lst, stack_quantity = buildStacks(self.vehicle, self.df_items, self.stackInfo)
         self.aco.getStacks(stack_lst, stack_quantity)
 
-    def add_columns(self, n_cols):
+    def add_columns(self, n_cols, duals):
         """ 
         add_columns
         ------------
@@ -61,7 +62,7 @@ class model_col_gen:
         """
         #TODO:check that number of columns <= N_ITER
         columns = np.zeros((self.items_type, n_cols))
-        bestAnts = self.aco.aco_2D_bin(n_bestAnts = n_cols)
+        bestAnts = self.aco.aco_2D_bin(n_bestAnts = n_cols, dualVars = duals)
         
         for j, ant in enumerate(bestAnts):
             for stack in ant:
@@ -80,53 +81,59 @@ class model_col_gen:
         pattern given by the ACO solution.
         """
 
-        m = gp.Model("ColumnGeneration")       
+        model = gp.Model("ColumnGeneration")       
         
-        #TODO: loop to add columns at every iteration
-        x = m.addVars(N_VARS, 1, vtype=GRB.INTEGER, name="x")
-        
-        # Create new columns from the ACO solution 
-        columns = self.add_columns(n_cols = N_COLS)
+        columns = np.zeros([self.items_type, N_COLS])
+        duals = np.zeros([self.items_type, 1])
+        t_start = time.time()
+        n_iter = 4
+        _iter = 0
+        while (time.time() - t_start) <= TIME_LIMIT or _iter <= n_iter :
+            x = model.addVars(_iter + N_COLS, 1, vtype=GRB.CONTINUOUS, name="x")
 
-        # Adding constraint to the model
-        for i in range(self.items_type):
-            constr_i = 0
+            # Create new columns from the ACO solution 
+            columns[:,_iter:_iter+N_COLS] = self.add_columns(n_cols = N_COLS, duals = duals)
+
+            # Adding constraint to the model
+            for i in range(self.items_type):
+                constr_i = 0
+                for n in range(columns.shape[1]):
+                    constr_i += columns[i, n] * x[n, 0]
+
+                model.addConstr(
+                    constr_i >= self.n_items_type[i],
+                    f"Constraint {i}"
+                )
+        
+            # Definition of the objective function
+            obj = gp.LinExpr()
             for n in range(columns.shape[1]):
-                constr_i += columns[i, n] * x[n, 0]
+                obj += self.vehicle["cost"] * x[n, 0]   #TODO: replace with gp.quicksum()?
 
-            m.addConstr(
-                constr_i >= self.n_items_type[i],
-                f"Constraint {i}"
-            )
-        
-        # Definition of the objective function
-        obj = gp.LinExpr()
-        for n in range(N_VARS):
-            obj += self.vehicle["cost"] * x[n, 0]   #TODO: replace with gp.quicksum()?
-        
-        m.setObjective(obj, GRB.MINIMIZE)
-        
-        m.optimize()
+            model.setObjective(obj, GRB.MINIMIZE)
 
-        # Check if the model is infeasible 
-        if m.Status != 3:
-            # Creation of the fixed model in order to access dual variables
-            fixed = m.fixed()
-            fixed.optimize()
+            model.optimize()
 
-            cons = fixed.getConstrs()
+            columns = np.append(columns, np.zeros([self.items_type, N_COLS]), axis=1)
 
-            # Print the values of the dual variables
-            for i in range(self.items_type): 
-                print(f"The dual of constr {i} is :{cons[i].getAttr('Pi')}")
+            _iter += N_COLS
+            # Check if the model is infeasible 
+            if model.Status != 3:
 
-            # Output decision variable values of the MIP and Fixed model (only if > 0)
-            m_vars = m.getVars()
-            f_vars = fixed.getVars()
-            for i in range(len(m_vars)):
-                if m_vars[i].X > 0:
-                    print('\nMIP model: %s %g' % (m_vars[i].VarName, m_vars[i].X))
-                    print('FIXED model: %s %g' % (f_vars[i].VarName, f_vars[i].X))
+                cons = model.getConstrs()
+                
+                for i in range(self.items_type): 
+                        duals[i] = cons[i].getAttr('Pi')
+                # Print the values of the dual variables
+                if PRINT:
+                    print("\nDUAL VARIABLES")
+                    for i in range(self.items_type): 
+                        print(f"The dual of constr {i} is :{cons[i].getAttr('Pi')}")
+
+                    # Output decision variable values of the MIP and Fixed model (only if > 0)
+                    for v in model.getVars():
+                        if v.X > 0:
+                            print('%s %g' % (v.VarName, v.X))
 
 
 
@@ -143,7 +150,7 @@ import pandas as pd
 from model_col_gen import model_col_gen
 
 if __name__ == "__main__":
-    dataset_name = "dataset_small"
+    dataset_name = "datasetA"
     type_vehicle = 0
     n_cols = 3
     sol_file_name = f"{dataset_name}_"
