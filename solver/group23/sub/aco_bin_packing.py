@@ -149,6 +149,8 @@ class ACO:
 
                         if DEBUG and code == 7:
                             print(f"Current code: {next_s_code}, i.e., {code}")
+                            # Does being here mean that there are stacks left, but simply we cannot fit them anymore?
+                            # I suppose so...
 
                         # If there are no more stacks of a certain code then set the pr_move to that specific 
                         # code to zero and distribute the probability over the others rows(stackability codes)
@@ -628,7 +630,7 @@ class ACO:
         # Pr_move parameters
         # Used to put at 0 the row in respect to the stack no more available and the ones with orientation constrain
         pr_mat = np.ones((self.dim_matr,self.dim_matr))
-        pr_mat[:,self.dim_matr-1] = 0 #last state is the empty truck, no ants can go in this state apart from the start
+        pr_mat[:, -1] = 0 #last state is the empty truck, no ants can go in this state apart from the start
 
 
         # loop over all the stackability code for checking the orientation and the presence of stack
@@ -770,7 +772,7 @@ class ACO:
             next_state = int(np.random.choice(considered_prob[0, :], p=considered_prob[1, :])) 
             return next_state
         else:
-            # The allowed codes have total probability = 0
+            # The allowed codes have total probability = 0 -> No state can be chosen!
             return None
     
     def prMoveUpdate(self):
