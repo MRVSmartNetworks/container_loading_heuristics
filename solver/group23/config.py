@@ -30,4 +30,4 @@ EVAPOR_COEFF = 0.2
 AREA_RATIO = 0.93
 
 ###
-DEBUG = True
+DEBUG = False
