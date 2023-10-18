@@ -141,25 +141,29 @@ class ACO:
                     ####
 
                     # Check if there are stacks left
+                    ## FIXME: maybe add condition free_space (= True)
                     if sum(stack_quantity_ant.values()) > 0:
                         code = next_s_code 
                         
                         if next_s_code >= self.n_code:
                             code = code - self.n_code
 
-                        if DEBUG and code == 7:
-                            print(f"Current code: {next_s_code}, i.e., {code}")
-                            # Does being here mean that there are stacks left, but simply we cannot fit them anymore?
-                            # I suppose so...
+                        if code == 7:
+                            if DEBUG:
+                                print(f"Current code: {next_s_code}, i.e., {code}")
+                            assert new_slice == [], "The next code was 14, but the truck can fit stacks..."
+                            # If here, no possible stack can be added (the value of next_s_code was left to
+                            # default prev_s_code = 14 <-> no stacks to be added)
 
-                        # If there are no more stacks of a certain code then set the pr_move to that specific 
-                        # code to zero and distribute the probability over the others rows(stackability codes)
-                        if stack_quantity_ant[self.state_to_code(code)] == 0: 
-                            prob_to_distr = pr_move[:,code] + pr_move[:,code+self.n_code]
-                            pr_move[:,[code, code + self.n_code]] = 0
-                            if np.any(pr_move):
-                                prob_to_distr = prob_to_distr/pr_move[:, pr_move.any(0)].shape[1]
-                                pr_move[:, pr_move.any(0)] +=  prob_to_distr.reshape(-1,1)
+                        else:
+                            # If there are no more stacks of a certain code then set the pr_move to that specific 
+                            # code to zero and distribute the probability over the others rows(stackability codes)
+                            if stack_quantity_ant[self.state_to_code(code)] == 0: 
+                                prob_to_distr = pr_move[:,code] + pr_move[:,code+self.n_code]
+                                pr_move[:,[code, code + self.n_code]] = 0
+                                if np.any(pr_move):
+                                    prob_to_distr = prob_to_distr/pr_move[:, pr_move.any(0)].shape[1]
+                                    pr_move[:, pr_move.any(0)] +=  prob_to_distr.reshape(-1,1)
                     else:
                         free_space = False
 
@@ -215,6 +219,8 @@ class ACO:
         - Choose the next code for the stack (choose_move)
         - Extract the first stack with the selected code
         - Add the stack to the slice
+
+        ---
 
         ### Input parameters:
         - prev_code: last selected stackability code
