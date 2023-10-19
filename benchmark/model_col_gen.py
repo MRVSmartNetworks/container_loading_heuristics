@@ -124,6 +124,7 @@ class model_col_gen:
                 
                 for i in range(self.items_type): 
                         duals[i] = cons[i].getAttr('Pi')
+
                 # Print the values of the dual variables
                 if PRINT:
                     print("\nDUAL VARIABLES")
@@ -134,6 +135,9 @@ class model_col_gen:
                     for v in model.getVars():
                         if v.X > 0:
                             print('%s %g' % (v.VarName, v.X))
+            
+            model.remove(model.getConstrs())
+            
 
 
 
@@ -150,9 +154,8 @@ import pandas as pd
 from model_col_gen import model_col_gen
 
 if __name__ == "__main__":
-    dataset_name = "datasetA"
+    dataset_name = "dataset_small"
     type_vehicle = 0
-    n_cols = 3
     sol_file_name = f"{dataset_name}_"
     df_items = pd.read_csv(
         os.path.join(".", "data", dataset_name, "items.csv"),

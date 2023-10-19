@@ -396,7 +396,8 @@ class ACO:
                 pr_mat[:,i+self.n_code] = 0
                 code_sub += 1
 
-            if np.sum(dualVar) == 0:
+            dualSum = np.sum(dualVar)
+            if dualSum == 0:
                 # Find the stacks that have the best fit in the trucks width
                 # App is updated every time a best fit into the truck is No_Stack 
                 app = 0 
@@ -454,10 +455,10 @@ class ACO:
                     y += 1
             else:
                 if dualVar[i] > 0:
-                    attr_mat[:,i] = 2
-                    attr_mat[:,i+self.n_code] = 2
+                    attr_mat[:,i] = 1.5 + dualVar[i]/dualSum
+                    attr_mat[:,i+self.n_code] = 1.5 + dualVar[i]/dualSum
 
-        if np.sum(dualVar) == 0:
+        if dualSum == 0:
             attr_mat[:,best_code1] = 2
             attr_mat[:,best_code2] = 2
         
