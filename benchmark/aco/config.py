@@ -31,6 +31,6 @@ AREA_RATIO = 1
 WEIGHT_RATIO = 1
 
 # Column generation 
-N_COLS = 10
+N_COLS = 5
 N_VARS = 100
-TIME_LIMIT = 200
+TIME_LIMIT = 500
