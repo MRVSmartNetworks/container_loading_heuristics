@@ -129,7 +129,7 @@ class ACO:
                 """
                 Slice definition: list of stacks that are placed along the y direction.
                 """
-                bound = [[0, 0], [0, self.vehicle["width"]]]
+                bound = [[0, 0], [self.vehicle["length"], 0]]
                                 
                 # Loop until free space available in vehicle
                 while(free_space):
@@ -144,7 +144,7 @@ class ACO:
                         slice_added = []    # Only add elements that fit (weight check)
                         for s in new_slice:
                             st = s[0]   # Extract the actual Stack object
-                            if totWeight + st.weight <= self.vehicle["max_weight"]:
+                            if totWeight + st.weight <= self.vehicle["max_weight"]: # FIXME: check was moved into buildSlice
                                 ant_k.append(st)
 
                                 # Update the measurements
@@ -243,6 +243,7 @@ class ACO:
         buildSlice
         ---
         Build the new slice to be placed in the truck for the current ant.
+        The slice is built along the x axis.
 
         ### Procedure
         - Choose the next code for the stack (choose_move)
@@ -254,33 +255,32 @@ class ACO:
         ### Input parameters:
         - prev_code: last selected stackability code
         - prob_move_mat: matrix of transition probabilities
-        - boundary: boundary for filling truck (in this case: lay stacks on 'y' axis)
+        - boundary: boundary for filling truck (in this case: lay stacks on 'x' axis)
         - stack_list: list of stacks that the current ant can use (stack_lst_ant in aco_2D_bin)
         - tot_weight: total sum of weights of placed stacks (before new slice)
 
         ### Output parameters:
-        - new_slice: list of pairs [Stack, y_coordinate] resulting in the 
+        - new_slice: list of pairs [Stack, x_coordinate] placed in current slice
         - stack_list: [to be assigned to stack_lst_ant] - the updated list of stacks available to 
         the ant
         - next_s_code: code of the last stack in the slice
         """
         new_slice = []
-        y_low = boundary[0][1] # Starting y coordinate
-        assert y_low == 0, f"The first element of the boundary is not at y=0 (y={y_low})"
-        max_width = boundary[-1][1] # The truck width 
-        assert max_width == self.vehicle["width"], f"The last bound point has not y = vehicle['width'] ({max_width} vs {self.vehicle['width']})"
+        x_low = boundary[0][0] # Starting x coordinate
+        assert x_low == 0, f"The first element of the boundary is not at x=0 (x={x_low})"
+        max_length = boundary[-1][0] # The truck length
+        assert max_length == self.vehicle["length"], f"The last bound point has not x = vehicle['length'] ({max_length} vs {self.vehicle['length']})"
 
-        x_0 = max([p[0] for p in boundary]) # Starting coordinate of slice (before pushing)
+        y_0 = max([p[1] for p in boundary]) # Starting y coordinate of slice (before pushing)
         # Maximum available length (TODO: find some room for improvement... 
         # the bound can be used to find 'holes')
-        max_length = self.vehicle["length"] - x_0
+        max_width = self.vehicle["width"] - y_0
 
-        slice_full = False  # Considering: y dimension, total weight of added stacks
+        slice_full = False  # Considering: x dimension, total weight of added stacks
         while not slice_full:
             # Used to track the chosen codes - 0 if not already chosen, 1 if chosen
             toAddStack = None
             track_codes = np.ones((len(prob_move_mat[0]),), dtype=np.int32)
-            no_more_ok_stacks = False
             next_s_code = 0
             while toAddStack is None and sum(track_codes) > 0:
                 # Choice of the next state (stackability code)
@@ -291,11 +291,6 @@ class ACO:
                     
                     cd = next_s_code - (self.n_code * (next_s_code >= self.n_code))
                     assert stack_quantity_ant[self.state_to_code(cd)] > 0, f"A code for which there are no items left was chosen!"
-                    
-                    # TODO: enforce weight constraint
-                    # For the current next_s_code, ensure there exist items that fit in terms 
-                    # of weight before
-                    
                     # Extract the first stack with the chosen code - without removing it from the list
                     # (if not fitting in current slice, it may fit in the next one - removing it it 
                     # makes the solution sub-optimal)
@@ -303,7 +298,7 @@ class ACO:
 
                     # Now, make sure that the stack can be added to the current slice
                     # The returned y is the y value where the stack 'ends' (FIXME: maybe remove)
-                    toAddStack, y_upd = self.addStack2Slice(new_stack, y_low, max_length)
+                    toAddStack, x_upd = self.addStack2Slice(new_stack, x_low, max_width)
 
                     if toAddStack is None:
                         track_codes[next_s_code] = 0
@@ -319,9 +314,10 @@ class ACO:
                 # Since the procedure to get the stack is the same, the extracted stack 
                 # should correspond to the one obtained previously with getFirstStack
                 assert toAddStack.items == new_stack.items
-                new_slice.append([toAddStack, y_low]) 
+                new_slice.append([toAddStack, x_low]) 
+                tot_weight += toAddStack.weight
                 prev_code = next_s_code
-                y_low = y_upd
+                x_low = x_upd
             else:
                 # If not, no more stack can be added to the vehicle (either stack is none, or it would exceed wt.)
                 slice_full = True
@@ -472,7 +468,7 @@ class ACO:
     
         return toAddStack, first_line, x_pos
 
-    def addStack2Slice(self, toAddStack: Stack, y_pos: float, x_avail: float):
+    def addStack2Slice(self, toAddStack: Stack, x_pos: float, y_avail: float):
         """
         addStack2Slice
         ---
@@ -487,24 +483,24 @@ class ACO:
         ### Input parameters
         - toAddStack: stack that needs to be added to the slice (chosen with 
         transition matrix).
-        - y_pos: y coordinate where to add the stack
-        - x_avail: available length along the x direction
+        - x_pos: x coordinate where to add the stack
+        - y_avail: available length along the y direction
 
         ### Output parameters
         - toAddStack/None: if the stack can fit in the slice, return it, else return None
-        - y_up/y_pos: if the stack can fit, return the new upper bound for the y coordinate
+        - x_up/x_pos: if the stack can fit, return the new upper bound for the x coordinate
         """
-        if toAddStack.length <= x_avail and y_pos + toAddStack.width <= self.vehicle['width']:
-            return toAddStack, y_pos + toAddStack.width
+        if toAddStack.width <= y_avail and x_pos + toAddStack.length <= self.vehicle['length']:
+            return toAddStack, x_pos + toAddStack.length
         else:
-            return None, y_pos
+            # Stack cannot fit in current slice
+            return None, x_pos
 
     def pushSlice(self, bound, new_slice):
         """
         pushSlice
         ---
-
-        [Adapted from solver22]
+        [Adapted from solver22 - slices are built parallel to 'x' axis of truck]
 
         Perform the 'push' operation on the new slice and assign the used stacks the 
         coordinates in the solution.
@@ -515,18 +511,18 @@ class ACO:
         are referenced)
         - new_slice: slice to be pushed; the format is:
           - new_slice[i][0]: Stack object
-          - new_slice[i][1]: y coordinate of the object
+          - new_slice[i][1]: x coordinate of the object
 
         ### Return values
         - new_bound: updated bound
 
         ### Push operation
         - For each new stack 'i':
-          - Isolate the points in the current bound which have y coordinates in the range
-          [y_origin[i], y_origin[i] + y_dim[i]], being y_origin the y coordinate of the origin
-          of the stack (fixed at slice creation) and y_dim the dimension of the stack along
-          the y direction (it is the width if not rotated, the length if rotated)
-          - The x coordinate of the origin in the stack will be the max value of x for the
+          - Isolate the points in the current bound which have x coordinates in the range
+          [x_origin[i], x_origin[i] + x_dim[i]], being x_origin the x coordinate of the origin
+          of the stack (fixed at slice creation) and x_dim the dimension of the stack along
+          the x direction (it is the length if not rotated, the width if rotated)
+          - The y coordinate of the origin in the stack will be the max value of y for the
           isolated points
 
         ### Updating the bound
@@ -540,18 +536,18 @@ class ACO:
 
         # Store the index of the first element in the bound which is valid
         for new_stack in new_slice:
-            y_i = new_stack[1]
-            w_i = new_stack[0].width
+            x_i = new_stack[1]
+            l_i = new_stack[0].length
             
             # Find lower bound starting from 0
             ind_bound = 0
-            while ind_bound < len(bound) and bound[ind_bound][1] <= y_i:
+            while ind_bound < len(bound) and bound[ind_bound][0] <= x_i:
                 ind_bound += 1
 
             if ind_bound < len(bound):
-                assert bound[ind_bound][1] > y_i
+                assert bound[ind_bound][0] > x_i
                 ind_bound -= 1
-                # This point has the same x coordinate as the one at which
+                # This point has the same y coordinate as the one at which
                 # the loop was broken and it is for sure not 'above' the
                 # current stack
             else:
@@ -560,55 +556,58 @@ class ACO:
             # Search for valid points
             ind_top = ind_bound + 0
             # (Needed to prevent to just copy the reference and update both indices...)
-            while ind_top < len(bound) and bound[ind_top][1] < y_i + w_i:
+            while ind_top < len(bound) and bound[ind_top][0] < x_i + l_i:
                 ind_top += 1
             # When the loop finishes, the element bound[ind_top] contains the upper end
 
             if ind_top >= len(bound):
                 assert (
-                    bound[ind_top - 1][1] == y_i + w_i
-                ), f"The truck width is {bound[-1][1]}, but the item would reach width {y_i + w_i}"
+                    bound[ind_top - 1][1] == x_i + l_i
+                ), f"The truck width is {bound[-1][0]}, but the item would reach width {x_i + l_i}"
                 ind_top -= 1
 
-            # The x coordinate is the max between the x coord of the elements of
+            # The y coordinate is the max between the y coord of the elements of
             # index between ind_bound and ind_top
-            x_i = max([p[0] for p in bound[ind_bound : ind_top + 1]])
+            y_i = max([p[1] for p in bound[ind_bound : ind_top + 1]])
 
             # Update position of stacks
             new_stack[0].position(x_i, y_i)
 
             # Update the bound
-            # Simply add the points of the 'rightmost' points of the current stack
-            l_i = new_stack[0].length
-            x_br = x_i + l_i
-            y_br = y_i
+            # Simply add the points of the 'topmost' points of the current stack
+            w_i = new_stack[0].width
+            x_tl = x_i
+            y_tl = y_i + w_i
 
             x_tr = x_i + l_i
             y_tr = y_i + w_i
-            new_bound.append([x_br, y_br])
+
+            new_bound.append([x_tl, y_tl])
             new_bound.append([x_tr, y_tr])
 
         # Fill the bound if the current slice does not reach the full width
-        if new_bound[-1][1] < bound[-1][1]:
+        if new_bound[-1][0] < bound[-1][0]:
             # Increase the index from 0 until the element of the old bound is bigger
             ind_extra = 0
 
-            while bound[ind_extra][1] < new_bound[-1][1] and ind_extra < len(bound):
-                # ind_extra locates the 1st corner in the old bound which has y bigger
+            while bound[ind_extra][0] < new_bound[-1][0] and ind_extra < len(bound):
+                # ind_extra locates the 1st corner in the old bound which has x bigger
                 # than the current last element in the new bound
                 ind_extra += 1
 
             # Add adjustment point:
-            # x is the one of the old bound
-            # y is the same as the last element in the current bound
+            # x is the same as the last element in the current bound
+            # y is the one of the old bound
             if ind_extra < len(bound):
-                new_bound.append([bound[ind_extra][0], new_bound[-1][1]])
+                new_bound.append([new_bound[-1][0], bound[ind_extra][1]])
 
                 for p in bound[ind_extra:]:
                     new_bound.append(p)
 
-            elif bound[ind_extra - 1][1] < new_bound[-1][1]:
+            elif bound[ind_extra - 1][0] < new_bound[-1][0]:
                 raise ValueError("The last point of the bound was lost!")
+
+        assert new_bound[-1][0] == bound[-1][0]
 
         return new_bound
 
