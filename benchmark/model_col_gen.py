@@ -146,7 +146,6 @@ class model_col_gen:
             model.write(f"./benchmark/results/model_{_iter}.lp")
             model.update()
             model.optimize()
-            print([x[n].X for n in range(_iter + N_COLS)])
 
             columns = np.append(columns, np.zeros([self.items_type, N_COLS]), axis=1)
 
@@ -157,7 +156,7 @@ class model_col_gen:
 
             # Check if the model is infeasible 
             if model.Status != 3:
-
+                print([x[n].X for n in range(_iter + N_COLS)])
                 cons = model.getConstrs()
                 
                 for i in range(self.items_type): 
