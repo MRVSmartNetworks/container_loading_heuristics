@@ -6,6 +6,9 @@ from solver.group23.sub.stack import Stack
 from solver.group23.config import *
 from copy import deepcopy, copy
 
+VERB_LOCAL = True
+DEBUG_LOCAL = False
+
 class ACO:
     """  
     Ant Colony Optimization for bin packing problem
@@ -66,8 +69,17 @@ class ACO:
         Method to solve 2D bin packing problem.
 
         #### INPUT PARAMETERS:
-            - last_iter: When True the left items can be stored all in the selected vehicle.\n
-                            In this way ACO parameters are changed to boost performance.
+        - last_iter: When True the left items can be stored all in the selected vehicle.
+        In this way ACO parameters are changed to boost performance.
+        
+        #### OUTPUT PARAMETERS:
+        - bestAnt: it contains the information of the ant that found the best solution 
+        for the current truck (in terms of occupied area percentage); the variable 
+        contains the list of [stack, y coordinate] of origin, in the order they have
+        been added
+        - area_ratio: percentage of occupied truck surface by current best ant
+        - weightRatio: ratio of total item weight / max. truck weight for current best 
+        ant
         """
 
         # When True the parameters of the ACO are changed.
@@ -85,13 +97,21 @@ class ACO:
         # All the ACO is done n_iter time or until a good solution is found.
         # The good solution is found when the filled area ratio of the truck reach a certain treshold
         while _iter < self.n_iter and not good_sol:
+            if VERB_LOCAL:
+                print("> ACO Iteration: {}              ".format(_iter))
             self.ants = []
             antsArea = []
             antsWeight = []
 
             # Iteration over all the ants. Every ants will find its own solution putting the stack as they want.
             # At the end only the best solution of all the ants will be taken into account.
-            for _ in range(self.n_ants):
+            for ant_index in range(self.n_ants):
+                if VERB_LOCAL:
+                    # Print status bar:
+                    print(loadingBar(ant_index, self.n_ants, 20) + f" {round(100 * ant_index / self.n_ants, 1)}%", end="\r")
+
+                if DEBUG_LOCAL:
+                    print(f"\n> Ant number {ant_index}")
                 stack_lst_ant = [stack for stack in self.stack_lst] #NOTE: [ele for ele in stack_lst] better????
                 stack_quantity_ant = self.stack_quantity.copy()
                 pr_move = self.pr_move.copy()
@@ -116,24 +136,30 @@ class ACO:
                     # Build the slice
                     new_slice, stack_lst_ant, stack_quantity_ant, next_s_code, pr_move = self.buildSlice(prev_s_code, pr_move, bound, stack_lst_ant, stack_quantity_ant, totWeight)
 
-                    if DEBUG:
-                        print("> New slice", new_slice)
+                    if DEBUG_LOCAL:
+                        print("> New slice added")
 
                     if new_slice != []:
                         # Some element was placed!
+                        slice_added = []    # Only add elements that fit (weight check)
                         for s in new_slice:
-                            st = s[0]
-                            ant_k.append(st)
+                            st = s[0]   # Extract the actual Stack object
+                            if totWeight + st.weight <= self.vehicle["max_weight"]:
+                                ant_k.append(st)
 
-                            # Update the measurements
-                            totArea += (st.length*st.width)
-                            totVolume +=(st.length*st.width*st.height)
-                            totWeight += st.weight
+                                # Update the measurements
+                                totArea += (st.length*st.width)
+                                totVolume +=(st.length*st.width*st.height)
+                                totWeight += st.weight
+
+                                slice_added.append(s)
+                            else:
+                                if DEBUG_LOCAL:
+                                    print("Discarded item exceeding weight constraint of truck!")
                             
-                        # Push the slice
-                        bound = self.pushSlice(bound, new_slice)
-                        if DEBUG:
-                            print("> Updated bound: ", bound)
+                        # Push the slice - only elements that fit (& update the 
+                        # coordinates of the stacks in the solution)
+                        bound = self.pushSlice(bound, slice_added)
                     else:
                         # No element could be placed - there is no space left
                         free_space = False
@@ -149,8 +175,9 @@ class ACO:
                             code = code - self.n_code
 
                         if code == 7:
-                            if DEBUG:
-                                print(f"Current code: {next_s_code}, i.e., {code}")
+                            if DEBUG_LOCAL:
+                                # print(f"Current code: {next_s_code}, i.e., {code}")
+                                print("> No stacks fit anymore!")
                             assert new_slice == [], "The next code was 14, but the truck can fit stacks..."
                             # If here, no possible stack can be added (the value of next_s_code was left to
                             # default prev_s_code = 14 <-> no stacks to be added)
@@ -188,6 +215,8 @@ class ACO:
                 bestAnt = self.ants[i_max]
                 bestArea = area_ratio 
                 weightRatio = antsWeight[i_max]/self.vehicle["max_weight"]
+
+                assert weightRatio <= 1.
 
             # Change evaportaion coefficient dynamically given the area ratio
             # At the start the evaporation coefficien will start with a low value (low importance of the ants trail)
@@ -262,17 +291,24 @@ class ACO:
                     
                     cd = next_s_code - (self.n_code * (next_s_code >= self.n_code))
                     assert stack_quantity_ant[self.state_to_code(cd)] > 0, f"A code for which there are no items left was chosen!"
-
+                    
+                    # TODO: enforce weight constraint
+                    # For the current next_s_code, ensure there exist items that fit in terms 
+                    # of weight before
+                    
                     # Extract the first stack with the chosen code - without removing it from the list
-                    new_stack = self.getFirstStack(stack_list, stack_quantity_ant, next_s_code) # OK
+                    # (if not fitting in current slice, it may fit in the next one - removing it it 
+                    # makes the solution sub-optimal)
+                    new_stack = self.getFirstStack(stack_list, stack_quantity_ant, next_s_code)
 
                     # Now, make sure that the stack can be added to the current slice
+                    # The returned y is the y value where the stack 'ends' (FIXME: maybe remove)
                     toAddStack, y_upd = self.addStack2Slice(new_stack, y_low, max_length)
 
                     if toAddStack is None:
                         track_codes[next_s_code] = 0
                 else:
-                    # Set all other track codes to 0
+                    # Set all other track codes to 0 - cannot add stacks anymore
                     track_codes = np.zeros((len(prob_move_mat[0]),), dtype=np.int32)
                     toAddStack = None
 
@@ -281,9 +317,9 @@ class ACO:
                 # Can add stack to the slice
                 new_stack, stack_list, stack_quantity_ant = self.popStack(stack_list, stack_quantity_ant, next_s_code)
                 # Since the procedure to get the stack is the same, the extracted stack 
-                # should correspond to the one obtained previously
+                # should correspond to the one obtained previously with getFirstStack
                 assert toAddStack.items == new_stack.items
-                new_slice.append([toAddStack, y_low])                
+                new_slice.append([toAddStack, y_low]) 
                 prev_code = next_s_code
                 y_low = y_upd
             else:
@@ -534,11 +570,6 @@ class ACO:
                 ), f"The truck width is {bound[-1][1]}, but the item would reach width {y_i + w_i}"
                 ind_top -= 1
 
-            # This could happen, e.g., at the beginning
-            # assert (
-            #     len(bound[ind_bound : ind_top + 1]) > 1
-            # ), "The considered elements of the bound are less than 2! Something went wrong"
-
             # The x coordinate is the max between the x coord of the elements of
             # index between ind_bound and ind_top
             x_i = max([p[0] for p in bound[ind_bound : ind_top + 1]])
@@ -563,10 +594,9 @@ class ACO:
             ind_extra = 0
 
             while bound[ind_extra][1] < new_bound[-1][1] and ind_extra < len(bound):
+                # ind_extra locates the 1st corner in the old bound which has y bigger
+                # than the current last element in the new bound
                 ind_extra += 1
-
-            # ind_extra locates the 1st corner in the old bound which has y bigger
-            # than the current last element in the new bound
 
             # Add adjustment point:
             # x is the one of the old bound
@@ -577,20 +607,8 @@ class ACO:
                 for p in bound[ind_extra:]:
                     new_bound.append(p)
 
-                # if N_DEBUG:
-                #     assert (
-                #         bound[-1][1] == new_bound[-1][1]
-                #     ), f"The last y of the bound does not match - {bound[ind_extra - 1][1]} (old) vs. {new_bound[-1][1]}"
-
             elif bound[ind_extra - 1][1] < new_bound[-1][1]:
                 raise ValueError("The last point of the bound was lost!")
-
-            #else:
-                # Ind_extra == len(bound)
-                # if N_DEBUG:
-                #     assert (
-                #         bound[ind_extra - 1][1] == new_bound[-1][1]
-                #     ), f"The last y of the bound should have been {bound[ind_extra - 1][1]}, it is instead {new_bound[-1][1]}"
 
         return new_bound
 
@@ -918,7 +936,7 @@ class ACO:
             widthwise = True
 
         # Iterate until a stack with the correct code is found
-        for i,stack in enumerate(stack_lst):
+        for _, stack in enumerate(stack_lst):
             if stack.stack_code == self.state_to_code(code):
                 stack_copy = copy(stack)
                 stack_copy.state = code
@@ -934,6 +952,32 @@ class ACO:
             
         raise Exception(f"[getStack]: No more stacks with specified code {code}")
     
+    def get_min_stack_weight(self, stack_lst, code):
+        """
+        get_min_stack_weight 
+        ---
+        Return the lowest stack weight for the specified stackability 
+        code.
+
+        ### Input parameters
+        - stack_lst: list of current stacks
+        - code: stackability code
+        """
+        widthwise = False
+        if code >= self.n_code:
+            code = code - self.n_code
+            widthwise = True
+
+        min_wt_code = None
+        for s in stack_lst:
+            if s.stack_code == code:
+                if min_wt_code is None:
+                    min_wt_code = s.weight
+                elif s.weight <= min_wt_code:
+                    min_wt_code = s.weight
+
+        return min_wt_code
+
     def state_to_code(self, index):
         return self.index_code[index]
     
