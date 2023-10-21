@@ -174,11 +174,11 @@ class ACO:
                         if next_s_code >= self.n_code:
                             code = code - self.n_code
 
-                        if code == 7:
+                        if code == self.n_code:
                             if DEBUG_LOCAL:
                                 # print(f"Current code: {next_s_code}, i.e., {code}")
                                 print("> No stacks fit anymore!")
-                            assert new_slice == [], "The next code was 14, but the truck can fit stacks..."
+                            assert new_slice == [], "The next state is 'truck empty', but the truck can fit stacks..."
                             # If here, no possible stack can be added (the value of next_s_code was left to
                             # default prev_s_code = 14 <-> no stacks to be added)
 
