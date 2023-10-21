@@ -5,11 +5,16 @@ import random
 import time
 import numpy as np
 import pandas as pd
+import warnings
+import signal
+import threading
+import sys
 
 from solver.group22.solution_representation import myStack3D
 from solver.group22.stack import Stack
 from solver.group22.stack_creation_heur import create_stack_heur, refill_stacks
 from solver.group22.stack_creation_gurobi_new import create_stack_gurobi
+from utilities.timeout import TimeoutException, timeout_handler, TIMEOUT_VALUE
 
 from solver.group22.config import (
     SEED,
@@ -26,6 +31,33 @@ from solver.group22.config import (
     STORE_TIMES,
     OUT_TIME,
 )
+
+
+class AnimationThread(threading.Thread):
+    """
+    AnimationThread
+    ---
+    This class defines a thread which is used to print the animation
+    during stack creation.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.stop_flag = threading.Event()
+
+    def run(self):
+        sym = ["|", "/", "-", "\\"]
+        i = 0
+        while not self.stop_flag.is_set():
+            c = sym[i]
+            sys.stdout.write("\rCreating stacks " + c)
+            sys.stdout.flush()
+            i = (i + 1) % len(sym)
+            time.sleep(0.1)
+        sys.stdout.write("\rDone!                      \n")
+
+    def stop(self):
+        self.stop_flag.set()
 
 
 class Solver22:
@@ -121,10 +153,11 @@ class Solver22:
 
     def solve(
         self,
-        df_items,
-        df_trucks,
-        sol_file_name,
+        df_items: pd.DataFrame,
+        df_trucks: pd.DataFrame,
+        sol_file_name: str,
         max_tries=MAX_TRIES,
+        max_time=TIMEOUT_VALUE,
         used_trucks_dict=None,
         recur=IMPROVE,
         gurobi=GUROBI,
@@ -148,6 +181,7 @@ class Solver22:
         - df_items: dataframe containing all items
         - df_trucks: dataframe containing all trucks
         - max_tries (default const. MAX_TRIES): maximum number of solutions to be found
+        - max_time: default
         """
         random.seed(SEED)
 
@@ -156,325 +190,365 @@ class Solver22:
 
         time_start = time.time()
 
-        for self.tries in range(max_tries):
-            print(f"Solution {self.tries + 1}")
-            t_0 = time.time()
-            sublist_sol_2D = []
-            sublist_scores_2D = []
+        signal.signal(signal.SIGALRM, timeout_handler)
 
-            self.curr_sol = {
-                "type_vehicle": [],
-                "idx_vehicle": [],
-                "id_stack": [],
-                "id_item": [],
-                "x_origin": [],
-                "y_origin": [],
-                "z_origin": [],
-                "orient": [],
-            }
-            self.curr_obj_value = 0
+        # Start timer - at expiry it will raise a TimeoutException
+        signal.alarm(max_time)
 
-            tmp_items = pd.DataFrame.copy(self.df_items)
-            tmp_vehicles = pd.DataFrame.copy(self.df_vehicles)
+        try:
+            while self.tries < max_tries and (time.time() - time_start) < max_time:
+                print(f"Solution {self.tries + 1}")
+                t_0 = time.time()
+                sublist_sol_2D = []
+                sublist_scores_2D = []
 
-            # TODO: review lower bound evaluation
-            # min_cost, min_n_trucks = self.getLowerBound(tmp_items, tmp_vehicles)
-            # print(f"The minimum cost possible is {min_cost} and it is achieved with {min_n_trucks}")
+                self.curr_sol = {
+                    "type_vehicle": [],
+                    "idx_vehicle": [],
+                    "id_stack": [],
+                    "id_item": [],
+                    "x_origin": [],
+                    "y_origin": [],
+                    "z_origin": [],
+                    "orient": [],
+                }
+                self.curr_obj_value = 0
 
-            tmp_items["surface"] = tmp_items["width"] * tmp_items["length"]
-            tmp_items["volume"] = tmp_items["surface"] * tmp_items["height"]
+                tmp_items = pd.DataFrame.copy(self.df_items)
+                tmp_vehicles = pd.DataFrame.copy(self.df_vehicles)
 
-            # Order according to dimensions * weight / cost ratio
-            if (
-                "dim_cost_ratio" not in tmp_vehicles.columns
-                and "dim_wt_cost_ratio" not in tmp_vehicles.columns
-            ):
-                tmp_vehicles["volume"] = (
-                    tmp_vehicles["width"]
-                    * tmp_vehicles["length"]
-                    * tmp_vehicles["height"]
-                )
-                tmp_vehicles["section"] = tmp_vehicles["width"] * tmp_vehicles["height"]
-                tmp_vehicles["dim_cost_ratio"] = (
-                    tmp_vehicles["volume"] / tmp_vehicles["cost"]
-                )
-                tmp_vehicles["dim_wt_cost_ratio"] = (
-                    tmp_vehicles["dim_cost_ratio"]
-                    * tmp_vehicles["max_weight"]
-                    * tmp_vehicles["max_weight_stack"]
-                )
+                # TODO: review lower bound evaluation
+                # min_cost, min_n_trucks = self.getLowerBound(tmp_items, tmp_vehicles)
+                # print(f"The minimum cost possible is {min_cost} and it is achieved with {min_n_trucks}")
 
-            # Used to track the different types of used vehicles and assign unique IDs:
-            # NOTE: it can be assigned by the
-            if used_trucks_dict is None:
-                self.idx_vehicle = 0
-                n_trucks = {}
-                for id in tmp_vehicles.id_truck.unique():
-                    n_trucks[id] = 0
-            else:
-                n_trucks = used_trucks_dict.copy()
-                self.idx_vehicle = sum(used_trucks_dict.values())
+                tmp_items["surface"] = tmp_items["width"] * tmp_items["length"]
+                tmp_items["volume"] = tmp_items["surface"] * tmp_items["height"]
 
-            all_trucks_id = []
-
-            self.iter = 0
-            print_trucks_ID = []
-
-            self.curr_truck_type = ""
-            self.last_truck_type = ""
-            while len(tmp_items.index) > 0 and self.iter < MAX_ITER:
-                if VERB:
-                    print("")
-
-                print(f"> Iter {self.iter}")
-                if self.iter == 10:
-                    pass
-                if N_DEBUG:
-                    print(f"> Items left: {len(tmp_items.index)}")
-
-                if self.last_truck_was_empty:
-                    self.unusable_trucks.append(str(curr_truck.id_truck[:2]))
-
-                self.last_truck_was_empty = False
-
-                # Strategy for selecting the trucks
-                curr_truck = self.selectNextTruck(
-                    tmp_vehicles, tmp_items, self.unusable_trucks
-                )
-
-                # Update the attributes used for recycling stacks
-                self.last_truck_type = self.curr_truck_type
-                self.curr_truck_type = curr_truck.id_truck
-
-                n_trucks[curr_truck.id_truck] += 1
-                # The value is updated with sol
-                curr_truck["idx_vehicle"] = self.idx_vehicle
-
-                if self.iter % 50 == 0:
-                    print_trucks_ID.append(curr_truck.idx_vehicle)
-
-                all_trucks_id.append(curr_truck.id_truck)
-
-                if VERB:
-                    print(f"> Truck type: {curr_truck.id_truck}")
-                    print(f"> Truck ID: {curr_truck.idx_vehicle}")
-
-                if implem.lower() == "new":
-                    ##################################
-                    # Improved implementation
-                    #
-                    if self.curr_truck_type != self.last_truck_type:
-                        # Shuffle items
-                        tmp_items = tmp_items.sample(frac=1, random_state=315054)
-                        # Build stacks
-                        if not gurobi:
-                            self.stacks_list, self.stack_number = create_stack_heur(
-                                tmp_items, curr_truck, self.stack_number
-                            )
-                        else:
-                            self.stacks_list, self.stack_number = create_stack_gurobi(
-                                tmp_items, curr_truck, self.stack_number
-                            )
-
-                        tot_it_in_stacks = sum(
-                            [len(st.items) for st in self.stacks_list]
-                        )
-                        if N_DEBUG:
-                            assert tot_it_in_stacks == len(
-                                tmp_items.index
-                            ), f"Items in stack = {tot_it_in_stacks}, total items = {len(tmp_items.index)}"
-                    else:
-                        # Destroy the worse stacks that are present in the list
-                        # (More than 30% height margin and no max stack)
-
-                        del_index = np.zeros(len(self.stacks_list))
-                        t_height = curr_truck["height"]
-                        thresh = 0.3 * t_height
-                        for k in range(len(self.stacks_list)):
-                            if (
-                                t_height - self.stacks_list[k].tot_height
-                            ) > thresh and not self.stacks_list[k].isMaxStack():
-                                del_index[k] = 1
-
-                        for k in list(range(len(del_index)))[::-1]:
-                            if del_index[k]:
-                                # Extract items from the stacks
-                                self.discarded_stacks.append(self.stacks_list[k])
-                                del self.stacks_list[k]
-
-                        # The stacks present in the current list are still valid!
-                        # Can create new stacks with the items in the discarded ones
-                        if len(self.discarded_stacks) > 0:
-                            # Extract items from stacks
-                            it_recycle = pd.DataFrame(columns=tmp_items.columns)
-                            for st in self.discarded_stacks:
-                                for it in st.items:
-                                    it_recycle.loc[len(it_recycle)] = it
-
-                            # Check that there are no discarded elements among the ones in the solution
-                            for ind, row in it_recycle.iterrows():
-                                if N_DEBUG:
-                                    for st in self.stacks_list:
-                                        assert row["id_item"] not in [
-                                            it["id_item"] for it in st.items
-                                        ], f"Item {row['id_item']} was discarded, but appears in valid stack {st.id}!"
-
-                            if N_DEBUG:
-                                tot_it_not_in_sol = sum(
-                                    [len(st.items) for st in self.stacks_list]
-                                ) + len(it_recycle.index)
-                                assert tot_it_not_in_sol == len(
-                                    tmp_items.index
-                                ), "The items not in the solution do not match"
-
-                            self.stacks_list, self.stack_number = refill_stacks(
-                                self.stacks_list,
-                                it_recycle,
-                                curr_truck,
-                                self.stack_number,
-                                create_stack_heur,
-                            )
-
-                    # Shuffle the list of stacks
-                    random.shuffle(self.stacks_list)
-
-                    # Make sure all items left appear in the stacks
-                    # (Code borrowed from stack_creation_heur.py)
-                    if N_DEBUG:
-                        # Isolate the single
-                        n_unique_ids = len(tmp_items.index)
-
-                        stack_items_ids = []
-                        for st in self.stacks_list:
-                            stack_items_ids += [it.id_item for it in st.items]
-
-                        stack_items_ids = np.array(stack_items_ids)
-                        used_unique_ids, used_counts = np.unique(
-                            stack_items_ids, return_counts=True
-                        )
-
-                        tot_items_in_stacks = sum(
-                            [len(st.items) for st in self.stacks_list]
-                        )
-
-                        assert tot_items_in_stacks == len(
-                            used_unique_ids
-                        ), "The items in the stacks are not matching!"
-
-                        assert (
-                            len(used_unique_ids) == n_unique_ids
-                        ), f"The stacks contain {len(used_unique_ids)} elements, while the remaining items are {n_unique_ids}"
-                    #
-                    #
-                    ##################################
-
-                elif implem.lower() == "old":
-                    ##################################
-                    # Original implementation:
-                    # NOTE: with this approach, it is not possible to create
-                    # stacks using gurobi due to time constraints, as it
-                    # recreates all the stacks from scratch at each iteration
-
-                    # Build stacks with the copied list of items 'tmp_items'
-                    self.stacks_list, self.stack_number = create_stack_heur(
-                        tmp_items, curr_truck, self.stack_number
+                # Order according to dimensions * weight / cost ratio
+                if (
+                    "dim_cost_ratio" not in tmp_vehicles.columns
+                    and "dim_wt_cost_ratio" not in tmp_vehicles.columns
+                ):
+                    tmp_vehicles["volume"] = (
+                        tmp_vehicles["width"]
+                        * tmp_vehicles["length"]
+                        * tmp_vehicles["height"]
+                    )
+                    tmp_vehicles["section"] = (
+                        tmp_vehicles["width"] * tmp_vehicles["height"]
+                    )
+                    tmp_vehicles["dim_cost_ratio"] = (
+                        tmp_vehicles["volume"] / tmp_vehicles["cost"]
+                    )
+                    tmp_vehicles["dim_wt_cost_ratio"] = (
+                        tmp_vehicles["dim_cost_ratio"]
+                        * tmp_vehicles["max_weight"]
+                        * tmp_vehicles["max_weight_stack"]
                     )
 
-                    # Shuffle the list of stacks
-                    random.shuffle(self.stacks_list)
-                    ##################################
+                # Used to track the different types of used vehicles and assign unique IDs:
+                # NOTE: it can be assigned by the
+                if used_trucks_dict is None:
+                    self.idx_vehicle = 0
+                    n_trucks = {}
+                    for id in tmp_vehicles.id_truck.unique():
+                        n_trucks[id] = 0
+                else:
+                    n_trucks = used_trucks_dict.copy()
+                    self.idx_vehicle = sum(used_trucks_dict.values())
 
-                # Cleanup stacks list
-                # self.stacks_list = self.cleanStackList(self.stacks_list)
+                all_trucks_id = []
 
-                if VERB:
-                    print(f"Total number of generated stacks: {len(self.stacks_list)}")
+                self.iter = 0
+                print_trucks_ID = []
 
-                ####### 2D PROBLEM SOLUTION (2D bin packing)
-                sol_2D, self.stacks_list, curr_score = self.solve2D(
-                    self.stacks_list,
-                    curr_truck,
-                    scores=True,
-                )
+                self.curr_truck_type = ""
+                self.last_truck_type = ""
 
-                sublist_sol_2D.append(sol_2D)
-                sublist_scores_2D.append(curr_score)
+                while len(tmp_items.index) > 0 and self.iter < MAX_ITER:
+                    if VERB:
+                        print("")
 
-                # Use the 2D solution to update the overall solution
-                tmp_items = self.updateCurrSol(sol_2D, curr_truck, tmp_items)
+                    print(f"> Iter {self.iter}")
+                    if self.iter == 10:
+                        pass
+                    if N_DEBUG:
+                        print(f"> Items left: {len(tmp_items.index)}")
 
-                self.iter += 1
+                    if self.last_truck_was_empty:
+                        self.unusable_trucks.append(str(curr_truck.id_truck[:2]))
 
-            self.curr_obj_value = self.evalObj(df_trucks)
+                    self.last_truck_was_empty = False
 
-            self.list_sol_2D.append(sublist_sol_2D)
-            self.scores_2D.append(sublist_scores_2D)
+                    # Strategy for selecting the trucks
+                    curr_truck = self.selectNextTruck(
+                        tmp_vehicles, tmp_items, self.unusable_trucks
+                    )
 
-            used_trucks = 0
-            for t in n_trucks.keys():
-                used_trucks += n_trucks[t]
+                    # Update the attributes used for recycling stacks
+                    self.last_truck_type = self.curr_truck_type
+                    self.curr_truck_type = curr_truck.id_truck
 
-            if VERB:
-                print(f"Number of trucks analyzed: {used_trucks}")
-                print(f"Actual number of used trucks: {self.idx_vehicle}")
+                    n_trucks[curr_truck.id_truck] += 1
+                    # The value is updated with sol
+                    curr_truck["idx_vehicle"] = self.idx_vehicle
 
-            self.checkValidSolution(self.curr_sol, self.df_items, self.df_vehicles)
-            print(f"Current objective value: {self.curr_obj_value}")
-            # print(f"Broken Stacks: {self.count_broken}")
+                    if self.iter % 50 == 0:
+                        print_trucks_ID.append(curr_truck.idx_vehicle)
 
-            if N_DEBUG:
-                assert (
-                    len(tmp_items.index) == 0
-                ), "Not all items have been used in current solution!"
+                    all_trucks_id.append(curr_truck.id_truck)
 
-            if self.updateBestSol() != 0:
-                print("Solution was updated!")
-                self.scores_2D_best = sublist_scores_2D
+                    if VERB:
+                        print(f"> Truck type: {curr_truck.id_truck}")
+                        print(f"> Truck ID: {curr_truck.idx_vehicle}")
 
-            self.runtimes.append(time.time() - t_0)
-            print("Time for solution: ", self.runtimes[self.tries], "\n")
+                    if implem.lower() == "new":
+                        ##################################
+                        # Improved implementation
+                        #
+                        if self.curr_truck_type != self.last_truck_type:
+                            # Shuffle items
+                            tmp_items = tmp_items.sample(frac=1, random_state=315054)
+                            # Build stacks
+                            if not gurobi:
+                                self.stacks_list, self.stack_number = create_stack_heur(
+                                    tmp_items, curr_truck, self.stack_number
+                                )
+                            else:
+                                t = AnimationThread()
+                                (
+                                    self.stacks_list,
+                                    self.stack_number,
+                                ) = create_stack_gurobi(
+                                    tmp_items, curr_truck, self.stack_number, t
+                                )
 
-            self.unusable_trucks = []
-            self.last_truck_was_empty = False
+                            tot_it_in_stacks = sum(
+                                [len(st.items) for st in self.stacks_list]
+                            )
+                            if N_DEBUG:
+                                assert tot_it_in_stacks == len(
+                                    tmp_items.index
+                                ), f"Items in stack = {tot_it_in_stacks}, total items = {len(tmp_items.index)}"
+                        else:
+                            # Destroy the worse stacks that are present in the list
+                            # (More than 30% height margin and no max stack)
 
-        print(f"Optimal initial value: {self.best_obj_value}")
+                            del_index = np.zeros(len(self.stacks_list))
+                            t_height = curr_truck["height"]
+                            thresh = 0.3 * t_height
+                            for k in range(len(self.stacks_list)):
+                                if (
+                                    t_height - self.stacks_list[k].tot_height
+                                ) > thresh and not self.stacks_list[k].isMaxStack():
+                                    del_index[k] = 1
 
-        ##### SOLUTION IMPROVEMENT
-        # Approach: start from the last truck which was filled, try to extract items
-        # and place them in other trucks
-        if recur:
-            was_improv = self.improveSolution(df_items, df_trucks, n_trucks)
+                            for k in list(range(len(del_index)))[::-1]:
+                                if del_index[k]:
+                                    # Extract items from the stacks
+                                    self.discarded_stacks.append(self.stacks_list[k])
+                                    del self.stacks_list[k]
 
-            if was_improv == 1:
-                print(f"\nImproved objective value: {self.best_obj_value}")
-            else:
-                print(f"\nOptimal objective value: {self.best_obj_value}")
+                            # The stacks present in the current list are still valid!
+                            # Can create new stacks with the items in the discarded ones
+                            if len(self.discarded_stacks) > 0:
+                                # Extract items from stacks
+                                it_recycle = pd.DataFrame(columns=tmp_items.columns)
+                                for st in self.discarded_stacks:
+                                    for it in st.items:
+                                        it_recycle.loc[len(it_recycle)] = it
 
-        # Append best solution for current truck
-        # Need to make sure the items left have been updated
-        df_sol = pd.DataFrame.from_dict(self.curr_best_sol)
-        df_sol.to_csv(os.path.join("results", sol_file_name), index=False)
+                                # Check that there are no discarded elements among the ones in the solution
+                                for ind, row in it_recycle.iterrows():
+                                    if N_DEBUG:
+                                        for st in self.stacks_list:
+                                            assert row["id_item"] not in [
+                                                it["id_item"] for it in st.items
+                                            ], f"Item {row['id_item']} was discarded, but appears in valid stack {st.id}!"
 
-        time_end = time.time()
+                                if N_DEBUG:
+                                    tot_it_not_in_sol = sum(
+                                        [len(st.items) for st in self.stacks_list]
+                                    ) + len(it_recycle.index)
+                                    assert tot_it_not_in_sol == len(
+                                        tmp_items.index
+                                    ), "The items not in the solution do not match"
 
-        print(f"Time for {MAX_TRIES} solution(s): {time_end - time_start} seconds")
+                                self.stacks_list, self.stack_number = refill_stacks(
+                                    self.stacks_list,
+                                    it_recycle,
+                                    curr_truck,
+                                    self.stack_number,
+                                    create_stack_heur,
+                                )
 
-        # If required, store runtimes on file
-        if STORE_TIMES:
-            with open(OUT_TIME, "a") as f:
-                for t in self.runtimes:
-                    f.write(f"{t}\n")
+                        # Shuffle the list of stacks
+                        random.shuffle(self.stacks_list)
 
-        ### PLOTS:
-        if PLOTS:
-            if used_trucks_dict is None:
-                # Only plot if the trucks dictionary has been created from scratch
-                for t_id in print_trucks_ID:
-                    myStack3D(self.df_items, self.df_vehicles, df_sol, t_id)
+                        # Make sure all items left appear in the stacks
+                        # (Code borrowed from stack_creation_heur.py)
+                        if N_DEBUG:
+                            # Isolate the single
+                            n_unique_ids = len(tmp_items.index)
 
-                # Get last used truck
-                last_truck_id = df_sol.idx_vehicle.iloc[-1]
-                myStack3D(self.df_items, self.df_vehicles, df_sol, last_truck_id)
+                            stack_items_ids = []
+                            for st in self.stacks_list:
+                                stack_items_ids += [it.id_item for it in st.items]
+
+                            stack_items_ids = np.array(stack_items_ids)
+                            used_unique_ids, used_counts = np.unique(
+                                stack_items_ids, return_counts=True
+                            )
+
+                            tot_items_in_stacks = sum(
+                                [len(st.items) for st in self.stacks_list]
+                            )
+
+                            assert tot_items_in_stacks == len(
+                                used_unique_ids
+                            ), "The items in the stacks are not matching!"
+
+                            assert (
+                                len(used_unique_ids) == n_unique_ids
+                            ), f"The stacks contain {len(used_unique_ids)} elements, while the remaining items are {n_unique_ids}"
+                        #
+                        #
+                        ##################################
+
+                    elif implem.lower() == "old":
+                        ##################################
+                        # Original implementation:
+                        # NOTE: with this approach, it is not possible to create
+                        # stacks using gurobi due to time constraints, as it
+                        # recreates all the stacks from scratch at each iteration
+
+                        # Build stacks with the copied list of items 'tmp_items'
+                        self.stacks_list, self.stack_number = create_stack_heur(
+                            tmp_items, curr_truck, self.stack_number
+                        )
+
+                        # Shuffle the list of stacks
+                        random.shuffle(self.stacks_list)
+                        ##################################
+
+                    # Cleanup stacks list
+                    # self.stacks_list = self.cleanStackList(self.stacks_list)
+
+                    if VERB:
+                        print(
+                            f"Total number of generated stacks: {len(self.stacks_list)}"
+                        )
+
+                    ####### 2D PROBLEM SOLUTION (2D bin packing)
+                    sol_2D, self.stacks_list, curr_score = self.solve2D(
+                        self.stacks_list,
+                        curr_truck,
+                        scores=True,
+                    )
+
+                    sublist_sol_2D.append(sol_2D)
+                    sublist_scores_2D.append(curr_score)
+
+                    # Use the 2D solution to update the overall solution
+                    tmp_items = self.updateCurrSol(sol_2D, curr_truck, tmp_items)
+
+                    self.iter += 1
+
+                # Check for time constraint here:
+                curr_ts = time.time()
+                if curr_ts - time_start <= max_time:
+                    # Only update the solution if the time it took to obtain it
+                    # does not exceed the maximum time allowed
+                    self.curr_obj_value = self.evalObj(df_trucks)
+
+                    self.list_sol_2D.append(sublist_sol_2D)
+                    self.scores_2D.append(sublist_scores_2D)
+
+                    used_trucks = 0
+                    for t in n_trucks.keys():
+                        used_trucks += n_trucks[t]
+
+                    if VERB:
+                        print(f"Number of trucks analyzed: {used_trucks}")
+                        print(f"Actual number of used trucks: {self.idx_vehicle}")
+
+                    self.checkValidSolution(
+                        self.curr_sol, self.df_items, self.df_vehicles
+                    )
+                    print(f"Current objective value: {self.curr_obj_value}")
+                    # print(f"Broken Stacks: {self.count_broken}")
+
+                    if N_DEBUG:
+                        assert (
+                            len(tmp_items.index) == 0
+                        ), "Not all items have been used in current solution!"
+
+                    if self.updateBestSol() != 0:
+                        print("Solution was updated!")
+                        self.scores_2D_best = sublist_scores_2D
+
+                    self.runtimes.append(time.time() - t_0)
+                    print("Time for solution: ", self.runtimes[self.tries], "\n")
+
+                    self.unusable_trucks = []
+                    self.last_truck_was_empty = False
+
+                self.tries += 1
+        except TimeoutException:
+            curr_ts = time.time()
+            warnings.warn(
+                f"The solver was stopped because it reached the time limit of {max_time} seconds"
+            )
+            try:
+                t.stop()
+            except:
+                pass
+            # NOTE: the solution is discarded at update (see line 414)
+
+        # Stop the alarm
+        signal.alarm(0)
+
+        if self.best_obj_value > 0:
+            # This should indicate that at least one solution was found
+
+            print(f"Optimal initial value: {self.best_obj_value}")
+
+            ##### SOLUTION IMPROVEMENT
+            # Approach: start from the last truck which was filled, try to extract items
+            # and place them in other trucks
+            if recur:
+                was_improv = self.improveSolution(df_items, df_trucks, n_trucks)
+
+                if was_improv == 1:
+                    print(f"\nImproved objective value: {self.best_obj_value}")
+                else:
+                    print(f"\nOptimal objective value: {self.best_obj_value}")
+
+            # Append best solution for current truck
+            # Need to make sure the items left have been updated
+            df_sol = pd.DataFrame.from_dict(self.curr_best_sol)
+            df_sol.to_csv(os.path.join("results", sol_file_name), index=False)
+
+            time_end = time.time()
+
+            print(f"Time for {self.tries} solution(s): {time_end - time_start} seconds")
+
+            # If required, store runtimes on file
+            if STORE_TIMES:
+                with open(OUT_TIME, "a") as f:
+                    for t in self.runtimes:
+                        f.write(f"{t}\n")
+
+            ### PLOTS:
+            if PLOTS:
+                if used_trucks_dict is None:
+                    # Only plot if the trucks dictionary has been created from scratch
+                    for t_id in print_trucks_ID:
+                        myStack3D(self.df_items, self.df_vehicles, df_sol, t_id)
+
+                    # Get last used truck
+                    last_truck_id = df_sol.idx_vehicle.iloc[-1]
+                    myStack3D(self.df_items, self.df_vehicles, df_sol, last_truck_id)
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
