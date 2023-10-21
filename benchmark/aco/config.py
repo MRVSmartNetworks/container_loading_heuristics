@@ -33,4 +33,4 @@ WEIGHT_RATIO = 1
 # Column generation 
 N_COLS = 5
 N_VARS = 100
-TIME_LIMIT = 500
+TIME_LIMIT = 5000
