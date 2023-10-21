@@ -9,7 +9,6 @@ import statistics as st
 from solver.group23.sub.utilities import *
 from solver.group23.sub.stack import Stack
 from solver.group23.sub.aco_bin_packing import ACO
-# from solver.group23.notes.aco_bin_packing_old import ACO
 from sol_representation import *
 from solver.group23.config import *
 
