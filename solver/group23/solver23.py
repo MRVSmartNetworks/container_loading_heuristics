@@ -37,7 +37,7 @@ class Solver23():
             "orient": []
         }
     
-    def solve(self, df_items, df_vehicles, sol_file_name, time_limit=300):
+    def solve(self, df_items, df_vehicles, sol_file_name, time_limit=30*60):
         """ 
         solve
         -----
@@ -196,12 +196,23 @@ class Solver23():
             vehicle, last_iter = self.vehicle_decision(df_vehicles, df_items, area_ratio, weightRatio)
             aco.getVehicle(vehicle)
 
+            if id_prev_truck is not None:
+                n_stacks_before = len(aco.stack_lst)
+            
+            n_items_before = df_items.shape[0]
+
             # Create the stacks given a vehicle and give it to ACO
             if vehicle.id_truck != id_prev_truck:
                 aco.getStacks(self.buildStacks(vehicle, df_items, stackInfo))
             else:
                 update_stack_lst(bestAnt, aco.stack_lst, aco.stack_quantity)
-            
+
+            n_stacks_after = len(aco.stack_lst)
+            if DEBUG and id_prev_truck is not None:
+                if vehicle.id_truck == id_prev_truck:
+                    assert n_stacks_before - n_stacks_after == len(bestAnt)
+                    print("Stacks add up")
+
             id_prev_truck = vehicle.id_truck
 
             # Check if there are stacks left
@@ -216,6 +227,15 @@ class Solver23():
             # Remove the items already added to the solution
             df_items = df_items[df_items.id_item.isin(self.sol["id_item"]) == False]
             totCost += vehicle['cost']
+            
+            n_items_after = df_items.shape[0]
+
+            if DEBUG:
+                # Get items placed in each stack of the best ant
+                n_items_placed = sum([s.n_items for s in bestAnt])
+                assert (
+                    n_items_before - n_items_after == n_items_placed
+                ), f"Items placed = {n_items_placed}, but {n_items_before - n_items_after} have been removed"
 
             # Boolean to print every 2D vehicle plot
             if SINGLE_PLOT:
@@ -225,6 +245,8 @@ class Solver23():
             if df_items.empty or (time.time() - st_time) >= time_limit:
                 if time_limit != 0 or df_items.empty:
                     more_items = False
+                    if (time.time() - st_time) >= time_limit:
+                        print("[!] - Time limit exceeded!")
         
         # Printing step of the solution
         df_sol = pd.DataFrame.from_dict(self.sol)
@@ -244,7 +266,7 @@ class Solver23():
     
 
     def buildStacks(self, vehicle, df_items, stackInfo):
-        """"
+        """
         buildStacks
         -----------
         Function used to create the stack with all the specificity of the selected truck.
