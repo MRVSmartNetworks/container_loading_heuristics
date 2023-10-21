@@ -165,7 +165,7 @@ class Stack:
 
         return 0
 
-    def add_item_override(self, newitem, other_constraints=None):
+    def add_item_override(self, newitem: pd.Series, other_constraints=None):
         """
         add_item_override
         ---
