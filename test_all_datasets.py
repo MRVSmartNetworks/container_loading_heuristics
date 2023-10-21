@@ -8,19 +8,19 @@ from sol_representation import *
 
 if __name__ == "__main__":
     datasets = [
-        'datasetA',
-        'datasetB',
-        'datasetC',
+        # 'datasetA',
+        # 'datasetB',
+        # 'datasetC',
         # 'datasetD',
-        # 'datasetE',
-        # 'datasetF',
-        # 'datasetG',
-        # 'datasetH',
+        'datasetE',
+        'datasetF',
+        'datasetG',
+        'datasetH',
         # 'datasetI',
-        # 'datasetJ',
+        'datasetJ',
         # 'dataset_small'
     ]
-    solver = Solver2()
+    solver = Solver10()
     f = open(
         os.path.join(".", "results", f"{solver.name}_summary.csv"),
         "a"
@@ -35,7 +35,7 @@ if __name__ == "__main__":
         sol_file_name = f"{solver.name}_{dataset}_sol.csv"
         # measure execution time
         start = time.time()
-        solver.solve(df_items, df_vehicles, sol_file_name)
+        solver.solve(df_items, df_vehicles, sol_file_name, time_limit=300)
         stop = time.time()
         # read dataframe solution
         df_sol = pd.read_csv(
