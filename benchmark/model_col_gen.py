@@ -10,7 +10,7 @@ import time
 
 class model_col_gen:
     
-    def __init__(self, vehicle, df_items):
+    def __init__(self, df_vehicles, df_items):
         """ 
         model_col_gen
         ------------
@@ -29,9 +29,10 @@ class model_col_gen:
         - items_type: how many distinct types of items are in df_items.\ 
         Are defined by length and width.
         """
-        self.vehicle = vehicle
+        self.df_vehicles = df_vehicles
         self.df_items, self.stackInfo = stackInfo_creation(df_items)
         self.items_type = len(self.stackInfo)
+        self.n_vehicles = len(self.df_vehicles)
         
         # Evaluate the number of items per type in df_items
         self.n_items_type = np.zeros(self.items_type)
@@ -41,13 +42,19 @@ class model_col_gen:
         # Ant Colony Optimizazion initialization
         self.aco = ACO(self.stackInfo, alpha=ALPHA, beta=BETA, 
                   n_ants=N_ANTS, n_iter=N_ITER)
-        self.aco.getVehicle(self.vehicle)
 
-        # Stacks building
-        stack_lst, stack_quantity = buildStacks(self.vehicle, self.df_items, self.stackInfo)
-        self.aco.getStacks(stack_lst, stack_quantity)
+        # Stacks building for each vehicle
+        self.stack_lst = {}
+        self.stack_quantity = {}
 
-    def add_columns(self, n_cols, duals):
+        print("BUILDING STACKS FOR EACH VEHICLE")
+        for i in range(self.n_vehicles):
+            id_truck = self.df_vehicles.iloc[i]["id_truck"]
+            self.stack_lst[id_truck], self.stack_quantity[id_truck] = buildStacks(self.df_vehicles.iloc[i], self.df_items, self.stackInfo)
+            print(f"\n Stack for vehicle {id_truck} created")
+        
+
+    def add_columns(self, n_cols, duals, vehicle):
         """ 
         add_columns
         ------------
@@ -60,8 +67,12 @@ class model_col_gen:
         ### Output parameter
         - columns: each column contains the number of items per type.
         """
-        #TODO:check that number of columns <= N_ITER
         columns = np.zeros((self.items_type, n_cols))
+        # Give a vehicle to ACO and the specific stack list
+        self.aco.getVehicle(vehicle)
+        self.aco.getStacks(self.stack_lst[vehicle["id_truck"]], self.stack_quantity[vehicle["id_truck"]])
+
+        # Solve the 2D bin packing problem
         bestAnts = self.aco.aco_2D_bin(n_bestAnts = n_cols, dualVars = duals)
         
         for j, ant in enumerate(bestAnts):
@@ -84,16 +95,24 @@ class model_col_gen:
         model = gp.Model("ColumnGeneration")       
         
         columns = np.zeros([self.items_type, N_COLS])
+        cols_to_vehicle = {}
         duals = np.zeros([self.items_type, 1])
+
         t_start = time.time()
-        n_iter = 4
+        ind_truck = 0
+        n_iter = 100 #TODO: set in config
         _iter = 0
-        while (time.time() - t_start) <= TIME_LIMIT or _iter <= n_iter :
+        while (time.time() - t_start) <= TIME_LIMIT and _iter <= n_iter * N_COLS:
             x = model.addVars(_iter + N_COLS, 1, vtype=GRB.CONTINUOUS, name="x")
 
-            # Create new columns from the ACO solution 
-            columns[:,_iter:_iter+N_COLS] = self.add_columns(n_cols = N_COLS, duals = duals)
+            # Create new columns from the ACO solution
+            vehicle = self.df_vehicles.iloc[ind_truck].to_dict()
+            columns[:,_iter:_iter+N_COLS] = self.add_columns(n_cols = N_COLS, duals = duals, vehicle = vehicle)
 
+            # Map columns index with vehicle ID
+            for i in range(_iter, columns.shape[1]):
+                cols_to_vehicle[i] = vehicle["id_truck"] 
+            
             # Adding constraint to the model
             for i in range(self.items_type):
                 constr_i = 0
@@ -106,9 +125,12 @@ class model_col_gen:
                 )
         
             # Definition of the objective function
+
             obj = gp.LinExpr()
+            
             for n in range(columns.shape[1]):
-                obj += self.vehicle["cost"] * x[n, 0]   #TODO: replace with gp.quicksum()?
+                cost = self.df_vehicles[self.df_vehicles["id_truck"] == cols_to_vehicle[n]]["cost"].iloc[0]
+                obj += cost * x[n, 0]   #TODO: replace with gp.quicksum()?
 
             model.setObjective(obj, GRB.MINIMIZE)
 
@@ -117,6 +139,10 @@ class model_col_gen:
             columns = np.append(columns, np.zeros([self.items_type, N_COLS]), axis=1)
 
             _iter += N_COLS
+            ind_truck += 1
+            if ind_truck >= self.n_vehicles:
+                ind_truck = 0
+
             # Check if the model is infeasible 
             if model.Status != 3:
 
@@ -155,7 +181,6 @@ from model_col_gen import model_col_gen
 
 if __name__ == "__main__":
     dataset_name = "dataset_small"
-    type_vehicle = 0
     sol_file_name = f"{dataset_name}_"
     df_items = pd.read_csv(
         os.path.join(".", "data", dataset_name, "items.csv"),
@@ -164,6 +189,5 @@ if __name__ == "__main__":
         os.path.join(".", "data", dataset_name, "vehicles.csv"),
     )
     
-    vehicle = df_vehicles.iloc[type_vehicle].to_dict()
-    model_cg = model_col_gen(vehicle, df_items)
+    model_cg = model_col_gen(df_vehicles, df_items)
     bestAnts = model_cg.model()
