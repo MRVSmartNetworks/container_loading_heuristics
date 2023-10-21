@@ -8,24 +8,36 @@ import time
 import sys
 
 from solver.group22.stack_creation_heur import checkValidStacks
-
 from solver.group22.config import VERB, MORE_VERB, N_DEBUG
 
-done = False
+try:
+    # If this program is imported from solver22, this line gives an error
+    from solver.group22.solver22 import AnimationThread
+except:
+
+    class AnimationThread(threading.Thread):
+        def __init__(self):
+            super().__init__()
+            self.stop_flag = threading.Event()
+
+        def run(self):
+            sym = ["|", "/", "-", "\\"]
+            i = 0
+            while not self.stop_flag.is_set():
+                c = sym[i]
+                sys.stdout.write("\rCreating stacks " + c)
+                sys.stdout.flush()
+                i = (i + 1) % len(sym)
+                time.sleep(0.1)
+            sys.stdout.write("\rDone!                      \n")
+
+        def stop(self):
+            self.stop_flag.set()
+
+    pass
 
 
-def animate():
-    # Animation for loading
-    for c in itertools.cycle(["|", "/", "-", "\\"]):
-        if done:
-            break
-        sys.stdout.write("\rCreating stacks " + c)
-        sys.stdout.flush()
-        time.sleep(0.1)
-    sys.stdout.write("\rDone!                      \n")
-
-
-def create_stack_gurobi(df_items, truck, id):
+def create_stack_gurobi(df_items, truck, id, t: AnimationThread):
     """
     create_stack_gurobi
     ---
@@ -66,7 +78,7 @@ def create_stack_gurobi(df_items, truck, id):
     # Use a copy of the dataframe in order not to delete the original items
     tmp_items = df_items.copy()
 
-    t = threading.Thread(target=animate)
+    # t = AnimationThread()
 
     for code in stack_codes:
         if VERB:
@@ -105,6 +117,7 @@ def create_stack_gurobi(df_items, truck, id):
 
         if code == stack_codes[0] and not VERB and not MORE_VERB:
             t.start()
+            # pass
 
         # Evaluate most bounding weight constraint
         # Since for each stack. code the base dimensions have to be the same,
@@ -137,7 +150,8 @@ def create_stack_gurobi(df_items, truck, id):
         stacks_list[j].assignID(id)
         id += 1
 
-    done = True
+    t.stop()
+    t.join()
 
     # Check validity of stacks
     if checkValidStacks(stacks_list, truck, df_items, compareItems=True):

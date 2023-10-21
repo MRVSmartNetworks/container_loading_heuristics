@@ -29,7 +29,7 @@ FRAC_DELETED_TRUCKS = 35  # %
 N_DEBUG = False
 
 MAX_ITER = 10000  # Maximum number of iterations for filling each truck
-MAX_TRIES = 1  # Maximum number of full solutions evaluated
+MAX_TRIES = 2  # Maximum number of full solutions evaluated
 
 # Output file with solution#
 # OUT_SOL = os.path.join("results", "solver22_sol_I.csv")
