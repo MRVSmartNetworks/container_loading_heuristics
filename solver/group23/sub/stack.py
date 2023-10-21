@@ -85,10 +85,10 @@ class Stack:
         """ 
         position
         --------
-        Method to give a spacial position to a stack by defining its vertexes
+        Assign spatial position to a stack by defining its vertices (x and y only).
 
         #### INPUT PARAMETERS:
-            - x_origin, y_origin: position of the left-down vertex of the stack
+        - x_origin, y_origin: position of the left-down vertex of the stack
         """
         self.vertexes = [
             (x_origin, y_origin),
