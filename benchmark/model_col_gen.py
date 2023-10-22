@@ -8,6 +8,8 @@ from aco.aco_bin_packing import ACO
 from aco.utilities import buildStacks, stackInfo_creation
 import time
 
+np.random.seed(0)
+
 # RUN python benchmark/model_col_gen.py
 class model_col_gen:
     
@@ -41,8 +43,10 @@ class model_col_gen:
             self.n_items_type[i] =  len(df_items.loc[df_items['stackability_code'] == i])
         
         # Ant Colony Optimizazion initialization
-        self.aco = ACO(self.stackInfo, alpha=ALPHA, beta=BETA, 
-                  n_ants=N_ANTS, n_iter=N_ITER)
+        self.aco = ACO(
+            self.stackInfo, alpha=ALPHA, beta=BETA, 
+            n_ants=N_ANTS, n_iter=N_ITER
+        )
 
         # Stacks building for each vehicle
         self.stack_lst = {}
@@ -95,7 +99,7 @@ class model_col_gen:
         pattern given by the ACO solution.
         """
 
-        model = gp.Model("ColumnGeneration")       
+        model = gp.Model("MasterProblemCG")       
         
         columns = np.zeros([self.items_type, N_COLS])
         # Dict to map the column index to the vehicle ID
@@ -109,37 +113,67 @@ class model_col_gen:
 
         t_start = time.time()
         ind_truck = 0
-        n_iter = 100 #TODO: set in config
+        n_iter = 100 # TODO: set in config
         _iter = 0
+        # initialize obj function
+        obj = 0
+        # initialize constraints
+        constrs = []
+        vars = []
         while (time.time() - t_start) <= TIME_LIMIT and _iter <= n_iter * N_COLS:
-            x = model.addVars(_iter + N_COLS, vtype=GRB.CONTINUOUS, lb = 0, name="x")
+            x = model.addVars(
+                N_COLS,
+                vtype=GRB.CONTINUOUS,
+                lb = 0,
+                name=f"X_{_iter}"
+            )
+            # TODO: fix
+            for n in range(N_COLS):
+                vars.append(x[n])
 
             # Create new columns from the ACO solution
             vehicle = self.df_vehicles.iloc[ind_truck].to_dict()
             duals = duals_dict[vehicle["id_truck"]]
-            columns[:,_iter:_iter+N_COLS] = self.add_columns(n_cols = N_COLS, duals = duals, vehicle = vehicle)
+            columns[:,_iter:_iter+N_COLS] = self.add_columns(
+                n_cols = N_COLS,
+                duals = duals,
+                vehicle = vehicle
+            )
             
             # Map columns index with vehicle ID
             for i in range(_iter, columns.shape[1]):
                 cols_to_vehicle[i] = vehicle["id_truck"] 
-            
-            # Adding constraint to the model
-            for i in range(self.items_type):
-                constr_i = 0
-                for n in range(columns.shape[1]):
-                    constr_i += columns[i, n] * x[n]
-
-                model.addConstr(
-                    constr_i >= self.n_items_type[i],
-                    f"Constraint {i}"
-                )
-        
-            # Definition of the objective function
-
-            obj = gp.LinExpr()
-            
-            for n in range(_iter, columns.shape[1]):
-                #cost = self.df_vehicles[self.df_vehicles["id_truck"] == cols_to_vehicle[n]]["cost"].iloc[0]
+            if _iter == 0:
+                # Adding constraint to the model
+                for i in range(self.items_type):
+                    constr_i = 0
+                    for n in range(columns.shape[1]):
+                        constr_i += columns[i, n] * x[n]
+                    constrs.append(
+                        model.addConstr(
+                            constr_i >= self.n_items_type[i],
+                            f"quantity_item{i}"
+                        )
+                    )
+            else:
+                # update the constraints
+                for i in range(self.items_type):
+                    constr_i = 0
+                    ii = 0
+                    for n in range(columns.shape[1]-N_COLS, columns.shape[1]):
+                        # constr_i += columns[i, n] * x[ii]
+                        model.chgCoeff(constrs[i], x[ii], columns[i, n])
+                        ii += 1
+                    # get row
+                    # tmp = model.getRow(constrs[0])
+                    
+            # TODO: TO FIX
+            # # Definition of the objective function
+            # for n in range(_iter, columns.shape[1]):
+            #     #cost = self.df_vehicles[self.df_vehicles["id_truck"] == cols_to_vehicle[n]]["cost"].iloc[0]
+            #     obj += vehicle["cost"] * x[n]
+            # TODO: the following lines are wrong:
+            for n in range(N_COLS):
                 obj += vehicle["cost"] * x[n]
 
             model.setObjective(obj, GRB.MINIMIZE)
@@ -156,13 +190,12 @@ class model_col_gen:
 
             # Check if the model is infeasible 
             if model.Status != 3:
-                print([x[n].X for n in range(_iter + N_COLS)])
+                print([var.X for var in vars])
                 cons = model.getConstrs()
                 
                 for i in range(self.items_type): 
                     duals_dict[vehicle["id_truck"]][i] = cons[i].getAttr('Pi')
 
-                
                 # Print the values of the dual variables
                 if PRINT_CG:
                     print("\nDUAL VARIABLES")
@@ -174,7 +207,7 @@ class model_col_gen:
                         if v.X > 0:
                             print('%s %g' % (v.VarName, v.X))
             
-            model.remove(model.getConstrs())
+            # model.remove(model.getConstrs())
             
 
 
