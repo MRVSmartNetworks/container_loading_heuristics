@@ -127,7 +127,7 @@ class model_col_gen:
                 lb = 0,
                 name=f"X_{_iter}"
             )
-            # TODO: fix
+    
             for n in range(N_COLS):
                 vars.append(x[n])
 
@@ -166,13 +166,7 @@ class model_col_gen:
                         ii += 1
                     # get row
                     # tmp = model.getRow(constrs[0])
-                    
-            # TODO: TO FIX
-            # # Definition of the objective function
-            # for n in range(_iter, columns.shape[1]):
-            #     #cost = self.df_vehicles[self.df_vehicles["id_truck"] == cols_to_vehicle[n]]["cost"].iloc[0]
-            #     obj += vehicle["cost"] * x[n]
-            # TODO: the following lines are wrong:
+                
             for n in range(N_COLS):
                 obj += vehicle["cost"] * x[n]
 
@@ -205,10 +199,7 @@ class model_col_gen:
                     # Output decision variable values of the MIP and Fixed model (only if > 0)
                     for v in model.getVars():
                         if v.X > 0:
-                            print('%s %g' % (v.VarName, v.X))
-            
-            # model.remove(model.getConstrs())
-            
+                            print('%s %g' % (v.VarName, v.X))            
 
 
 
