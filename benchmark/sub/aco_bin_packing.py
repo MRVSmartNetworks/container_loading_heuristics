@@ -56,7 +56,7 @@ class ACO:
     #####################################################################################################
     ######### ACO function
      
-    def aco_2D_bin(self, n_bestAnts = 1, last_iter = False, dualVars = None): 
+    def aco_2D_bin(self, n_bestAnts = 1, last_iter = False, dualVars = 0): 
         """ 
         aco_2D_bin
         ----------

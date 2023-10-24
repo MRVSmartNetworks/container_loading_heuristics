@@ -29,8 +29,3 @@ EVAPOR_COEFF = 0.2
 # (pay attention that also N_ANTS and N_ITER influences the performance of the program, both in time and objective value)
 AREA_RATIO = 1
 WEIGHT_RATIO = 1
-
-# Column generation 
-N_COLS = 10
-TIME_LIMIT = 5000
-PRINT_CG = False
