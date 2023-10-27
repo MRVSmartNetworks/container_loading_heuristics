@@ -6,7 +6,9 @@ from configCG import N_INIT_COLS
 class MasterProblem:
     """  
     MasterProblem
-    ----------------------------------------------
+    ---------------------------------------------------
+    Class used to define the master problem used in the
+    implementation of the column generation.
     """
     def __init__(self, columns, df_vehicles, df_items):
         self.model = gp.Model("MasterProblem")
@@ -40,7 +42,6 @@ class MasterProblem:
                 self.vars.append(self.x[n])
     
     def generateConstrs(self):
-        
         # Adding constraint to the model
         for i in range(self.items_type):
             constr_i = 0
@@ -52,16 +53,7 @@ class MasterProblem:
                     f"quantity_item{i}"
                 )
             )
-        """ else:
-            # update the constraints
-            for i in range(self.items_type):
-                constr_i = 0
-                ii = 0
-                for n in range(columns.shape[1]-self.n_cols, columns.shape[1]):
-                    # constr_i += columns[i, n] * x[ii]
-                    self.model.chgCoeff(self.constrs[i], x[ii], columns[i, n])
-                    ii += 1 """
-    
+
     def generateObj(self):
         j = 0
         for i in range(len(self.df_vehicles)):
