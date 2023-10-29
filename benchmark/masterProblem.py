@@ -17,12 +17,16 @@ class MasterProblem:
         self.df_vehicles = df_vehicles
         self.n_cols = self.columns.shape[1]
         self.items_type = self.columns.shape[0]
+        
         # Evaluate the number of items per type in df_items
         self.n_items_type = np.zeros(self.items_type)
         for i in range(self.items_type):
             self.n_items_type[i] =  len(df_items.loc[df_items['stackability_code'] == i])
         self.constrs = []
         self.vars = []
+
+        # Build the model
+        self.buildModel()
     
     def buildModel(self):
         self.generateVars()
@@ -30,7 +34,6 @@ class MasterProblem:
         self.generateObj()
         self.model.update()
         
-
     def generateVars(self):
         self.x = self.model.addVars(
                 self.n_cols,
@@ -65,15 +68,17 @@ class MasterProblem:
         self.model.setObjective(self.obj, GRB.MINIMIZE)
     
     def solveRelaxedModel(self, _iter):
-        self.model.write(f"./benchmark/results/model_{_iter}.lp")
         self.relaxedModel = self.model.relax()
+        self.relaxedModel.Params.LogToConsole = 0
         self.relaxedModel.optimize()
         
         # Check if model is infeasible
         if self.relaxedModel.Status == 3:
-            return 1
+            print(f"Iteration {_iter}: Model infeasible")
+            return None
         else:
-            return 0
+            print(f"Iteration {_iter}: Objective value {self.relaxedModel.objVal}")
+            return self.relaxedModel.objVal
 
     def getDuals(self):
         return self.relaxedModel.getAttr("Pi", self.model.getConstrs())
@@ -86,4 +91,8 @@ class MasterProblem:
                               obj = objective, 
                               column = newColumn)
         self.model.update()
-        self.model.write(f"./benchmark/results/model_X.lp")
+    
+    def solveModel(self, file_name = None):
+        self.model.optimize()
+        if file_name:
+            self.model.write(file_name)
