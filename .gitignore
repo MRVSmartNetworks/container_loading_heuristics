@@ -166,6 +166,9 @@ Temporary Items
 logs/*
 !logs/.gitkeep 
 
+benchmark/results/*
+!benchmark/results/.gitkeep 
+
 */__pycache__/
 
 ## Vim temporary files
