@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import numpy as np
-from sub.config import *
-from sub.stack import *
-from sub.utilities import *
 from copy import copy
+from .config import *
+from .stack import *
+from .utilities import *
 
 
 class ACO:

@@ -3,7 +3,11 @@
 import numpy as np
 import pandas as pd
 import random
-from sub.stack import Stack
+
+try:
+    from .stack import Stack
+except ImportError:
+    from sub.stack import Stack
 
 
 def buildStacks(vehicle, df_items, stackInfo):
