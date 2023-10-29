@@ -227,7 +227,7 @@ class SolverACO:
             id_prev_truck = vehicle.id_truck
 
             # Check if there are stacks left
-            if PRINT:
+            if VERB_LOCAL:
                 print("Truck: ", self.id_vehicle)
 
             # Method to solve the 2D bin packing problem
