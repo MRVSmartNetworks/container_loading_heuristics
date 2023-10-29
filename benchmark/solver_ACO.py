@@ -211,7 +211,10 @@ class SolverACO:
 
             # Create the stacks given a vehicle and give it to ACO
             if vehicle.id_truck != id_prev_truck:
-                aco.getStacks(self.buildStacks(vehicle, df_items, stackInfo))
+                stack_list, stack_quantity = self.buildStacks(
+                    vehicle, df_items, stackInfo
+                )
+                aco.getStacks(stack_list, stack_quantity)
             else:
                 update_stack_lst(bestAnt, aco.stack_lst, aco.stack_quantity)
 
@@ -228,7 +231,8 @@ class SolverACO:
                 print("Truck: ", self.id_vehicle)
 
             # Method to solve the 2D bin packing problem
-            bestAnt, area_ratio, weightRatio = aco.aco_2D_bin(last_iter)
+            bestAnts = aco.aco_2D_bin(last_iter=last_iter)
+            bestAnt = bestAnts[0]
 
             self.solUpdate(bestAnt, vehicle)
 
