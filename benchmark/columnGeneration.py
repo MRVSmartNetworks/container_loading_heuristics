@@ -47,27 +47,29 @@ class columnGeneration:
         self.stack_lst = {}
         self.stack_quantity = {}
 
+        t_start = time.time()
         print("BUILDING STACKS FOR EACH VEHICLE\n")
         for i in range(self.n_vehicles):
             id_truck = self.df_vehicles.iloc[i]["id_truck"]
             self.stack_lst[id_truck], self.stack_quantity[id_truck] = buildStacks(self.df_vehicles.iloc[i], self.df_items, self.stackInfo)
             print(f"Stack for vehicle {id_truck} created")
+        print(f"\nElapsed time to create stacks: {round(time.time() - t_start, 2)} s")
 
     def solve(self, sol_file_name = None):
+        t_start = time.time()
         # Generate initial columns for each vehicle
         initColumns = self.generateInitialColumns(n_cols = N_INIT_COLS)
 
         # Definition of the master problem and build of the model
         master = MasterProblem(initColumns, self.df_vehicles, self.df_items)
-        master.buildModel()
-
-        _iter = 1
+        
+        _iter = 0
         duals = 0
         t_start = time.time()
         while  (time.time() - t_start) <= TIME_LIMIT:
             # Solve relaxed master
-            feasibile = master.solveRelaxedModel(_iter)
-            if feasibile == 0:
+            objVal = master.solveRelaxedModel(_iter)
+            if objVal:
                 duals = master.getDuals()
 
             # FIXME: Dummy solution
@@ -81,7 +83,9 @@ class columnGeneration:
             # Add new columns to master
             master.addColumns(vehicle["cost"], newColumns)
             _iter += 1
-        #TODO: master.solveModel() -> solve the MIP
+        
+        master.solveModel(file_name = "benchmark/results/model.lp")
+        print(f"\nTotal elapsed time: {round(time.time() - t_start, 2)} s")
             
 
     def generateColumns(self, n_cols, duals, vehicle):
@@ -115,6 +119,7 @@ class columnGeneration:
         the ACO.
         """
         print("\nGENERATING THE INITIAL SET OF COLUMNS FOR EACH VEHICLE...\n")
+        t_start = time.time()
         columns = np.zeros((self.items_type, n_cols * self.n_vehicles))
         _iter = 0
         for i in range(self.n_vehicles):
@@ -126,5 +131,7 @@ class columnGeneration:
 
             columns[:, _iter:_iter+N_INIT_COLS] = columns_vehicle
             _iter += N_INIT_COLS
-
+        
+        print(f"\nElapsed time to create initial columns: "
+              f"{round(time.time() - t_start, 2)} s")
         return columns
