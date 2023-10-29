@@ -11,7 +11,7 @@ PARAM_ITER = 1
 PARAM_FILE = "solver\group23\parameters_file\datasetF"
 
 # To print information related to area and weight ratio of trucks
-PRINT = True
+PRINT = False
 
 # Ant colony optimization parameters
 ALPHA = 1
@@ -29,7 +29,3 @@ EVAPOR_COEFF = 0.2
 # (pay attention that also N_ANTS and N_ITER influences the performance of the program, both in time and objective value)
 AREA_RATIO = 1
 WEIGHT_RATIO = 1
-
-# Column generation 
-N_COLS = 7
-N_VARS = 7
