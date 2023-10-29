@@ -3,13 +3,21 @@
 import numpy as np
 import time
 import random
-from masterProblem import MasterProblem
-from sub.utilities import stackInfo_creation, buildStacks
-from sub.aco_bin_packing_slices import ACO
+
+try:
+    from .masterProblem import MasterProblem
+    from .sub.utilities import stackInfo_creation, buildStacks
+    from .sub.aco_bin_packing_slices import ACO
+    from .sub.config import ALPHA, BETA, N_ANTS, N_ITER
+    from .sub.configCG import N_INIT_COLS, N_COLS, TIME_LIMIT
+except ImportError:
+    from masterProblem import MasterProblem
+    from sub.utilities import stackInfo_creation, buildStacks
+    from sub.aco_bin_packing_slices import ACO
+    from sub.config import ALPHA, BETA, N_ANTS, N_ITER
+    from sub.configCG import N_INIT_COLS, N_COLS, TIME_LIMIT
 
 # from sub.aco_bin_packing import ACO
-from sub.config import ALPHA, BETA, N_ANTS, N_ITER
-from configCG import N_INIT_COLS, N_COLS, TIME_LIMIT
 
 
 class columnGeneration:
