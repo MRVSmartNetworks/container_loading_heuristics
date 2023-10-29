@@ -6,7 +6,8 @@ import random
 from masterProblem import MasterProblem
 from sub.utilities import stackInfo_creation, buildStacks
 from sub.aco_bin_packing_slices import ACO
-from sub.aco_bin_packing import ACO
+
+# from sub.aco_bin_packing import ACO
 from sub.config import ALPHA, BETA, N_ANTS, N_ITER
 from configCG import N_INIT_COLS, N_COLS, TIME_LIMIT
 

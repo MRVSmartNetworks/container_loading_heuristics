@@ -22,10 +22,13 @@ EVAPOR_COEFF = 0.2
 
 # Performance parameters
 # AREA_RATIO is the parameters that choose when a solution is considered a good one.
-# when the best area_ratio of the ants exceed the one of AREA_RATIO then the solution is cosidered 
+# when the best area_ratio of the ants exceed the one of AREA_RATIO then the solution is cosidered
 # good enough and the truck is completed.
 # AREA_RATIO = 0.9 is the usual value setted for a good trade-off between performance and time
 # AREA_RATIO = 1 is to obtain the maximum performance obtainable from the program (advice: 0.93 obtain likely the maximum performance with much faster solutions)
 # (pay attention that also N_ANTS and N_ITER influences the performance of the program, both in time and objective value)
 AREA_RATIO = 1
 WEIGHT_RATIO = 1
+
+VERB_LOCAL = True
+DEBUG_LOCAL = False
