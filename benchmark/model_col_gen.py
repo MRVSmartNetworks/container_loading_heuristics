@@ -3,9 +3,9 @@
 import numpy as np
 import gurobipy as gp
 from gurobipy import GRB
-from aco.config import ALPHA, BETA, N_ANTS, N_ITER, N_COLS, N_VARS
-from aco.aco_bin_packing import ACO
-from aco.utilities import buildStacks, stackInfo_creation, removeRandStacks
+from sub.config import ALPHA, BETA, N_ANTS, N_ITER, N_COLS, N_VARS
+from sub.aco_bin_packing import ACO
+from sub.utilities import buildStacks, stackInfo_creation, removeRandStacks
 
 class model_col_gen:
     
