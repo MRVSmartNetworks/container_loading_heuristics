@@ -82,7 +82,7 @@ class MasterProblem:
             print(f"Iteration {_iter}: Model infeasible")
             return None
         else:
-            print(f"Iteration {_iter}: Objective value {self.relaxedModel.objVal}")
+            print(f"Iteration {_iter}: Objective value {round(self.relaxedModel.objVal, 2)}")
             return self.relaxedModel.objVal
 
     def getDuals(self):

@@ -849,6 +849,9 @@ class ACO:
                 if dualVar[i] > 0:
                     attr_mat[:, i] = 1.5 + dualVar[i] / dualSum
                     attr_mat[:, i + self.n_code] = 1.5 + dualVar[i] / dualSum
+                else:
+                    attr_mat[:, i] = 0
+                    attr_mat[:, i + self.n_code] = 0
 
         if dualSum == 0:
             attr_mat[:, best_code1] = 2
