@@ -38,7 +38,25 @@ class columnGeneration:
     - genereateInitialColumns
     """
 
-    def __init__(self, df_vehicles, df_items):
+    def __init__(
+        self,
+    ):
+        self.df_vehicles = None
+        self.df_items = None
+        self.stackInfo = None
+        self.items_type = 0
+        self.n_vehicles = 0
+
+        # Creation of the stacks for each vehicle
+        self.stack_lst = {}
+        self.stack_quantity = {}
+
+        # List containing dictionaries of patterns, vehicle, area
+        self.pattern_list = []
+
+    def solve(self, df_items, df_vehicles, sol_file_name=None):
+        t_start = time.time()
+
         self.df_vehicles = df_vehicles
         self.df_items, self.stackInfo = stackInfo_creation(df_items)
         self.items_type = len(self.stackInfo)
@@ -54,22 +72,9 @@ class columnGeneration:
             self.stackInfo, alpha=ALPHA, beta=BETA, n_ants=N_ANTS, n_iter=N_ITER
         )
 
-        # Creation of the stacks for each vehicle
-        self.stack_lst = {}
-        self.stack_quantity = {}
+        # Creation of stacks for each vehicle
+        self.stacksBuilding()
 
-        t_start = time.time()
-        print("BUILDING STACKS FOR EACH VEHICLE\n")
-        for i in range(self.n_vehicles):
-            id_truck = self.df_vehicles.iloc[i]["id_truck"]
-            self.stack_lst[id_truck], self.stack_quantity[id_truck] = buildStacks(
-                self.df_vehicles.iloc[i], self.df_items, self.stackInfo
-            )
-            print(f"Stack for vehicle {id_truck} created")
-        print(f"\nElapsed time to create stacks: {round(time.time() - t_start, 2)} s")
-
-    def solve(self, sol_file_name=None):
-        t_start = time.time()
         # Generate initial columns for each vehicle
         initColumns = self.generateInitialColumns(n_cols=N_INIT_COLS)
 
@@ -78,29 +83,47 @@ class columnGeneration:
 
         _iter = 0
         duals = 0
+        ind_vehicle = 0
         t_start = time.time()
         while (time.time() - t_start) <= TIME_LIMIT:
-            # Solve relaxed master
-            objVal = master.solveRelaxedModel(_iter)
-            if objVal:
-                duals = master.getDuals()
+            try:
+                # Solve relaxed master
+                objVal = master.solveRelaxedModel(_iter)
+                if objVal:
+                    duals = master.getDuals()
+                    print(duals)
+                # FIXME: Dummy solution
+                if _iter != 0:
+                    ind_vehicle += 1
+                    if ind_vehicle >= self.n_vehicles:
+                        ind_vehicle = 0
 
-            # FIXME: Dummy solution
-            vehicle = self.df_vehicles.iloc[
-                random.randint(0, self.n_vehicles) - 1
-            ].to_dict()
+                vehicle = self.df_vehicles.iloc[ind_vehicle].to_dict()
 
-            # Solve the Ant Colony optimization
-            newColumns = self.generateColumns(
-                n_cols=N_COLS, duals=duals, vehicle=vehicle
-            )
+                # Solve the Ant Colony optimization
+                newColumns = self.generateColumns(
+                    n_cols=N_COLS, duals=duals, vehicle=vehicle
+                )
 
-            # Add new columns to master
-            master.addColumns(vehicle["cost"], newColumns)
-            _iter += 1
+                # Add new columns to master
+                master.addColumns(vehicle["cost"], newColumns)
+                _iter += 1
+            except KeyboardInterrupt:
+                break
 
         master.solveModel(file_name="benchmark/results/model.lp")
         print(f"\nTotal elapsed time: {round(time.time() - t_start, 2)} s")
+
+        # Print patterns used
+        print("\nPATTERN USED\n")
+        vars = master.getVars()
+        for i, v in enumerate(vars):
+            if v.X > 0:
+                print(
+                    f"{int(v.X)} vehicles {self.pattern_list[i]['vehicle']}"
+                    f" with area {round(self.pattern_list[i]['area'], 3)}"
+                    f" Pattern: {self.pattern_list[i]['pattern']}"
+                )
 
     def generateColumns(self, n_cols, duals, vehicle):
         """
@@ -119,11 +142,19 @@ class columnGeneration:
         )
 
         # Solve the 2D bin packing problem
-        bestAnts = self.aco.aco_2D_bin(n_bestAnts=n_cols, dualVars=duals)
+        bestAnts, bestAreas = self.aco.aco_2D_bin(n_bestAnts=n_cols, dualVars=duals)
         for j, ant in enumerate(bestAnts):
             for stack in ant:
                 # TODO: use code to state
                 columns[stack.stack_code][j] += len(stack.items)
+
+            self.pattern_list.append(
+                {
+                    "pattern": columns[:, j],
+                    "vehicle": vehicle["id_truck"],
+                    "area": bestAreas[j],
+                }
+            )
 
         return columns
 
@@ -147,6 +178,7 @@ class columnGeneration:
             print(f"Solution found for vehicle {vehicle['id_truck']}")
 
             columns[:, _iter : _iter + N_INIT_COLS] = columns_vehicle
+
             _iter += N_INIT_COLS
 
         print(
@@ -154,3 +186,15 @@ class columnGeneration:
             f"{round(time.time() - t_start, 2)} s"
         )
         return columns
+
+    def stacksBuilding(self):
+        # Creation of the stacks for each vehicle
+        t_start = time.time()
+        print("BUILDING STACKS FOR EACH VEHICLE\n")
+        for i in range(self.n_vehicles):
+            id_truck = self.df_vehicles.iloc[i]["id_truck"]
+            self.stack_lst[id_truck], self.stack_quantity[id_truck] = buildStacks(
+                self.df_vehicles.iloc[i], self.df_items, self.stackInfo
+            )
+            print(f"Stack for vehicle {id_truck} created")
+        print(f"\nElapsed time to create stacks: {round(time.time() - t_start, 2)} s")

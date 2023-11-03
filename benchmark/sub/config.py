@@ -27,8 +27,8 @@ EVAPOR_COEFF = 0.2
 # AREA_RATIO = 0.9 is the usual value setted for a good trade-off between performance and time
 # AREA_RATIO = 1 is to obtain the maximum performance obtainable from the program (advice: 0.93 obtain likely the maximum performance with much faster solutions)
 # (pay attention that also N_ANTS and N_ITER influences the performance of the program, both in time and objective value)
-AREA_RATIO = 1
-WEIGHT_RATIO = 1
+AREA_RATIO = 0.93
+WEIGHT_RATIO = 0.98
 
 VERB_LOCAL = False
 DEBUG_LOCAL = False
