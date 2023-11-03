@@ -83,7 +83,11 @@ class ACO:
         - weightRatio: ratio of total item weight / max. truck weight for current best
         ant
         """
-
+        self.ants = []
+        self.bestAnts = []
+        self.bestWeights = []
+        self.bestAreas = []
+        # random.shuffle(self.stack_lst)
         # When True the parameters of the ACO are changed.
         # The number of iteration and ants are highly increased the probability for the ACO
         # to complete the simulation with the filling of the last truck.
@@ -258,7 +262,7 @@ class ACO:
                     f"\n{i + 1}:\n Area ratio: {self.bestAreas[i]},\n Weight ratio: {self.bestWeights[i]} "
                 )
 
-        return self.bestAnts
+        return self.bestAnts, self.bestAreas
 
     def buildSlice(
         self,
