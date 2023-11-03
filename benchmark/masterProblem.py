@@ -82,7 +82,9 @@ class MasterProblem:
             print(f"Iteration {_iter}: Model infeasible")
             return None
         else:
-            print(f"Iteration {_iter}: Objective value {round(self.relaxedModel.objVal, 2)}")
+            print(
+                f"Iteration {_iter}: Objective value {round(self.relaxedModel.objVal, 2)}"
+            )
             return self.relaxedModel.objVal
 
     def getDuals(self):
@@ -100,3 +102,6 @@ class MasterProblem:
         self.model.optimize()
         if file_name:
             self.model.write(file_name)
+
+    def getVars(self):
+        return self.model.getVars()
