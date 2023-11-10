@@ -9,6 +9,7 @@ try:
 except ImportError:
     from sub.stack import Stack
 
+
 def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient):
     stack_feat = (stackInfo[stackInfo.stackability_code == stack_code].values)[0]
     stack = Stack(int(stack_code), stack_feat[0], stack_feat[1], stack_feat[3])
@@ -17,7 +18,7 @@ def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient):
     constraints = {
         "max_height": vehicle["height"],
         "max_weight_stack": vehicle["max_weight_stack"],
-        "max_density": vehicle["max_density"]
+        "max_density": vehicle["max_density"],
     }
     items_code = df_items[
         (df_items.stackability_code == stack_code)
@@ -32,9 +33,10 @@ def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient):
     new_stack_needed = False
     k = 0
 
-    while stack.n_items <= n_items and new_stack_needed == False and k < len(items_code):
+    while (
+        stack.n_items <= n_items and new_stack_needed == False and k < len(items_code)
+    ):
         item = items_code.iloc[k]
-        stack_added = stack.addItem(item, constraints)
 
         # Check that the item is not already been used
         if not item.id_item in removed:
@@ -150,6 +152,7 @@ def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient):
                 )
         k += 1
     return stack
+
 
 def buildStacks(vehicle, df_items, stackInfo):
     """ "
