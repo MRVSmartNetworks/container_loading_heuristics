@@ -3,6 +3,7 @@
 import numpy as np
 import time
 import random
+import pandas as pd
 
 try:
     from .masterProblem import MasterProblem
@@ -12,7 +13,7 @@ try:
     from .sub.configCG import N_INIT_COLS, N_COLS, TIME_LIMIT
 except ImportError:
     from masterProblem import MasterProblem
-    from sub.utilities import stackInfo_creation, buildStacks
+    from sub.utilities import stackInfo_creation, buildStacks, buildSingleStack
     from sub.aco_bin_packing_slices import ACO
     from sub.config import ALPHA, BETA, N_ANTS, N_ITER
     from sub.configCG import N_INIT_COLS, N_COLS, TIME_LIMIT
@@ -53,6 +54,22 @@ class columnGeneration:
 
         # List containing dictionaries of patterns, vehicle, area
         self.pattern_list = []
+
+        # List containing dictionaries of patte
+        self.pattern_info = []
+        self.Npattern = 0
+
+        self.sol = {
+            "type_vehicle": [],
+            "idx_vehicle": [],
+            "id_stack": [],
+            "id_item": [],
+            "x_origin": [],
+            "y_origin": [],
+            "z_origin": [],
+            "orient": [],
+        }
+        self.id_vehicle = 0
 
     def solve(self, df_items, df_vehicles, sol_file_name=None):
         t_start = time.time()
@@ -124,6 +141,31 @@ class columnGeneration:
                     f" with area {round(self.pattern_list[i]['area'], 3)}"
                     f" Pattern: {self.pattern_list[i]['pattern']}"
                 )
+                self.generateSolution(int(v.X), i)
+        
+        df_sol = pd.DataFrame.from_dict(self.sol)
+        pass
+
+    def generateSolution(self, nTruck, index):
+        pattern = [row for row in self.pattern_info if row['pattern'] == index]
+        vehicle = self.df_vehicles[self.df_vehicles['id_truck'] == self.pattern_list[index]['vehicle']].iloc[0]
+        for i in range(nTruck):
+            for j in range(len(pattern)):
+                stack = buildSingleStack(self.df_items, self.stackInfo, vehicle, pattern[j]['stack_Nitems'], pattern[j]['stack_code'], pattern[j]['orient'])
+                z_origin = 0
+                # Saving all the item with their information in the dictionary solution
+                for y in range(stack.n_items):
+                    self.sol["type_vehicle"].append(vehicle["id_truck"])
+                    self.sol["idx_vehicle"].append(self.id_vehicle)
+                    self.sol["id_stack"].append(f"S{len(self.sol['type_vehicle'])}")
+                    self.sol["id_item"].append(stack.items[y])
+                    self.sol["x_origin"].append(pattern[j]['x_origin'])
+                    self.sol["y_origin"].append(pattern[j]['y_origin'])
+                    self.sol["z_origin"].append(z_origin)
+                    self.sol["orient"].append(pattern[j]['orient'])
+                    z_origin += stack.h_items[y]
+                # Update of the vehicle id
+            self.id_vehicle += 1
 
     def generateColumns(self, n_cols, duals, vehicle):
         """
@@ -147,6 +189,19 @@ class columnGeneration:
             for stack in ant:
                 # TODO: use code to state
                 columns[stack.stack_code][j] += len(stack.items)
+                self.pattern_info.append(
+                    {
+                        "pattern": self.Npattern,
+                        "vehicle": vehicle["id_truck"],
+                        "stack_code": stack.stack_code,
+                        "stack_Nitems": stack.n_items,
+                        "x_origin": stack.vertexes[0][0],
+                        "y_origin": stack.vertexes[0][1],
+                        "orient": stack.orient
+                    }
+                )
+
+            self.Npattern += 1
 
             self.pattern_list.append(
                 {
