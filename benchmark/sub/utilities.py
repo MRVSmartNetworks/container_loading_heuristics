@@ -27,19 +27,18 @@ def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient):
             | (df_items.forced_orientation == orient)
         )
     ]
-    removed = []
+    # Obtaining all the unique value of height and weight for a better stack creation
     unique_height = np.sort(items_code.height.unique())[::-1]
     unique_weight = np.sort(items_code.weight.unique())[::-1]
+
     new_stack_needed = False
     k = 0
 
     while (
-        stack.n_items <= n_items and new_stack_needed == False and k < len(items_code)
+        stack.n_items < n_items and new_stack_needed == False and len(items_code) != 0
     ):
-        item = items_code.iloc[k]
-
-        # Check that the item is not already been used
-        if not item.id_item in removed:
+        item = items_code.iloc[0]
+        if stack.weight + item.weight <= vehicle.max_weight:
             stack_added = stack.addItem(item, constraints)
 
             # Returned code 0 means that the max stackability code is reached
@@ -65,18 +64,14 @@ def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient):
                                 # If all the constrain are respected the item is added to the stack
                                 if stack.addItem(valid_items.iloc[i], constraints) == 1:
                                     fit = True
-                                    id_item = valid_items.iloc[i].id_item
-                                    items_code = items_code[
-                                        items_code.id_item
+                                    df_items = df_items[
+                                        df_items["id_item"]
                                         != valid_items.iloc[i].id_item
                                     ]
-                                    removed.append(id_item)
-                                    df_items.drop(
-                                        df_items[
-                                            (df_items["id_item"] == item.id_item)
-                                        ].index,
-                                        inplace=True,
-                                    )
+                                    items_code = items_code[
+                                        items_code["id_item"]
+                                        != valid_items.iloc[i].id_item
+                                    ]
                                 i += 1
                         h += 1
 
@@ -98,18 +93,14 @@ def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient):
                             while i < len(valid_items) and not fit:
                                 if stack.addItem(valid_items.iloc[i], constraints) == 1:
                                     fit = True
-                                    id_item = valid_items.iloc[i].id_item
-                                    items_code = items_code[
-                                        items_code.id_item
+                                    df_items = df_items[
+                                        df_items["id_item"]
                                         != valid_items.iloc[i].id_item
                                     ]
-                                    df_items.drop(
-                                        df_items[
-                                            (df_items["id_item"] == item.id_item)
-                                        ].index,
-                                        inplace=True,
-                                    )
-                                    removed.append(id_item)
+                                    items_code = items_code[
+                                        items_code["id_item"]
+                                        != valid_items.iloc[i].id_item
+                                    ]
                                 i += 1
                         w += 1
 
@@ -129,29 +120,24 @@ def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient):
                             while i < len(valid_items) and not fit:
                                 if stack.addItem(valid_items.iloc[i], constraints) == 1:
                                     fit = True
-                                    id_item = valid_items.iloc[i].id_item
-                                    items_code = items_code[
-                                        items_code.id_item
+                                    df_items = df_items[
+                                        df_items["id_item"]
                                         != valid_items.iloc[i].id_item
                                     ]
-                                    df_items.drop(
-                                        df_items[
-                                            (df_items["id_item"] == item.id_item)
-                                        ].index,
-                                        inplace=True,
-                                    )
-                                    removed.append(id_item)
+                                    items_code = items_code[
+                                        items_code["id_item"]
+                                        != valid_items.iloc[i].id_item
+                                    ]
                                 i += 1
                         w += 1
 
             # Returned code 1 means item correctly added to the stack
             if stack_added == 1:
-                items_code = items_code[items_code.id_item != item.id_item]
-                df_items.drop(
-                    df_items[(df_items["id_item"] == item.id_item)].index, inplace=True
-                )
+                df_items = df_items[df_items["id_item"] != item.id_item]
+                items_code = items_code[items_code["id_item"] != item.id_item]
+
         k += 1
-    return stack
+    return stack, df_items
 
 
 def buildStacks(vehicle, df_items, stackInfo):
