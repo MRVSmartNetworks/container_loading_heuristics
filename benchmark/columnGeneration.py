@@ -111,7 +111,6 @@ class columnGeneration:
                 objVal = master.solveRelaxedModel(_iter)
                 if objVal:
                     duals = master.getDuals()
-                    print(duals)
                 # FIXME: Dummy solution
                 if _iter != 0:
                     ind_vehicle += 1
@@ -137,6 +136,8 @@ class columnGeneration:
         # Print patterns used
         print("\nPATTERN USED\n")
         vars = master.getVars()
+
+        df_items_copy = self.df_items.copy()
         for i, v in enumerate(vars):
             if v.X > 0:
                 print(
@@ -144,42 +145,11 @@ class columnGeneration:
                     f" with area {round(self.pattern_list[i]['area'], 3)}"
                     f" Pattern: {self.pattern_list[i]['pattern']}"
                 )
-                self.generateSolution(int(v.X), i)
+                df_items_copy = self.generateSolution(int(v.X), i, df_items_copy)
 
+        print(f"\nItems not inserted: {len(df_items_copy)}")
         df_sol = pd.DataFrame.from_dict(self.sol)
         df_sol.to_csv(os.path.join("results", sol_file_name), index=False)
-
-    def generateSolution(self, nTruck, index):
-        df_items_copy = self.df_items.copy()
-        pattern = [row for row in self.pattern_info if row["pattern"] == index]
-        vehicle = self.df_vehicles[
-            self.df_vehicles["id_truck"] == self.pattern_list[index]["vehicle"]
-        ].iloc[0]
-        for i in range(nTruck):
-            for j in range(len(pattern)):
-                stack = buildSingleStack(
-                    df_items_copy,
-                    self.stackInfo,
-                    vehicle,
-                    pattern[j]["stack_Nitems"],
-                    pattern[j]["stack_code"],
-                    pattern[j]["orient"],
-                )
-                z_origin = 0
-                # Saving all the item with their information in the dictionary solution
-                for y in range(stack.n_items):
-                    self.sol["type_vehicle"].append(vehicle["id_truck"])
-                    self.sol["idx_vehicle"].append(self.id_vehicle)
-                    self.sol["id_stack"].append(f"S{self.id_stack}")
-                    self.sol["id_item"].append(stack.items[y])
-                    self.sol["x_origin"].append(pattern[j]["x_origin"])
-                    self.sol["y_origin"].append(pattern[j]["y_origin"])
-                    self.sol["z_origin"].append(z_origin)
-                    self.sol["orient"].append(pattern[j]["orient"])
-                    z_origin += stack.h_items[y]
-                self.id_stack += 1
-                # Update of the vehicle id
-            self.id_vehicle += 1
 
     def generateColumns(self, n_cols, duals, vehicle):
         """
@@ -267,3 +237,36 @@ class columnGeneration:
             )
             print(f"Stack for vehicle {id_truck} created")
         print(f"\nElapsed time to create stacks: {round(time.time() - t_start, 2)} s")
+
+    def generateSolution(self, nTruck, index, df_items):
+        pattern = [row for row in self.pattern_info if row["pattern"] == index]
+        vehicle = self.df_vehicles[
+            self.df_vehicles["id_truck"] == self.pattern_list[index]["vehicle"]
+        ].iloc[0]
+        for i in range(nTruck):
+            for j in range(len(pattern)):
+                stack, df_items = buildSingleStack(
+                    df_items,
+                    self.stackInfo,
+                    vehicle,
+                    pattern[j]["stack_Nitems"],
+                    pattern[j]["stack_code"],
+                    pattern[j]["orient"],
+                )
+                z_origin = 0
+                # Saving all the item with their information in the dictionary solution
+                for y in range(stack.n_items):
+                    self.sol["type_vehicle"].append(vehicle["id_truck"])
+                    self.sol["idx_vehicle"].append(self.id_vehicle)
+                    self.sol["id_stack"].append(f"S{self.id_stack}")
+                    self.sol["id_item"].append(stack.items[y])
+                    self.sol["x_origin"].append(pattern[j]["x_origin"])
+                    self.sol["y_origin"].append(pattern[j]["y_origin"])
+                    self.sol["z_origin"].append(z_origin)
+                    self.sol["orient"].append(pattern[j]["orient"])
+                    z_origin += stack.h_items[y]
+                self.id_stack += 1
+                # Update of the vehicle id
+            self.id_vehicle += 1
+
+        return df_items
