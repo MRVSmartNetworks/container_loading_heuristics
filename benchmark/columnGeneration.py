@@ -59,7 +59,7 @@ class columnGeneration:
 
         # List containing dictionaries of patte
         self.pattern_info = []
-        self.Npattern = 0
+        self.n_pattern = 0
 
         self.sol = {
             "type_vehicle": [],
@@ -175,7 +175,7 @@ class columnGeneration:
                 columns[stack.stack_code][j] += len(stack.items)
                 self.pattern_info.append(
                     {
-                        "pattern": self.Npattern,
+                        "pattern": self.n_pattern,
                         "vehicle": vehicle["id_truck"],
                         "stack_code": stack.stack_code,
                         "stack_Nitems": stack.n_items,
@@ -185,7 +185,7 @@ class columnGeneration:
                     }
                 )
 
-            self.Npattern += 1
+            self.n_pattern += 1
 
             self.pattern_list.append(
                 {
