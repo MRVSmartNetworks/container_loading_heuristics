@@ -244,14 +244,16 @@ class columnGeneration:
             self.df_vehicles["id_truck"] == self.pattern_list[index]["vehicle"]
         ].iloc[0]
         for i in range(nTruck):
+            tot_weight = 0
             for j in range(len(pattern)):
-                stack, df_items = buildSingleStack(
+                stack, df_items, tot_weight = buildSingleStack(
                     df_items,
                     self.stackInfo,
                     vehicle,
                     pattern[j]["stack_Nitems"],
                     pattern[j]["stack_code"],
                     pattern[j]["orient"],
+                    tot_weight
                 )
                 z_origin = 0
                 # Saving all the item with their information in the dictionary solution
