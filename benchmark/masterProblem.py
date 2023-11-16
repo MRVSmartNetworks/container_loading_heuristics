@@ -91,6 +91,7 @@ class MasterProblem:
         return self.relaxedModel.getAttr("Pi", self.model.getConstrs())
 
     def addColumns(self, objective, newColumns):
+        # TODO: add check for existing columns
         for i in range(newColumns.shape[1]):
             newColumn = gp.Column(newColumns[:, i], self.model.getConstrs())
             self.model.addVar(
