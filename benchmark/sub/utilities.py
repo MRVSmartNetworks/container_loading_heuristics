@@ -10,7 +10,7 @@ except ImportError:
     from sub.stack import Stack
 
 
-def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient):
+def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient, tot_weight):
     stack_feat = (stackInfo[stackInfo.stackability_code == stack_code].values)[0]
     stack = Stack(int(stack_code), stack_feat[0], stack_feat[1], stack_feat[3])
 
@@ -38,7 +38,7 @@ def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient):
         stack.n_items < n_items and new_stack_needed == False and len(items_code) != 0
     ):
         item = items_code.iloc[0]
-        if stack.weight + item.weight <= vehicle.max_weight:
+        if tot_weight + stack.weight + item.weight <= vehicle.max_weight:
             stack_added = stack.addItem(item, constraints)
 
             # Returned code 0 means that the max stackability code is reached
@@ -72,6 +72,7 @@ def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient):
                                         items_code["id_item"]
                                         != valid_items.iloc[i].id_item
                                     ]
+                                    tot_weight += valid_items.iloc[i].weight
                                 i += 1
                         h += 1
 
@@ -101,6 +102,7 @@ def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient):
                                         items_code["id_item"]
                                         != valid_items.iloc[i].id_item
                                     ]
+                                    tot_weight += valid_items.iloc[i].weight
                                 i += 1
                         w += 1
 
@@ -128,6 +130,7 @@ def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient):
                                         items_code["id_item"]
                                         != valid_items.iloc[i].id_item
                                     ]
+                                    tot_weight += valid_items.iloc[i].weight
                                 i += 1
                         w += 1
 
@@ -135,9 +138,12 @@ def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient):
             if stack_added == 1:
                 df_items = df_items[df_items["id_item"] != item.id_item]
                 items_code = items_code[items_code["id_item"] != item.id_item]
+                tot_weight += item.weight
+        else:
+            items_code = items_code[items_code["id_item"] != item.id_item]
 
         k += 1
-    return stack, df_items
+    return stack, df_items, tot_weight
 
 
 def buildStacks(vehicle, df_items, stackInfo):
@@ -166,7 +172,7 @@ def buildStacks(vehicle, df_items, stackInfo):
         "max_weight_stack": vehicle["max_weight_stack"],
         "max_density": vehicle["max_density"],
     }
-
+    n_items_insert = 0
     # Loop over all the stackability code
     for code in stackInfo.stackability_code:
         stack_quantity[code] = 0
@@ -290,6 +296,7 @@ def buildStacks(vehicle, df_items, stackInfo):
 
                 # When the stack il ready must be added to the stackList
                 if new_stack_needed and stack.n_items != 0:
+                    n_items_insert += stack.n_items
                     stack.updateHeight()
                     stack_lst.append(stack)
                     stack_quantity[code] += 1
@@ -302,9 +309,12 @@ def buildStacks(vehicle, df_items, stackInfo):
 
         # After the loop if the last stack created have some items must be added
         if stack.n_items > 0:
+            n_items_insert += stack.n_items
             stack.updateHeight()
             stack_lst.append(stack)
             stack_quantity[code] += 1
+    
+    assert len(df_items) == n_items_insert
 
     return stack_lst, stack_quantity
 
