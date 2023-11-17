@@ -18,6 +18,8 @@ class MasterProblem:
 
     def __init__(self, columns, df_vehicles, df_items):
         self.model = gp.Model("MasterProblem")
+        self.model.setParam("MIPGap", 0.20)
+        self.model.setParam("Timelimit", 60)
         self.obj = 0
         self.columns = columns
         self.df_vehicles = df_vehicles
