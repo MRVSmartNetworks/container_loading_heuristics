@@ -10,7 +10,9 @@ except ImportError:
     from sub.stack import Stack
 
 
-def buildSingleStack(df_items, stackInfo, vehicle, n_items, stack_code, orient, tot_weight):
+def buildSingleStack(
+    df_items, stackInfo, vehicle, n_items, stack_code, orient, tot_weight
+):
     stack_feat = (stackInfo[stackInfo.stackability_code == stack_code].values)[0]
     stack = Stack(int(stack_code), stack_feat[0], stack_feat[1], stack_feat[3])
 
@@ -313,7 +315,7 @@ def buildStacks(vehicle, df_items, stackInfo):
             stack.updateHeight()
             stack_lst.append(stack)
             stack_quantity[code] += 1
-    
+
     assert len(df_items) == n_items_insert
 
     return stack_lst, stack_quantity
@@ -441,6 +443,160 @@ def df_vehicles_improv(df_vehicles):
     return df_vehicles
 
 
+def stackInfo_creation_weight(df_items):
+    """
+    stackInfo_creation
+    ------------------
+    Creation of a dataframe containing the carachteristics of items per
+    stackability code
+    """
+    # Retrieve information about the features of the items given their stackability code,
+    # then a sorting is needed for the correct performance of states creation
+    df_items = map_items_weight(df_items)
+    stackInfo_App = df_items[
+        ["length", "width", "stackability_code", "forced_orientation", "classWeight"]
+    ].drop_duplicates()
+    stackInfo_App = stackInfo_App.sort_values(by=["stackability_code"]).reset_index(
+        drop=True
+    )
+    stackInfo = (
+        stackInfo_App[["length", "width", "stackability_code", "classWeight"]]
+        .drop_duplicates()
+        .reset_index(drop=True)
+    )
+    stackInfo["forced_orientation"] = ""
+    # In case of stackability codes with different orientation, they are divided into
+    # different stackability codes for mantaining the standard ACO solution
+    for i in range(len(stackInfo_App)):
+        stackInfo.at[i, "forced_orientation"] = stackInfo_App.at[
+            i, "forced_orientation"
+        ]
+        stackInfo.at[i, "length"] = stackInfo_App.at[i, "length"]
+        stackInfo.at[i, "width"] = stackInfo_App.at[i, "width"]
+        stackInfo.at[i, "stackability_code"] = i
+        stackInfo.at[i, "classWeight"] = stackInfo_App.at[i, "classWeight"]
+    # If items with same stack code have different characteristics raise an exception
+    if len(stackInfo) != len(
+        stackInfo[["stackability_code", "forced_orientation"]].drop_duplicates()
+    ):
+        raise ValueError(
+            "Items with the same stackability code have different lenght or width!"
+        )
+
+    # Only when some modification happen to the stackability code the mapping must be done
+    if not stackInfo.equals(stackInfo_App):
+        df_items = df_items.reset_index(drop=True)
+        df_items = map_items_old(df_items, stackInfo_App)
+
+    return df_items, stackInfo
+
+
+def map_items_weight(df_items):
+    # TODO: da fare in modo più intelligente
+    codes = df_items.stackability_code.drop_duplicates()
+    data = []
+    for code in codes:
+        items_code = df_items[df_items.stackability_code == code]
+        maxIt_W = max(items_code["weight"])
+        cols = np.linspace(0, maxIt_W, num=100)
+        items_code["classWeight"] = np.searchsorted(cols, items_code["weight"])
+
+        for i, row in items_code.iterrows():
+            data.append(row)
+    df = pd.DataFrame(data)
+    return df
+
+
+def map_items(df_items, stackInfo_App):
+    """
+    map_items
+    ---------
+    Mapping function used to correct the stackability code
+
+    #### INPUT PARAMETERS:
+    - df_items: dataframe containing all the items
+                that are to be put into the trucks
+    - stackInfo_App: dataframe containing the original stackability codes that need to be mapped to their index also in the item dataframe
+
+    #### OUTPUT PARAMETERS:
+    - df_items: the new items dataframe with all the stackability codes corrected
+    """
+
+    # For every item the code must be corrected
+    for i, code in enumerate(stackInfo_App.stackability_code):
+        orient = stackInfo_App.iloc[i]["forced_orientation"]
+        classWeight = stackInfo_App.iloc[i]["classWeight"]
+
+        """ df_items.loc[
+            [
+                (df_items["forced_orientation"] == orient)
+                & (df_items["classWeight"] == classWeight)
+                & (df_items["stackability_code"] == code)
+            ],
+            "classWeight",
+        ] = i """
+        my_query_index = df_items.query(
+            f"forced_orientation == '{orient}' & classWeight == {classWeight} & stackability_code == {code}"
+        ).index
+        df_items.iloc[my_query_index, 6] = i
+
+    return df_items
+
+
+def loadingBar(
+    current_iter: int, tot_iter: int, n_chars: int = 10, ch: str = "=", n_ch: str = " "
+) -> str:
+    """
+    loadingBar
+    ---
+    Produce a loading bar string to be printed.
+
+    ### Input parameters
+    - current_iter: current iteration, will determine the position
+    of the current bar
+    - tot_iter: total number of iterations to be performed
+    - n_chars: total length of the loading bar in characters
+    - ch: character that makes up the loading bar (default: =)
+    - n_ch: character that makes up the remaining part of the bar
+    (default: blankspace)
+    """
+    n_elem = int(current_iter * n_chars / tot_iter)
+    prog = str("".join([ch] * n_elem))
+    n_prog = str("".join([" "] * (n_chars - n_elem - 1)))
+    return "[" + prog + n_prog + "]"
+
+
+def map_items_old(df_items, stackInfo_App):
+    """
+    map_items
+    ---------
+    Mapping function used to correct the stackability code
+
+    #### INPUT PARAMETERS:
+    - df_items: dataframe containing all the items
+                that are to be put into the trucks
+    - stackInfo_App: dataframe containing the original stackability codes that need to be mapped to their index also in the item dataframe
+
+    #### OUTPUT PARAMETERS:
+    - df_items: the new items dataframe with all the stackability codes corrected
+    """
+
+    # For every item the code must be corrected
+    for i, code in enumerate(df_items.stackability_code):
+        orientation = df_items.at[i, "forced_orientation"]
+        classWeight = df_items.at[i, "classWeight"]
+
+        # The new code is the corresponding changed from stackInfo_App to stackInfo
+        new_code = np.where(
+            (stackInfo_App.stackability_code == code)
+            & (stackInfo_App.forced_orientation == orientation)
+            & (stackInfo_App.classWeight == classWeight)
+        )[0]
+        df_items.at[i, "stackability_code"] = new_code[0]
+
+    return df_items
+
+
 def stackInfo_creation(df_items):
     """
     stackInfo_creation
@@ -481,58 +637,6 @@ def stackInfo_creation(df_items):
 
     # Only when some modification happen to the stackability code the mapping must be done
     if not stackInfo.equals(stackInfo_App):
-        df_items = map_items(df_items, stackInfo_App)
+        df_items = map_items_old(df_items, stackInfo_App)
 
     return df_items, stackInfo
-
-
-def map_items(df_items, stackInfo_App):
-    """
-    map_items
-    ---------
-    Mapping function used to correct the stackability code
-
-    #### INPUT PARAMETERS:
-    - df_items: dataframe containing all the items
-                that are to be put into the trucks
-    - stackInfo_App: dataframe containing the original stackability codes that need to be mapped to their index also in the item dataframe
-
-    #### OUTPUT PARAMETERS:
-    - df_items: the new items dataframe with all the stackability codes corrected
-    """
-
-    # For every item the code must be corrected
-    for i, code in enumerate(df_items.stackability_code):
-        orientation = df_items.at[i, "forced_orientation"]
-
-        # The new code is the corresponding changed from stackInfo_App to stackInfo
-        new_code = np.where(
-            (stackInfo_App.stackability_code == code)
-            & (stackInfo_App.forced_orientation == orientation)
-        )[0]
-        df_items.at[i, "stackability_code"] = new_code[0]
-
-    return df_items
-
-
-def loadingBar(
-    current_iter: int, tot_iter: int, n_chars: int = 10, ch: str = "=", n_ch: str = " "
-) -> str:
-    """
-    loadingBar
-    ---
-    Produce a loading bar string to be printed.
-
-    ### Input parameters
-    - current_iter: current iteration, will determine the position
-    of the current bar
-    - tot_iter: total number of iterations to be performed
-    - n_chars: total length of the loading bar in characters
-    - ch: character that makes up the loading bar (default: =)
-    - n_ch: character that makes up the remaining part of the bar
-    (default: blankspace)
-    """
-    n_elem = int(current_iter * n_chars / tot_iter)
-    prog = str("".join([ch] * n_elem))
-    n_prog = str("".join([" "] * (n_chars - n_elem - 1)))
-    return "[" + prog + n_prog + "]"
