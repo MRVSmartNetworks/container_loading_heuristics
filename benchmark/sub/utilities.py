@@ -507,42 +507,6 @@ def map_items_weight(df_items):
     return df
 
 
-def map_items(df_items, stackInfo_App):
-    """
-    map_items
-    ---------
-    Mapping function used to correct the stackability code
-
-    #### INPUT PARAMETERS:
-    - df_items: dataframe containing all the items
-                that are to be put into the trucks
-    - stackInfo_App: dataframe containing the original stackability codes that need to be mapped to their index also in the item dataframe
-
-    #### OUTPUT PARAMETERS:
-    - df_items: the new items dataframe with all the stackability codes corrected
-    """
-
-    # For every item the code must be corrected
-    for i, code in enumerate(stackInfo_App.stackability_code):
-        orient = stackInfo_App.iloc[i]["forced_orientation"]
-        classWeight = stackInfo_App.iloc[i]["classWeight"]
-
-        """ df_items.loc[
-            [
-                (df_items["forced_orientation"] == orient)
-                & (df_items["classWeight"] == classWeight)
-                & (df_items["stackability_code"] == code)
-            ],
-            "classWeight",
-        ] = i """
-        my_query_index = df_items.query(
-            f"forced_orientation == '{orient}' & classWeight == {classWeight} & stackability_code == {code}"
-        ).index
-        df_items.iloc[my_query_index, 6] = i
-
-    return df_items
-
-
 def loadingBar(
     current_iter: int, tot_iter: int, n_chars: int = 10, ch: str = "=", n_ch: str = " "
 ) -> str:
@@ -566,7 +530,7 @@ def loadingBar(
     return "[" + prog + n_prog + "]"
 
 
-def map_items_old(df_items, stackInfo_App):
+def map_items(df_items, stackInfo_App):
     """
     map_items
     ---------
@@ -591,6 +555,35 @@ def map_items_old(df_items, stackInfo_App):
             (stackInfo_App.stackability_code == code)
             & (stackInfo_App.forced_orientation == orientation)
             & (stackInfo_App.classWeight == classWeight)
+        )[0]
+        df_items.at[i, "stackability_code"] = new_code[0]
+
+    return df_items
+
+
+def map_items_old(df_items, stackInfo_App):
+    """
+    map_items
+    ---------
+    Mapping function used to correct the stackability code
+
+    #### INPUT PARAMETERS:
+    - df_items: dataframe containing all the items
+                that are to be put into the trucks
+    - stackInfo_App: dataframe containing the original stackability codes that need to be mapped to their index also in the item dataframe
+
+    #### OUTPUT PARAMETERS:
+    - df_items: the new items dataframe with all the stackability codes corrected
+    """
+
+    # For every item the code must be corrected
+    for i, code in enumerate(df_items.stackability_code):
+        orientation = df_items.at[i, "forced_orientation"]
+
+        # The new code is the corresponding changed from stackInfo_App to stackInfo
+        new_code = np.where(
+            (stackInfo_App.stackability_code == code)
+            & (stackInfo_App.forced_orientation == orientation)
         )[0]
         df_items.at[i, "stackability_code"] = new_code[0]
 
