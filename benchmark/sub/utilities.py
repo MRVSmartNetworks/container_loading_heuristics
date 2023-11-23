@@ -498,8 +498,9 @@ def map_items_weight(df_items):
     for code in codes:
         items_code = df_items[df_items.stackability_code == code]
         maxIt_W = max(items_code["weight"])
-        cols = np.linspace(0, maxIt_W, num=100)
-        items_code["classWeight"] = np.searchsorted(cols, items_code["weight"])
+        cols = np.linspace(0, maxIt_W, num=1)
+        classWeight = np.searchsorted(cols, items_code.loc[:, "weight"])
+        items_code.loc[:, ["classWeight"]] = classWeight
 
         for i, row in items_code.iterrows():
             data.append(row)
