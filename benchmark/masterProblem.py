@@ -18,6 +18,8 @@ class MasterProblem:
 
     def __init__(self, columns, df_vehicles, df_items):
         self.model = gp.Model("MasterProblem")
+        self.model.setParam("MIPGap", 0.20)
+        self.model.setParam("Timelimit", 60)
         self.obj = 0
         self.columns = columns
         self.df_vehicles = df_vehicles
@@ -91,6 +93,7 @@ class MasterProblem:
         return self.relaxedModel.getAttr("Pi", self.model.getConstrs())
 
     def addColumns(self, objective, newColumns):
+        # TODO: add check for existing columns
         for i in range(newColumns.shape[1]):
             newColumn = gp.Column(newColumns[:, i], self.model.getConstrs())
             self.model.addVar(
