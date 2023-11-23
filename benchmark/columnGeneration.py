@@ -8,14 +8,14 @@ import os
 
 try:
     from .masterProblem import MasterProblem
-    from .sub.utilities import stackInfo_creation, buildStacks, buildSingleStack
-    from .sub.aco_bin_packing_slices import ACO
+    from .sub.utilities import stackInfo_creation_weight, buildStacks, buildSingleStack
+    from .sub.aco_bin_packing import ACO
     from .sub.config import ALPHA, BETA, N_ANTS, N_ITER
     from .sub.configCG import N_INIT_COLS, N_COLS, TIME_LIMIT
 except ImportError:
     from masterProblem import MasterProblem
-    from sub.utilities import stackInfo_creation, buildStacks, buildSingleStack
-    from sub.aco_bin_packing_slices import ACO
+    from sub.utilities import stackInfo_creation_weight, buildStacks, buildSingleStack
+    from sub.aco_bin_packing import ACO
     from sub.config import ALPHA, BETA, N_ANTS, N_ITER
     from sub.configCG import N_INIT_COLS, N_COLS, TIME_LIMIT
 
@@ -59,7 +59,7 @@ class columnGeneration:
 
         # List containing dictionaries of patte
         self.pattern_info = []
-        self.Npattern = 0
+        self.n_pattern = 0
 
         self.sol = {
             "type_vehicle": [],
@@ -78,14 +78,16 @@ class columnGeneration:
         t_start = time.time()
 
         self.df_vehicles = df_vehicles
-        self.df_items, self.stackInfo = stackInfo_creation(df_items)
+        self.df_items, self.stackInfo = stackInfo_creation_weight(df_items)
         self.items_type = len(self.stackInfo)
         self.n_vehicles = len(self.df_vehicles)
 
         # Evaluate the number of items per type in df_items
         self.n_items_type = np.zeros(self.items_type)
         for i in range(self.items_type):
-            self.n_items_type[i] = len(df_items.loc[df_items["stackability_code"] == i])
+            self.n_items_type[i] = len(
+                self.df_items.loc[self.df_items["stackability_code"] == i]
+            )
 
         # Ant Colony Optimizazion initialization
         self.aco = ACO(
@@ -175,7 +177,7 @@ class columnGeneration:
                 columns[stack.stack_code][j] += len(stack.items)
                 self.pattern_info.append(
                     {
-                        "pattern": self.Npattern,
+                        "pattern": self.n_pattern,
                         "vehicle": vehicle["id_truck"],
                         "stack_code": stack.stack_code,
                         "stack_Nitems": stack.n_items,
@@ -185,7 +187,7 @@ class columnGeneration:
                     }
                 )
 
-            self.Npattern += 1
+            self.n_pattern += 1
 
             self.pattern_list.append(
                 {
@@ -244,14 +246,16 @@ class columnGeneration:
             self.df_vehicles["id_truck"] == self.pattern_list[index]["vehicle"]
         ].iloc[0]
         for i in range(nTruck):
+            tot_weight = 0
             for j in range(len(pattern)):
-                stack, df_items = buildSingleStack(
+                stack, df_items, tot_weight = buildSingleStack(
                     df_items,
                     self.stackInfo,
                     vehicle,
                     pattern[j]["stack_Nitems"],
                     pattern[j]["stack_code"],
                     pattern[j]["orient"],
+                    tot_weight,
                 )
                 z_origin = 0
                 # Saving all the item with their information in the dictionary solution
