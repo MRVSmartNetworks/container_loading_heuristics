@@ -486,7 +486,7 @@ def stackInfo_creation_weight(df_items):
     # Only when some modification happen to the stackability code the mapping must be done
     if not stackInfo.equals(stackInfo_App):
         df_items = df_items.reset_index(drop=True)
-        df_items = map_items_old(df_items, stackInfo_App)
+        df_items = map_items(df_items, stackInfo_App)
 
     return df_items, stackInfo
 
