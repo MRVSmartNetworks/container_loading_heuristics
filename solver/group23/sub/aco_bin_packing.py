@@ -5,7 +5,7 @@ from solver.group23.sub.utilities import *
 from solver.group23.config import *
 from copy import copy
 
-VERB_LOCAL = True
+VERB_LOCAL = False
 
 
 class ACO:
