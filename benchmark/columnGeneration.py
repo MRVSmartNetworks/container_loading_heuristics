@@ -11,13 +11,13 @@ try:
     from .sub.utilities import stackInfo_creation_weight, buildStacks, buildSingleStack
     from .sub.aco_bin_packing import ACO
     from .sub.config import ALPHA, BETA, N_ANTS, N_ITER
-    from .sub.configCG import N_INIT_COLS, N_COLS, TIME_LIMIT
+    from .sub.configCG import N_INIT_COLS, N_COLS, TIME_LIMIT, PRINT_SLACK
 except ImportError:
     from masterProblem import MasterProblem
     from sub.utilities import stackInfo_creation_weight, buildStacks, buildSingleStack
     from sub.aco_bin_packing import ACO
     from sub.config import ALPHA, BETA, N_ANTS, N_ITER
-    from sub.configCG import N_INIT_COLS, N_COLS, TIME_LIMIT
+    from sub.configCG import N_INIT_COLS, N_COLS, TIME_LIMIT, PRINT_SLACK
 
 # from sub.aco_bin_packing import ACO
 
@@ -113,6 +113,12 @@ class columnGeneration:
                 objVal = master.solveRelaxedModel(_iter)
                 if objVal:
                     duals = master.getDuals()
+                    slack = master.getSlack()
+                    if PRINT_SLACK:
+                        print("Dual variables")
+                        print(duals)
+                        print("Slack variables")
+                        print(slack)
                 # FIXME: Dummy solution
                 if _iter != 0:
                     ind_vehicle += 1
@@ -125,6 +131,10 @@ class columnGeneration:
                 newColumns = self.generateColumns(
                     n_cols=N_COLS, duals=duals, vehicle=vehicle
                 )
+
+                if PRINT_SLACK:
+                    print("New Columns")
+                    print(newColumns)
 
                 # Add new columns to master
                 master.addColumns(vehicle["cost"], newColumns)
