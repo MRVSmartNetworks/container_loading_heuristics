@@ -91,6 +91,9 @@ class MasterProblem:
 
     def getDuals(self):
         return self.relaxedModel.getAttr("Pi", self.model.getConstrs())
+    
+    def getSlack(self):
+        return self.relaxedModel.getAttr("Slack", self.model.getConstrs())
 
     def addColumns(self, objective, newColumns):
         # TODO: add check for existing columns
