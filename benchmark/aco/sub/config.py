@@ -12,7 +12,8 @@ PARAM_FILE = "solver\group23\parameters_file\datasetF"
 
 # To print information related to area and weight ratio of trucks
 PRINT = True
-
+# Set number of weight clusters (set 1 for avoid clustering)
+N_WEIGHT_CLUSTERS = 1
 # Ant colony optimization parameters
 ALPHA = 1
 BETA = 1
