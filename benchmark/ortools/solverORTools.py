@@ -1,3 +1,4 @@
+import os
 import warnings
 from typing import Dict, List, Tuple
 
@@ -226,9 +227,10 @@ class solverORTools:
                 x_interval_vars_rot[i].append(
                     [
                         self.model.NewOptionalIntervalVar(
-                            start=x_vars[i][j][k],
+                            start=x_vars_rot[i][j][k],
                             size=self.items.iloc[i]["width"],
-                            end=x_vars[i][j][k] + self.items.iloc[i]["width"],
+                            end=x_vars_rot[i][j][k]
+                            + self.items.iloc[i]["width"],
                             is_present=c_vars_rot[i][j][k],
                             name=f"x_interval_rot_({i},{j},{k})",
                         )
@@ -238,9 +240,10 @@ class solverORTools:
                 y_interval_vars_rot[i].append(
                     [
                         self.model.NewOptionalIntervalVar(
-                            start=y_vars[i][j][k],
+                            start=y_vars_rot[i][j][k],
                             size=self.items.iloc[i]["length"],
-                            end=y_vars[i][j][k] + self.items.iloc[i]["length"],
+                            end=y_vars_rot[i][j][k]
+                            + self.items.iloc[i]["length"],
                             is_present=c_vars_rot[i][j][k],
                             name=f"y_interval_rot_({i},{j},{k})",
                         )
@@ -298,6 +301,32 @@ class solverORTools:
                 )
                 == 0
             ).OnlyEnforceIf(o_vars[i])
+
+            # self.model.Add(
+            #     sum(
+            #         [
+            #             c_vars[i][j][k]
+            #             for j in range(n_trucks)
+            #             for k in range(self.max_truck_n[j])
+            #         ]
+            #     )
+            #     + sum(
+            #         [
+            #             c_vars_rot[i][j][k]
+            #             for j in range(n_trucks)
+            #             for k in range(self.max_truck_n[j])
+            #         ]
+            #     )
+            #     == 1
+            # )
+
+            # Link orientation to the forced orientation
+            self.model.Add(o_vars[i] == 0).OnlyEnforceIf(
+                self.items.iloc[i]["forced_orientation"] == "l"
+            )
+            self.model.Add(o_vars[i] == 1).OnlyEnforceIf(
+                self.items.iloc[i]["forced_orientation"] == "w"
+            )
 
         objective = 0
         for j in range(n_trucks):
@@ -383,28 +412,54 @@ class solverORTools:
                     print(f"> Total weight: {curr_tot_weight}")
             print("")
 
-        self.used_trucks_sol = self.printSolution(c_vars, x_vars, y_vars)
+        var_1 = [c_vars, x_vars, y_vars]
+        var_2 = [c_vars_rot, x_vars_rot, y_vars_rot]
+        self.used_trucks_sol = self.printSolution(var_1, var_2)
         print(f"> {self.used_trucks_sol} trucks have been used")
         print("+--------------------------------------------+")
 
-    def printSolution(self, var, var_rot) -> int:
+        # Store solution - converted to the usual format
+        vars_all = [
+            t_vars,
+            o_vars,
+            c_vars,
+            c_vars_rot,
+            x_vars,
+            x_vars_rot,
+            y_vars,
+            y_vars_rot,
+        ]
+        sol_dict = self.assembleSolution(vars_all)
+
+        df_sol = pd.DataFrame.from_dict(sol_dict)
+        df_sol.to_csv(os.path.join("results", sol_file_name), index=False)
+
+    def printSolution(self, var: List, var_rot: List) -> int:
         """
         Print the solution - only displaying the trucks that contain at least
         one item.
         The function returns the number of used trucks.
 
         Args:
-            boxes: list of items (dict)
-            trucks: list of truck types (dict)
-            c_vars: variable 'c' from the model
-            x_vars: variable 'x' from the model
-            y_vars: variable 'y' from the model
+            var: List with 3 elements:
+                c_vars: variable 'c' from the model
+                x_vars: variable 'x' from the model
+                y_vars: variable 'y' from the model
+            var_rot: List with 3 elements:
+                c_vars_rot: variable 'c' from the model, for rotated items
+                x_vars_rot: variable 'x' from the model, for rotated items
+                y_vars_rot: variable 'y' from the model, for rotated items
 
         Returns:
             Integer number of trucks used (i.e., containing >0 elements); if no
             solution has been found yet, the returned value is -1.
         """
-        c_vars
+        c_vars = var[0]
+        x_vars = var[1]
+        y_vars = var[2]
+        c_vars_rot = var_rot[0]
+        x_vars_rot = var_rot[1]
+        y_vars_rot = var_rot[2]
         n_items = self.items.shape[0]
         n_trucks = self.trucks.shape[0]
         if self.sol_found:
@@ -415,6 +470,11 @@ class solverORTools:
                     if sum(
                         [
                             self.solver.Value(c_vars[i][j][k])
+                            for i in range(n_items)
+                        ]
+                    ) or sum(
+                        [
+                            self.solver.Value(c_vars_rot[i][j][k])
                             for i in range(n_items)
                         ]
                     ):
@@ -441,11 +501,15 @@ class solverORTools:
                                 ax.add_patch(
                                     patches.Rectangle(
                                         (
-                                            self.solver.Value(x_vars[i][j][k]),
-                                            self.solver.Value(y_vars[i][j][k]),
+                                            self.solver.Value(
+                                                x_vars_rot[i][j][k]
+                                            ),
+                                            self.solver.Value(
+                                                y_vars_rot[i][j][k]
+                                            ),
                                         ),
-                                        self.items.iloc[i]["length"],
                                         self.items.iloc[i]["width"],
+                                        self.items.iloc[i]["length"],
                                         facecolor="blue",
                                         alpha=0.2,
                                         edgecolor="b",
@@ -462,6 +526,123 @@ class solverORTools:
                 "No solution was found yet! Please run the model first"
             )
             return -1
+
+    def assembleSolution(self, var_list: List) -> Dict:
+        """
+        Put together a Dict containing the obtained solution, given all the
+        variables of the solved problem.
+
+        The dict is both returned and stored as a class attribute.
+
+        This function also performs some basic checks on the solution and used
+        items
+
+        Args:
+            var_list: list containing the problem variables
+        """
+        # This function is ugly, but it works (hopefully)
+        t_vars = var_list[0]
+        o_vars = var_list[1]
+        c_vars = var_list[2]
+        c_vars_rot = var_list[3]
+        x_vars = var_list[4]
+        x_vars_rot = var_list[5]
+        y_vars = var_list[6]
+        y_vars_rot = var_list[7]
+
+        """Attributes:
+            type_vehicle,
+            idx_vehicle,
+            id_stack,
+            id_item,
+            x_origin,
+            y_origin,
+            z_origin,
+            orient
+        """
+        # Initialize solution dict
+        self.sol_dict = {
+            "type_vehicle": [],
+            "idx_vehicle": [],
+            "id_stack": [],
+            "id_item": [],
+            "x_origin": [],
+            "y_origin": [],
+            "z_origin": [],
+            "orient": [],
+        }
+
+        n_trucks = len(t_vars)
+        n_items = len(o_vars)
+        trucks_count = 0
+        check_items = np.zeros((n_items,))  # Add 1 when item is encountered
+        for j in range(n_trucks):
+            # Iterate over the truck types and fill the solution
+            curr_type = self.trucks.iloc[j]["id_truck"]
+
+            for k in range(len(t_vars[j])):
+                # Iterate over the trucks of the same type, looking for a truck
+                # with more than 0 elements inside
+                if sum(
+                    [self.solver.Value(c_vars[i][j][k]) for i in range(n_items)]
+                ) + sum(
+                    [
+                        self.solver.Value(c_vars_rot[i][j][k])
+                        for i in range(n_items)
+                    ]
+                ):
+                    for i in range(n_items):
+                        if (
+                            self.solver.Value(c_vars[i][j][k]) == 1
+                            or self.solver.Value(c_vars_rot[i][j][k]) == 1
+                        ):
+                            check_items[i] += 1
+
+                            assert self.solver.Value(
+                                c_vars[i][j][k]
+                            ) != self.solver.Value(
+                                c_vars_rot[i][j][k]
+                            ), "Something is wron with the variables 'c'"
+
+                            self.sol_dict["type_vehicle"].append(curr_type)
+                            self.sol_dict["idx_vehicle"].append(trucks_count)
+                            # Item ID will be the same as the stack ID
+                            # (items == stacks)
+                            curr_it_id = self.items.iloc[i]["id_item"]
+                            self.sol_dict["id_stack"].append(curr_it_id)
+                            self.sol_dict["id_item"].append(curr_it_id)
+                            if self.solver.Value(o_vars[i]) == 0:
+                                # Not rotated
+                                self.sol_dict["x_origin"].append(
+                                    self.solver.Value(x_vars[i][j][k])
+                                )
+                                self.sol_dict["y_origin"].append(
+                                    self.solver.Value(y_vars[i][j][k])
+                                )
+                                self.sol_dict["orient"].append("l")
+                            elif self.solver.Value(o_vars[i]) == 1:
+                                # Rotated
+                                self.sol_dict["x_origin"].append(
+                                    self.solver.Value(x_vars_rot[i][j][k])
+                                )
+                                self.sol_dict["y_origin"].append(
+                                    self.solver.Value(y_vars_rot[i][j][k])
+                                )
+                                self.sol_dict["orient"].append("w")
+                            else:
+                                raise ValueError("Invalid rotation")
+
+                            self.sol_dict["z_origin"].append(0)
+
+                    trucks_count += 1
+
+        assert all(
+            check_items > 0
+        ), f"Not all items have been used! {sum(check_items == 0)} unused items"
+
+        assert all(check_items == 1), "Some duplicate exist!"
+
+        return self.sol_dict
 
 
 if __name__ == "__main__":
