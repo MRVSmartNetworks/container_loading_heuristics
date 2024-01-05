@@ -5,6 +5,7 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import time
 
 DEBUG = True
 VERB = False
@@ -42,6 +43,16 @@ boxes = [
 class solverORTools:
     def __init__(self) -> None:
         self.name = "solORTools"
+        self.sol = {
+            "type_vehicle": [],
+            "idx_vehicle": [],
+            "id_stack": [],
+            "id_item": [],
+            "x_origin": [],
+            "y_origin": [],
+            "z_origin": [],
+            "orient": [],
+        }
 
     def solve(
         self,
@@ -212,8 +223,10 @@ class solverORTools:
         # Enumerate all solutions.
         # solver.parameters.enumerate_all_solutions = True
         # Solve
+        t_start = time.time()
         status = self.solver.Solve(self.model)
         print("+--------------------------------------------+")
+        print(f"Time required: {round(time.time() - t_start, 2)} s")
         if status != cp_model.INFEASIBLE and status != cp_model.MODEL_INVALID:
             self.sol_found = True
             if status == cp_model.OPTIMAL:
