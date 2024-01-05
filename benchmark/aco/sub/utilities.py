@@ -6,8 +6,10 @@ import random
 
 try:
     from .stack import Stack
+    from .config import N_WEIGHT_CLUSTERS
 except ImportError:
     from sub.stack import Stack
+    from sub.config import N_WEIGHT_CLUSTERS
 
 
 def buildSingleStack(
@@ -498,7 +500,7 @@ def map_items_weight(df_items):
     for code in codes:
         items_code = df_items[df_items.stackability_code == code]
         maxIt_W = max(items_code["weight"])
-        cols = np.linspace(0, maxIt_W, num=1)
+        cols = np.linspace(0, maxIt_W, num=N_WEIGHT_CLUSTERS)
         classWeight = np.searchsorted(cols, items_code.loc[:, "weight"])
         items_code.loc[:, ["classWeight"]] = classWeight
 
