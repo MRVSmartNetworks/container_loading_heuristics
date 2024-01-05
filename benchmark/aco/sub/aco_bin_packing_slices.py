@@ -251,7 +251,7 @@ class ACO:
             # Find the best solution in terms of area ratio with vehicle size
             area_ratio = self.updateBestAnts(antsArea, antsWeight, n_bestAnts)
 
-            self.dynamicEvapCoeff(area_ratio, _iter)
+            good_sol = self.dynamicEvapCoeff(area_ratio, _iter)
 
             _iter += 1
 
