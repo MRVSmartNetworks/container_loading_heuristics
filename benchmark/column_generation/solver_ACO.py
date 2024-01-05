@@ -1,18 +1,17 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import os
-import time
-import pandas as pd
-import numpy as np
 import statistics as st
+import time
 
-from benchmark.sub.utilities import *
-from benchmark.sub.stack import Stack
-
+import numpy as np
+import pandas as pd
 # from solver.benchmark.aco.aco_bin_packing import ACO
-from benchmark.sub.aco_bin_packing_slices import ACO
+from benchmark.column_generation.sub.aco_bin_packing_slices import ACO
+from benchmark.column_generation.sub.config import *
+from benchmark.column_generation.sub.stack import Stack
+from benchmark.column_generation.sub.utilities import *
 from sol_representation import *
-from benchmark.sub.config import *
 
 
 class SolverACO:
@@ -128,7 +127,9 @@ class SolverACO:
                 if BETA == 1 and ALPHA == 1:
                     globals()["TEST_PAR"] = False
                     print(f"Best ALPHA: {best_alpha} \nBest BETA: {best_beta}")
-                    f.write(f"\n\nBest ALPHA: {best_alpha} \nBest BETA: {best_beta}\n")
+                    f.write(
+                        f"\n\nBest ALPHA: {best_alpha} \nBest BETA: {best_beta}\n"
+                    )
                     f.close()
 
         # Final information of the best solution
@@ -186,7 +187,9 @@ class SolverACO:
         df_items, stackInfo = stackInfo_creation(df_items)
 
         # Initialization of the ACO object
-        aco = ACO(stackInfo, alpha=ALPHA, beta=BETA, n_ants=N_ANTS, n_iter=N_ITER)
+        aco = ACO(
+            stackInfo, alpha=ALPHA, beta=BETA, n_ants=N_ANTS, n_iter=N_ITER
+        )
         more_items = True
         totCost = 0
 
@@ -237,7 +240,9 @@ class SolverACO:
             self.solUpdate(bestAnt, vehicle)
 
             # Remove the items already added to the solution
-            df_items = df_items[df_items.id_item.isin(self.sol["id_item"]) == False]
+            df_items = df_items[
+                df_items.id_item.isin(self.sol["id_item"]) == False
+            ]
             totCost += vehicle["cost"]
 
             n_items_after = df_items.shape[0]
@@ -308,11 +313,15 @@ class SolverACO:
         # Loop over all the stackability code
         for code in stackInfo.stackability_code:
             stack_quantity[code] = 0
-            stack_feat = (stackInfo[stackInfo.stackability_code == code].values)[0]
+            stack_feat = (
+                stackInfo[stackInfo.stackability_code == code].values
+            )[0]
             stack = Stack(code, stack_feat[0], stack_feat[1], stack_feat[3])
 
             # Taking only the first n items of the specific stack code to speed up the computation
-            items_code = df_items[df_items.stackability_code == code]  # .head(1000)
+            items_code = df_items[
+                df_items.stackability_code == code
+            ]  # .head(1000)
 
             # Obtaining all the unique value of height and weight for a better stack creation
             unique_height = np.sort(items_code.height.unique())[::-1]
@@ -357,7 +366,9 @@ class SolverACO:
                                             == 1
                                         ):
                                             fit = True
-                                            id_item = valid_items.iloc[i].id_item
+                                            id_item = valid_items.iloc[
+                                                i
+                                            ].id_item
                                             items_code = items_code[
                                                 items_code.id_item
                                                 != valid_items.iloc[i].id_item
@@ -389,7 +400,9 @@ class SolverACO:
                                             == 1
                                         ):
                                             fit = True
-                                            id_item = valid_items.iloc[i].id_item
+                                            id_item = valid_items.iloc[
+                                                i
+                                            ].id_item
                                             items_code = items_code[
                                                 items_code.id_item
                                                 != valid_items.iloc[i].id_item
@@ -405,7 +418,9 @@ class SolverACO:
                             fit = False
                             w = 0
                             while w < len(unique_weight) and not fit:
-                                density = (unique_weight[w] + stack.weight) / stack.area
+                                density = (
+                                    unique_weight[w] + stack.weight
+                                ) / stack.area
                                 if density <= constraints["max_density"]:
                                     valid_items = items_code[
                                         items_code.weight == unique_weight[w]
@@ -419,7 +434,9 @@ class SolverACO:
                                             == 1
                                         ):
                                             fit = True
-                                            id_item = valid_items.iloc[i].id_item
+                                            id_item = valid_items.iloc[
+                                                i
+                                            ].id_item
                                             items_code = items_code[
                                                 items_code.id_item
                                                 != valid_items.iloc[i].id_item
@@ -430,7 +447,9 @@ class SolverACO:
 
                     # Returned code 1 means item correctly added to the stack
                     if stack_added == 1:
-                        items_code = items_code[items_code.id_item != row.id_item]
+                        items_code = items_code[
+                            items_code.id_item != row.id_item
+                        ]
 
                     # When the stack il ready must be added to the stackList
                     if new_stack_needed:
@@ -438,9 +457,13 @@ class SolverACO:
                         stack_lst.append(stack)
                         stack_quantity[code] += 1
 
-                        stack = Stack(code, stack_feat[0], stack_feat[1], stack_feat[3])
+                        stack = Stack(
+                            code, stack_feat[0], stack_feat[1], stack_feat[3]
+                        )
                         stack.addItem(row, constraints)
-                        items_code = items_code[items_code.id_item != row.id_item]
+                        items_code = items_code[
+                            items_code.id_item != row.id_item
+                        ]
 
             # After the loop if the last stack created have some items must be added
             if stack.n_items > 0:
@@ -478,7 +501,9 @@ class SolverACO:
         # Update of the vehicle id
         self.id_vehicle += 1
 
-    def vehicle_decision(self, df_vehicles, items_left, area_ratio, weightRatio):
+    def vehicle_decision(
+        self, df_vehicles, items_left, area_ratio, weightRatio
+    ):
         """
         vehicle_decision
         ----------------
@@ -499,7 +524,9 @@ class SolverACO:
         last_iter = False
         # evaluation of important parameters for the truck choice
         tot_weight = sum(items_left["weight"])
-        tot_vol = sum(items_left["length"] * items_left["width"] * items_left["height"])
+        tot_vol = sum(
+            items_left["length"] * items_left["width"] * items_left["height"]
+        )
 
         # Select the max weight, height and desity of the left items.
         # Particularly useful for the choice of the last trucks.
@@ -512,7 +539,9 @@ class SolverACO:
         # List of the trucks that can respect all the constrain of the remained items.
         Usable_vehicles = df_vehicles[df_vehicles.max_weight_stack >= maxIt_W]
         Usable_vehicles = Usable_vehicles[Usable_vehicles.height >= maxIt_H]
-        Usable_vehicles = Usable_vehicles[Usable_vehicles.max_density >= maxIt_D]
+        Usable_vehicles = Usable_vehicles[
+            Usable_vehicles.max_density >= maxIt_D
+        ]
 
         # This exception happen when exist one or more items that singularly cannot be put in any truck
         if Usable_vehicles.empty:
@@ -549,7 +578,8 @@ class SolverACO:
             # area covered and a weightRatio satured
             if weightRatio > 0.95 and area_ratio < 0.95:
                 if (
-                    BestEff_vehicles.at[0, "area"] - BestWeight_vehicles.at[0, "area"]
+                    BestEff_vehicles.at[0, "area"]
+                    - BestWeight_vehicles.at[0, "area"]
                 ) < (1 - area_ratio) * BestEff_vehicles.at[0, "area"]:
                     return BestWeight_vehicles.iloc[0], last_iter
                 else:
