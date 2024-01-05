@@ -113,7 +113,7 @@ class ACO:
             area_ratio = self.updateBestAnts(antsArea, antsWeight, n_bestAnts)
 
             # Check if sol is "good" enough and update evaporation coefficient
-            self.dynamicEvapCoeff(area_ratio, _iter)
+            good_sol = self.dynamicEvapCoeff(area_ratio, _iter)
 
             _iter += 1
 
