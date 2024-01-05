@@ -6,13 +6,13 @@ import pandas as pd
 import numpy as np
 import statistics as st
 
-from benchmark.sub.utilities import *
-from benchmark.sub.stack import Stack
+from benchmark.aco.sub.utilities import *
+from benchmark.aco.sub.stack import Stack
 
 # from solver.benchmark.aco.aco_bin_packing import ACO
-from benchmark.sub.aco_bin_packing_slices import ACO
+from benchmark.aco.sub.aco_bin_packing_slices import ACO
 from sol_representation import *
-from benchmark.sub.config import *
+from benchmark.aco.sub.config import *
 
 
 class SolverACO:
@@ -211,9 +211,7 @@ class SolverACO:
 
             # Create the stacks given a vehicle and give it to ACO
             if vehicle.id_truck != id_prev_truck:
-                stack_list, stack_quantity = self.buildStacks(
-                    vehicle, df_items, stackInfo
-                )
+                stack_list, stack_quantity = buildStacks(vehicle, df_items, stackInfo)
                 aco.getStacks(stack_list, stack_quantity)
             else:
                 update_stack_lst(bestAnt, aco.stack_lst, aco.stack_quantity)
@@ -231,7 +229,8 @@ class SolverACO:
                 print("Truck: ", self.id_vehicle)
 
             # Method to solve the 2D bin packing problem
-            bestAnts = aco.aco_2D_bin(last_iter=last_iter)
+            bestAnts, bestAreas = aco.aco_2D_bin(last_iter=last_iter)
+            # Pick only the first one among the best
             bestAnt = bestAnts[0]
 
             self.solUpdate(bestAnt, vehicle)

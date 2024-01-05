@@ -11,7 +11,7 @@ PARAM_ITER = 1
 PARAM_FILE = "solver\group23\parameters_file\datasetF"
 
 # To print information related to area and weight ratio of trucks
-PRINT = False
+PRINT = True
 
 # Ant colony optimization parameters
 ALPHA = 1

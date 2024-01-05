@@ -256,10 +256,10 @@ class ACO:
             _iter += 1
 
         if PRINT:
-            print(f"Vehicle: {self.vehicle['id_truck']}")
+            print(f"\nVehicle: {self.vehicle['id_truck']}")
             for i in range(n_bestAnts):
                 print(
-                    f"\n{i + 1}:\n Area ratio: {self.bestAreas[i]},\n Weight ratio: {self.bestWeights[i]} "
+                    f"Area ratio: {self.bestAreas[i]},\n Weight ratio: {self.bestWeights[i]} "
                 )
 
         return self.bestAnts, self.bestAreas
