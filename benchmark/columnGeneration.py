@@ -40,9 +40,7 @@ class columnGeneration:
     - genereateInitialColumns
     """
 
-    def __init__(
-        self,
-    ):
+    def __init__(self):
         self.name = "columnGeneration"
         self.df_vehicles = None
         self.df_items = None
