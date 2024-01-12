@@ -87,7 +87,7 @@ class ACO:
         self.bestAnts = []
         self.bestWeights = []
         self.bestAreas = []
-        random.shuffle(self.stack_lst)
+        # random.shuffle(self.stack_lst)
         # When True the parameters of the ACO are changed.
         # The number of iteration and ants are highly increased the probability for the ACO
         # to complete the simulation with the filling of the last truck.
