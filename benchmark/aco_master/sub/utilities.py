@@ -3,16 +3,17 @@
 import numpy as np
 import pandas as pd
 import random
-from .config import N_CLUSTERING, ONE_LAYER
 
 try:
     from .stack import Stack
+    from .config import N_WEIGHT_CLUSTERS, ONE_LAYER
 except ImportError:
     from sub.stack import Stack
+    from sub.config import N_WEIGHT_CLUSTERS, ONE_LAYER
 
 
 def buildSingleStack(
-    df_items, stackInfo, vehicle, n_items, stack_code, orient, weight, avg_stack_W, tot_weight
+    df_items, stackInfo, vehicle, n_items, stack_code, orient, avg_stack_W, tot_weight
 ):
     item_lost = False
 
@@ -42,24 +43,24 @@ def buildSingleStack(
 
     avg_height = vehicle.height / n_items
     if len(unique_height) > 0:
-        if min(unique_height)*(n_items-1) + max(unique_height) > vehicle.height:
-            minFlag = True 
+        if min(unique_height) * (n_items - 1) + max(unique_height) > vehicle.height:
+            minFlag = True
 
     while (
         stack.n_items < n_items and new_stack_needed == False and len(items_code) != 0
     ):
         # Optimization on weight
         if tot_weight <= avg_stack_W:
-            items_code = items_code.sort_values(by='weight', ascending = False)
+            items_code = items_code.sort_values(by="weight", ascending=False)
         else:
-            items_code = items_code.sort_values(by='weight', ascending = True)
+            items_code = items_code.sort_values(by="weight", ascending=True)
 
         if not ONE_LAYER:
             # Optimization on height
-            if stack.height <= avg_height*k and not minFlag:
-                items_code = items_code.sort_values(by=['height'], ascending = False)
+            if stack.height <= avg_height * k and not minFlag:
+                items_code = items_code.sort_values(by=["height"], ascending=False)
             else:
-                items_code = items_code.sort_values(by=['height'], ascending = True)
+                items_code = items_code.sort_values(by=["height"], ascending=True)
                 if stack.n_items + 2 == n_items:
                     minFlag = False
 
@@ -167,7 +168,7 @@ def buildSingleStack(
                 tot_weight += item.weight
         else:
             new_stack_needed = True
-            #items_code = items_code[items_code["id_item"] != item.id_item]
+            # items_code = items_code[items_code["id_item"] != item.id_item]
 
         k += 1
     stack.updateHeight()
@@ -527,7 +528,7 @@ def map_items_weight(df_items):
     for code in codes:
         items_code = df_items[df_items.stackability_code == code]
         maxIt_W = max(items_code["weight"])
-        cols = np.linspace(0, maxIt_W, num=N_CLUSTERING)
+        cols = np.linspace(0, maxIt_W, num=N_WEIGHT_CLUSTERS)
         classWeight = np.searchsorted(cols, items_code.loc[:, "weight"])
         items_code.loc[:, ["classWeight"]] = classWeight
 
@@ -660,6 +661,6 @@ def stackInfo_creation(df_items):
 
     # Only when some modification happen to the stackability code the mapping must be done
     if not stackInfo.equals(stackInfo_App):
-        df_items = map_items_old(df_items, stackInfo_App)
+        df_items = map_items(df_items, stackInfo_App)
 
     return df_items, stackInfo
