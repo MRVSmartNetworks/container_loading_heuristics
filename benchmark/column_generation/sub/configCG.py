@@ -4,4 +4,6 @@ N_INIT_COLS = 10
 # Number of columns added at each iteration
 N_COLS = 6
 
-TIME_LIMIT = 600
+TIME_LIMIT = 60
+
+PRINT_SLACK = True
