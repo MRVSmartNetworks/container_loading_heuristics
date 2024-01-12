@@ -183,7 +183,7 @@ class SolverACO:
 
         # Creation of a dataframe containing information related
         # to the items and useful for the creation of stacks
-        df_items, stackInfo = stackInfo_creation(df_items)
+        df_items, stackInfo = stackInfo_creation_weight(df_items)
 
         # Initialization of the ACO object
         aco = ACO(stackInfo, alpha=ALPHA, beta=BETA, n_ants=N_ANTS, n_iter=N_ITER)
