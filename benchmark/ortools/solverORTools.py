@@ -16,31 +16,6 @@ TIME_LIMIT = 1000  # seconds
 
 # Instance - Need to ensure all elements can fit in the bin, else the solution
 # will be infeasible
-# container: 0->length, 1->width, 2->max_weight, 3->cost
-containers = [(40, 15, 20, 10), (35, 15, 10, 2)]
-
-# Boxes:
-#   "item_id":
-#       Unique id of the item
-#   "dim":
-#       [0]: length (x dim)
-#       [1]: width (y dim)
-#       [2]: weight
-boxes = [
-    {"item_id": "I0001", "dim": (11, 3, 4), "orientation": "n"},
-    {"item_id": "I0002", "dim": (13, 3, 2), "orientation": "l"},
-    {"item_id": "I0003", "dim": (9, 2, 4), "orientation": "w"},
-    {"item_id": "I0004", "dim": (7, 2, 6), "orientation": "n"},
-    {"item_id": "I0005", "dim": (9, 3, 1), "orientation": "l"},
-    {"item_id": "I0006", "dim": (7, 3, 3), "orientation": "w"},
-    {"item_id": "I0007", "dim": (11, 2, 3), "orientation": "n"},
-    {"item_id": "I0008", "dim": (13, 2, 2), "orientation": "n"},
-    {"item_id": "I0009", "dim": (11, 4, 7), "orientation": "l"},
-    {"item_id": "I0010", "dim": (13, 4, 6), "orientation": "w"},
-    {"item_id": "I0010", "dim": (3, 5, 1), "orientation": "w"},
-    {"item_id": "I0012", "dim": (11, 2, 2), "orientation": "l"},
-    {"item_id": "I0007", "dim": (11, 2, 3), "orientation": "n"},
-]
 
 
 class solverORTools:
@@ -153,8 +128,7 @@ class solverORTools:
                     [
                         self.model.NewIntVar(
                             0,
-                            self.trucks.loc[j, "length"]
-                            - self.items.iloc[i]["length"],
+                            self.trucks.loc[j, "length"] - self.items.iloc[i]["length"],
                             name=f"x_({i},{j},{k})",
                         )
                         for k in range(self.max_truck_n[j])
@@ -165,8 +139,7 @@ class solverORTools:
                     [
                         self.model.NewIntVar(
                             0,
-                            self.trucks.loc[j, "width"]
-                            - self.items.iloc[i]["width"],
+                            self.trucks.loc[j, "width"] - self.items.iloc[i]["width"],
                             name=f"y_({i},{j},{k})",
                         )
                         for k in range(self.max_truck_n[j])
@@ -213,8 +186,7 @@ class solverORTools:
                     [
                         self.model.NewIntVar(
                             0,
-                            self.trucks.loc[j, "length"]
-                            - self.items.iloc[i]["width"],
+                            self.trucks.loc[j, "length"] - self.items.iloc[i]["width"],
                             name=f"x_rot_({i},{j},{k})",
                         )
                         for k in range(self.max_truck_n[j])
@@ -226,8 +198,7 @@ class solverORTools:
                     [
                         self.model.NewIntVar(
                             0,
-                            self.trucks.loc[j, "width"]
-                            - self.items.iloc[i]["length"],
+                            self.trucks.loc[j, "width"] - self.items.iloc[i]["length"],
                             name=f"y_rot_({i},{j},{k})",
                         )
                         for k in range(self.max_truck_n[j])
@@ -240,8 +211,7 @@ class solverORTools:
                         self.model.NewOptionalIntervalVar(
                             start=x_vars_rot[i][j][k],
                             size=self.items.iloc[i]["width"],
-                            end=x_vars_rot[i][j][k]
-                            + self.items.iloc[i]["width"],
+                            end=x_vars_rot[i][j][k] + self.items.iloc[i]["width"],
                             is_present=c_vars_rot[i][j][k],
                             name=f"x_interval_rot_({i},{j},{k})",
                         )
@@ -253,8 +223,7 @@ class solverORTools:
                         self.model.NewOptionalIntervalVar(
                             start=y_vars_rot[i][j][k],
                             size=self.items.iloc[i]["length"],
-                            end=y_vars_rot[i][j][k]
-                            + self.items.iloc[i]["length"],
+                            end=y_vars_rot[i][j][k] + self.items.iloc[i]["length"],
                             is_present=c_vars_rot[i][j][k],
                             name=f"y_interval_rot_({i},{j},{k})",
                         )
@@ -358,9 +327,7 @@ class solverORTools:
                 y_interval_vars_jk = [y[j][k] for y in y_interval_vars] + [
                     y[j][k] for y in y_interval_vars_rot
                 ]
-                self.model.AddNoOverlap2D(
-                    x_interval_vars_jk, y_interval_vars_jk
-                )
+                self.model.AddNoOverlap2D(x_interval_vars_jk, y_interval_vars_jk)
 
                 # Weight constraint
                 self.model.Add(
@@ -481,15 +448,9 @@ class solverORTools:
                 for k in range(self.max_truck_n[j]):
                     # Check curr. truck contains at least 1 element
                     if sum(
-                        [
-                            self.solver.Value(c_vars[i][j][k])
-                            for i in range(n_items)
-                        ]
+                        [self.solver.Value(c_vars[i][j][k]) for i in range(n_items)]
                     ) or sum(
-                        [
-                            self.solver.Value(c_vars_rot[i][j][k])
-                            for i in range(n_items)
-                        ]
+                        [self.solver.Value(c_vars_rot[i][j][k]) for i in range(n_items)]
                     ):
                         n_used_trucks += 1
                         fig, ax = plt.subplots(1)
@@ -514,12 +475,8 @@ class solverORTools:
                                 ax.add_patch(
                                     patches.Rectangle(
                                         (
-                                            self.solver.Value(
-                                                x_vars_rot[i][j][k]
-                                            ),
-                                            self.solver.Value(
-                                                y_vars_rot[i][j][k]
-                                            ),
+                                            self.solver.Value(x_vars_rot[i][j][k]),
+                                            self.solver.Value(y_vars_rot[i][j][k]),
                                         ),
                                         self.items.iloc[i]["width"],
                                         self.items.iloc[i]["length"],
@@ -535,9 +492,7 @@ class solverORTools:
                         plt.show()
             return n_used_trucks
         else:
-            warnings.warn(
-                "No solution was found yet! Please run the model first"
-            )
+            warnings.warn("No solution was found yet! Please run the model first")
             return -1
 
     def assembleSolution(self, var_list: List) -> Dict:
@@ -599,10 +554,7 @@ class solverORTools:
                 if sum(
                     [self.solver.Value(c_vars[i][j][k]) for i in range(n_items)]
                 ) + sum(
-                    [
-                        self.solver.Value(c_vars_rot[i][j][k])
-                        for i in range(n_items)
-                    ]
+                    [self.solver.Value(c_vars_rot[i][j][k]) for i in range(n_items)]
                 ):
                     for i in range(n_items):
                         if (
@@ -656,39 +608,3 @@ class solverORTools:
         assert all(check_items == 1), "Some duplicate exist!"
 
         return self.sol_dict
-
-
-if __name__ == "__main__":
-    # IDEA: decide beforehand which are the items to be considered among the
-    # (long) list of ones that are provided - choose this by solving the
-    # knapsack problem on the weight and on dimensions -> 3D knapsack
-    df_items = {
-        "id_item": [
-            "I0001",
-            "I0002",
-            "I0003",
-            "I0004",
-            "I0005",
-            "I0006",
-            "I0007",
-            "I0008",
-            "I0009",
-            "I0010",
-        ],
-        "length": [11, 13, 9, 7, 9, 7, 9, 7, 3, 10],
-        "width": [3, 3, 4, 5, 3, 2, 1, 2, 3, 4],
-        "weight": [4, 5, 6, 4, 2, 1, 4, 5, 5, 3],
-    }
-    df_vehicles = {
-        "id_truck": ["V0"],
-        "length": [40],
-        "width": [15],
-        "max_weight": [20],
-        "cost": [10],
-    }
-
-    df_items = pd.DataFrame.from_dict(df_items)
-    df_vehicles = pd.DataFrame.from_dict(df_vehicles)
-
-    truck_loading = solverORTools()
-    truck_loading.solve(df_items, df_vehicles)
