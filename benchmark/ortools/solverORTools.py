@@ -12,7 +12,7 @@ from ortools.sat.python import cp_model
 
 DEBUG = True
 VERB = False
-TIME_LIMIT = 1000  # seconds
+TIME_LIMIT = 300  # seconds
 
 # Instance - Need to ensure all elements can fit in the bin, else the solution
 # will be infeasible
@@ -49,6 +49,7 @@ class solverORTools:
             available. This variable is optional (default []), and it is meant
             to speed up the computation by reducing the variable dimensionality.
         """
+        t1 = time.time()
         self.items = items
         self.trucks = trucks
         n_items = self.items.shape[0]
@@ -413,6 +414,9 @@ class solverORTools:
 
         df_sol = pd.DataFrame.from_dict(sol_dict)
         df_sol.to_csv(os.path.join("results", sol_file_name), index=False)
+
+        t = round(time.time() - t1, 2)
+        return t
 
     def printSolution(self, var: List, var_rot: List) -> int:
         """

@@ -3,6 +3,7 @@
 
 import os
 import pandas as pd
+import time
 
 try:
     from .masterProblem import MasterProblem
@@ -103,6 +104,7 @@ class masterAco:
         return df_items
 
     def solve(self, df_items, df_vehicles, sol_file_name):
+        t1 = time.time()
         self.df_items = df_items
         self.df_vehicles = df_vehicles
 
@@ -147,3 +149,6 @@ class masterAco:
             print(f"\nItems not inserted: {len(df_items_copy)}")
             df_sol = sol_aco.solver_end(df_items_copy, df_vehicles, self.sol)
         df_sol.to_csv(os.path.join("results", sol_file_name), index=False)
+
+        t = round(time.time() - t1, 2)
+        return t

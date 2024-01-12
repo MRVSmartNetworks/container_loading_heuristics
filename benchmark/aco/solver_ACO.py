@@ -52,7 +52,7 @@ class SolverACO:
         - sol_file_name: solution file name obtained from the specific database
         - time_limit: time limit imposed externally to conclude the iteration after a certain amount of time
         """
-
+        t1 = time.time()
         # Max value that will be decreased with the best solution value
         # and other parameters for loop test
         best_cost = float("inf")
@@ -143,6 +143,9 @@ class SolverACO:
 
         # Saving the best dataframe solution in the file
         best_sol.to_csv(os.path.join("results", sol_file_name), index=False)
+
+        t = round(time.time() - t1, 2)
+        return t
 
     def solver(self, df_items, df_vehicles, time_limit):
         """
