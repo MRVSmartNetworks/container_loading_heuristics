@@ -168,6 +168,7 @@ logs/*
 
 benchmark/results/*
 !benchmark/results/.gitkeep 
+!benchmark/results/benchmark.csv
 
 */__pycache__/
 
