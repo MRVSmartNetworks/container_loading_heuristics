@@ -15,6 +15,6 @@ if __name__ == "__main__":
         os.path.join(".", "data", dataset_name, "vehicles.csv"),
     )
 
-    df_vehicles = df_vehicles.iloc[[1, 2]]
+    df_vehicles = df_vehicles.iloc[[0, 1]]
     model_cg = columnGeneration()
     bestAnts = model_cg.solve(df_items, df_vehicles)
