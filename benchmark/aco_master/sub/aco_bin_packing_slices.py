@@ -251,15 +251,15 @@ class ACO:
             # Find the best solution in terms of area ratio with vehicle size
             area_ratio = self.updateBestAnts(antsArea, antsWeight, n_bestAnts)
 
-            self.dynamicEvapCoeff(area_ratio, _iter)
+            good_sol = self.dynamicEvapCoeff(area_ratio, _iter)
 
             _iter += 1
 
         if PRINT:
-            print(f"Vehicle: {self.vehicle['id_truck']}")
+            print(f"\nVehicle: {self.vehicle['id_truck']}")
             for i in range(n_bestAnts):
                 print(
-                    f"\n{i + 1}:\n Area ratio: {self.bestAreas[i]},\n Weight ratio: {self.bestWeights[i]} "
+                    f"Area ratio: {self.bestAreas[i]},\n Weight ratio: {self.bestWeights[i]} "
                 )
 
         return self.bestAnts, self.bestAreas
