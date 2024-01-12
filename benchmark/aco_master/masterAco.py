@@ -144,6 +144,7 @@ class masterAco:
                     int(v.X), i, df_items_copy, stackInfo, patterInfo, pattern_list
                 )
 
-        print(f"\nItems not inserted: {len(df_items_copy)}")
-        df_sol = sol_aco.solver_end(df_items_copy, df_vehicles, self.sol)
+        if len(df_items_copy) != 0:
+            print(f"\nItems not inserted: {len(df_items_copy)}")
+            df_sol = sol_aco.solver_end(df_items_copy, df_vehicles, self.sol)
         df_sol.to_csv(os.path.join("results", sol_file_name), index=False)
