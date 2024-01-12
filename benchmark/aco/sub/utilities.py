@@ -6,15 +6,17 @@ import random
 
 try:
     from .stack import Stack
-    from .config import N_WEIGHT_CLUSTERS
+    from .config import N_WEIGHT_CLUSTERS, ONE_LAYER
 except ImportError:
     from sub.stack import Stack
-    from sub.config import N_WEIGHT_CLUSTERS
+    from sub.config import N_WEIGHT_CLUSTERS, ONE_LAYER
 
 
 def buildSingleStack(
-    df_items, stackInfo, vehicle, n_items, stack_code, orient, tot_weight
+    df_items, stackInfo, vehicle, n_items, stack_code, orient, avg_stack_W, tot_weight
 ):
+    item_lost = False
+
     stack_feat = (stackInfo[stackInfo.stackability_code == stack_code].values)[0]
     stack = Stack(int(stack_code), stack_feat[0], stack_feat[1], stack_feat[3])
 
@@ -36,11 +38,32 @@ def buildSingleStack(
     unique_weight = np.sort(items_code.weight.unique())[::-1]
 
     new_stack_needed = False
+    minFlag = False
     k = 0
+
+    avg_height = vehicle.height / n_items
+    if len(unique_height) > 0:
+        if min(unique_height) * (n_items - 1) + max(unique_height) > vehicle.height:
+            minFlag = True
 
     while (
         stack.n_items < n_items and new_stack_needed == False and len(items_code) != 0
     ):
+        # Optimization on weight
+        if tot_weight <= avg_stack_W:
+            items_code = items_code.sort_values(by="weight", ascending=False)
+        else:
+            items_code = items_code.sort_values(by="weight", ascending=True)
+
+        if not ONE_LAYER:
+            # Optimization on height
+            if stack.height <= avg_height * k and not minFlag:
+                items_code = items_code.sort_values(by=["height"], ascending=False)
+            else:
+                items_code = items_code.sort_values(by=["height"], ascending=True)
+                if stack.n_items + 2 == n_items:
+                    minFlag = False
+
         item = items_code.iloc[0]
         if tot_weight + stack.weight + item.weight <= vehicle.max_weight:
             stack_added = stack.addItem(item, constraints)
@@ -144,10 +167,15 @@ def buildSingleStack(
                 items_code = items_code[items_code["id_item"] != item.id_item]
                 tot_weight += item.weight
         else:
-            items_code = items_code[items_code["id_item"] != item.id_item]
+            new_stack_needed = True
+            # items_code = items_code[items_code["id_item"] != item.id_item]
 
         k += 1
-    return stack, df_items, tot_weight
+    stack.updateHeight()
+    if stack.n_items != n_items and not items_code.empty:
+        item_lost = True
+        pass
+    return stack, df_items, tot_weight, item_lost
 
 
 def buildStacks(vehicle, df_items, stackInfo):

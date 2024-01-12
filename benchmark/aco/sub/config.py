@@ -21,6 +21,8 @@ N_ANTS = 90
 N_ITER = 15
 EVAPOR_COEFF = 0.2
 
+# If true the solution created consist of one layer only (no stack of item N_item in a stack = 1)
+ONE_LAYER = False
 # Performance parameters
 # AREA_RATIO is the parameters that choose when a solution is considered a good one.
 # when the best area_ratio of the ants exceed the one of AREA_RATIO then the solution is cosidered
