@@ -9,8 +9,9 @@ import statistics as st
 from benchmark.aco_master.sub.utilities import *
 from benchmark.aco_master.sub.stack import Stack
 
-# from benchmark.sub.aco_bin_packing_slices import ACO
-from benchmark.aco_master.sub.aco_bin_packing import ACO
+from benchmark.aco_master.sub.aco_bin_packing_slices import ACO
+
+# from benchmark.aco_master.sub.aco_bin_packing import ACO
 from benchmark.aco_master.sub.config import *
 
 
@@ -218,9 +219,7 @@ class SolverACO:
 
             # Create the stacks given a vehicle and give it to ACO
             if vehicle.id_truck != id_prev_truck:
-                stack_list, stack_quantity = self.buildStacks(
-                    vehicle, df_items, stackInfo
-                )
+                stack_list, stack_quantity = buildStacks(vehicle, df_items, stackInfo)
                 aco.getStacks(stack_list, stack_quantity)
             else:
                 update_stack_lst(bestAnt, aco.stack_lst, aco.stack_quantity)
@@ -374,9 +373,7 @@ class SolverACO:
 
             # Create the stacks given a vehicle and give it to ACO
             if vehicle.id_truck != id_prev_truck:
-                stack_list, stack_quantity = self.buildStacks(
-                    vehicle, df_items, stackInfo
-                )
+                stack_list, stack_quantity = buildStacks(vehicle, df_items, stackInfo)
                 aco.getStacks(stack_list, stack_quantity)
             else:
                 update_stack_lst(bestAnt, aco.stack_lst, aco.stack_quantity)
@@ -424,178 +421,6 @@ class SolverACO:
 
         # Return the dataframe solution and its cost to check the best solution among all the iteration
         return df_sol
-
-    def buildStacks(self, vehicle, df_items, stackInfo):
-        """
-        buildStacks
-        -----------
-        Function used to create the stack with all the specificity of the selected truck.
-
-        #### INPUT PARAMETERS:
-            - vehicle: vehicle type, needed to check the height, weight, max density and max\n
-                            stack weight for creating the stacks for this specific truck
-            - df_items: dataframe containing all the items that will be put into the trucks
-            - stackInfo: dataframe containing all the main information fro each stackability code
-        #### OUTPUT PARAMETERS:
-            - stack_lst: list of all the stack created
-            - stack_quantity: dictionary containing all the numbers of the items divided in stackability codes
-        """
-
-        removed = []
-        stack_lst = []
-        stack_quantity = {code: 0 for code in stackInfo.stackability_code}
-
-        # Vehicle constrain in a dictionary, ready to be passed to the addItem function
-        constraints = {
-            "max_height": vehicle["height"],
-            "max_weight_stack": vehicle["max_weight_stack"],
-            "max_density": vehicle["max_density"],
-        }
-
-        # Loop over all the stackability code
-        for code in stackInfo.stackability_code:
-            stack_quantity[code] = 0
-            stack_feat = (stackInfo[stackInfo.stackability_code == code].values)[0]
-            stack = Stack(code, stack_feat[0], stack_feat[1], stack_feat[3])
-
-            # Taking only the first n items of the specific stack code to speed up the computation
-            items_code = df_items[df_items.stackability_code == code]  # .head(1000)
-
-            # Obtaining all the unique value of height and weight for a better stack creation
-            unique_height = np.sort(items_code.height.unique())[::-1]
-            unique_weight = np.sort(items_code.weight.unique())[::-1]
-
-            # Loop over the items for the stack creation
-            for i, row in items_code.iterrows():
-                new_stack_needed = False
-
-                # Check that the item is not already been used
-                if not row.id_item in removed:
-                    stack_added = stack.addItem(row, constraints)
-
-                    # Returned code 0 means that the max stackability code is reached
-                    if stack_added == 0:
-                        new_stack_needed = True
-
-                    # Returned code -1 means max_height reached
-                    if stack_added == -1:
-                        new_stack_needed = True
-
-                        # If other item with different height exist then another iteam is searched to be fitted in this stack
-                        if len(unique_height) > 1:
-                            fit = False
-                            h = 0
-                            while h < len(unique_height) and not fit:
-                                # If an item respect the height constrain is found, all the other constrain are also checked
-                                if (
-                                    unique_height[h] + stack.height
-                                    <= constraints["max_height"]
-                                ):
-                                    valid_items = items_code[
-                                        items_code.height == unique_height[h]
-                                    ]
-                                    i = 0
-                                    while i < len(valid_items) and not fit:
-                                        # If all the constrain are respected the item is added to the stack
-                                        if (
-                                            stack.addItem(
-                                                valid_items.iloc[i], constraints
-                                            )
-                                            == 1
-                                        ):
-                                            fit = True
-                                            id_item = valid_items.iloc[i].id_item
-                                            items_code = items_code[
-                                                items_code.id_item
-                                                != valid_items.iloc[i].id_item
-                                            ]
-                                            removed.append(id_item)
-                                        i += 1
-                                h += 1
-
-                    # Returned code -2 means max_weight reached(the following procedure is the same as the height)
-                    if stack_added == -2:
-                        new_stack_needed = True
-                        if len(unique_weight) > 1:
-                            fit = False
-                            w = 0
-                            while w < len(unique_weight) and not fit:
-                                if (
-                                    unique_weight[w] + stack.weight
-                                    <= constraints["max_weight_stack"]
-                                ):
-                                    valid_items = items_code[
-                                        items_code.weight == unique_weight[w]
-                                    ]
-                                    i = 0
-                                    while i < len(valid_items) and not fit:
-                                        if (
-                                            stack.addItem(
-                                                valid_items.iloc[i], constraints
-                                            )
-                                            == 1
-                                        ):
-                                            fit = True
-                                            id_item = valid_items.iloc[i].id_item
-                                            items_code = items_code[
-                                                items_code.id_item
-                                                != valid_items.iloc[i].id_item
-                                            ]
-                                            removed.append(id_item)
-                                        i += 1
-                                w += 1
-
-                    # Returned code -3 means max_density reached(another item is searched)
-                    if stack_added == -3:
-                        new_stack_needed = True
-                        if len(unique_weight) > 1:
-                            fit = False
-                            w = 0
-                            while w < len(unique_weight) and not fit:
-                                density = (unique_weight[w] + stack.weight) / stack.area
-                                if density <= constraints["max_density"]:
-                                    valid_items = items_code[
-                                        items_code.weight == unique_weight[w]
-                                    ]
-                                    i = 0
-                                    while i < len(valid_items) and not fit:
-                                        if (
-                                            stack.addItem(
-                                                valid_items.iloc[i], constraints
-                                            )
-                                            == 1
-                                        ):
-                                            fit = True
-                                            id_item = valid_items.iloc[i].id_item
-                                            items_code = items_code[
-                                                items_code.id_item
-                                                != valid_items.iloc[i].id_item
-                                            ]
-                                            removed.append(id_item)
-                                        i += 1
-                                w += 1
-
-                    # Returned code 1 means item correctly added to the stack
-                    if stack_added == 1:
-                        items_code = items_code[items_code.id_item != row.id_item]
-
-                    # When the stack il ready must be added to the stackList
-                    if new_stack_needed:
-                        stack.updateHeight()
-                        stack_lst.append(stack)
-                        stack_quantity[code] += 1
-
-                        stack = Stack(code, stack_feat[0], stack_feat[1], stack_feat[3])
-                        stack.addItem(row, constraints)
-                        items_code = items_code[items_code.id_item != row.id_item]
-
-            # After the loop if the last stack created have some items must be added
-            if stack.n_items > 0:
-                stack.updateHeight()
-                stack_lst.append(stack)
-                stack_quantity[code] += 1
-
-        return stack_lst, stack_quantity
 
     def solUpdate(self, bestAnt, vehicle):
         """

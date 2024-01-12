@@ -75,7 +75,6 @@ class masterAco:
                     pattern[j]["stack_Nitems"],
                     pattern[j]["stack_code"],
                     pattern[j]["orient"],
-                    pattern[j]["stack_weight"],
                     avg_stack_W,
                     tot_weight,
                 )

@@ -12,7 +12,8 @@ PARAM_FILE = "solver\group23\parameters_file\datasetF"
 
 # To print information related to area and weight ratio of trucks
 PRINT = True
-
+# Set number of weight clusters (set 1 for avoid clustering)
+N_WEIGHT_CLUSTERS = 1
 # Ant colony optimization parameters
 ALPHA = 1
 BETA = 1
@@ -20,6 +21,8 @@ N_ANTS = 90
 N_ITER = 15
 EVAPOR_COEFF = 0.2
 
+# If true the solution created consist of one layer only (no stack of item N_item in a stack = 1)
+ONE_LAYER = False
 # Performance parameters
 # AREA_RATIO is the parameters that choose when a solution is considered a good one.
 # when the best area_ratio of the ants exceed the one of AREA_RATIO then the solution is cosidered
@@ -30,11 +33,5 @@ EVAPOR_COEFF = 0.2
 AREA_RATIO = 0.93
 WEIGHT_RATIO = 0.98
 
-# Number of weight clustering categories for each stackability_code
-N_CLUSTERING = 10
-
-# If true the solution created consist of one layer only (no stack of item N_item in a stack = 1)
-ONE_LAYER = False
-
-VERB_LOCAL = True
+VERB_LOCAL = False
 DEBUG_LOCAL = False
