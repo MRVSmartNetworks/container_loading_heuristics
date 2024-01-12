@@ -300,53 +300,56 @@ class ACO:
                 x_pos = 0
 
         if not first_line:
-            k = 0
-            stack_added = False
+            if len(stack_1_line) > 0:
+                k = 0
+                stack_added = False
 
-            # Loop until the stack is added or there is no more space for it
-            # The loop is on the stacks of contained in the first line
-            while not stack_added and toAddStack != None and k < len(stack_1_line):
-                # Check if the possible origin of the new stack is in the middle of the extremes
-                # of the k-th stack
-                if (
-                    x_pos <= stack_1_line[k].vertexes[3][0]
-                    and x_pos >= stack_1_line[k].vertexes[2][0]
-                ):
-                    y_pos_tmp = stack_1_line[k].vertexes[3][1]
-                    x_pos_right = x_pos + toAddStack.length
-
-                    j = k
-                    # Loop on the stacks which are positioned before the possible right extreme
-                    # of the new stack
-                    while (
-                        j < len(stack_1_line)
-                        and stack_1_line[j].vertexes[2][0] <= x_pos_right
-                    ):
-                        # Check if there is an overlap
-                        if (
-                            x_pos_right <= stack_1_line[j].vertexes[3][0]
-                            and x_pos_right >= stack_1_line[j].vertexes[2][0]
-                            and stack_1_line[j].vertexes[3][1] >= y_pos_tmp
-                        ):
-                            # Update the y position of the origin of the new stack
-                            y_pos_tmp = stack_1_line[j].vertexes[3][1]
-
-                        j += 1
-
+                # Loop until the stack is added or there is no more space for it
+                # The loop is on the stacks of contained in the first line
+                while not stack_added and toAddStack != None and k < len(stack_1_line):
+                    # Check if the possible origin of the new stack is in the middle of the extremes
+                    # of the k-th stack
                     if (
-                        x_pos + toAddStack.length <= self.vehicle["length"]
-                        and y_pos_tmp + toAddStack.width <= self.vehicle["width"]
+                        x_pos <= stack_1_line[k].vertexes[3][0]
+                        and x_pos >= stack_1_line[k].vertexes[2][0]
                     ):
-                        toAddStack.position(x_pos, y_pos_tmp)
-                        x_pos += toAddStack.length
-                        stack_added = True
-                    else:
+                        y_pos_tmp = stack_1_line[k].vertexes[3][1]
+                        x_pos_right = x_pos + toAddStack.length
+
+                        j = k
+                        # Loop on the stacks which are positioned before the possible right extreme
+                        # of the new stack
+                        while (
+                            j < len(stack_1_line)
+                            and stack_1_line[j].vertexes[2][0] <= x_pos_right
+                        ):
+                            # Check if there is an overlap
+                            if (
+                                x_pos_right <= stack_1_line[j].vertexes[3][0]
+                                and x_pos_right >= stack_1_line[j].vertexes[2][0]
+                                and stack_1_line[j].vertexes[3][1] >= y_pos_tmp
+                            ):
+                                # Update the y position of the origin of the new stack
+                                y_pos_tmp = stack_1_line[j].vertexes[3][1]
+
+                            j += 1
+
+                        if (
+                            x_pos + toAddStack.length <= self.vehicle["length"]
+                            and y_pos_tmp + toAddStack.width <= self.vehicle["width"]
+                        ):
+                            toAddStack.position(x_pos, y_pos_tmp)
+                            x_pos += toAddStack.length
+                            stack_added = True
+                        else:
+                            toAddStack = None
+
+                    k += 1
+
+                    if k == len(stack_1_line) and not stack_added:
                         toAddStack = None
-
-                k += 1
-
-                if k == len(stack_1_line) and not stack_added:
-                    toAddStack = None
+            else:
+                toAddStack = None
 
         return toAddStack, first_line, x_pos
 
