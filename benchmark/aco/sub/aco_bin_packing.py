@@ -3,6 +3,7 @@
 import numpy as np
 from .config import AREA_RATIO, WEIGHT_RATIO, PRINT
 from copy import copy
+import time
 
 
 class ACO:
@@ -77,6 +78,7 @@ class ACO:
         # When True the parameters of the ACO are changed.
         # The number of iteration and ants are highly increased the probability for the ACO
         # to complete the simulation with the filling of the last truck.
+        t1 = time.time()
         if last_iter:
             self.n_ants += int(0.5 * self.n_iter)
             self.n_iter += int(0.5 * self.n_iter)
@@ -118,13 +120,13 @@ class ACO:
             _iter += 1
 
         if PRINT:
-            print(f"Vehicle: {self.vehicle['id_truck']}")
+            print(f" Vehicle: {self.vehicle['id_truck']}")
             for i in range(n_bestAnts):
                 print(
-                    f"\n{i + 1}:\n Area ratio: {self.bestAreas[i]},\n Weight ratio: {self.bestWeights[i]} "
+                    f" Area ratio: {round(self.bestAreas[i], 2)},\n Weight ratio: {round(self.bestWeights[i], 2)}\n Time: {round(time.time()-t1, 2)} s"
                 )
 
-        return self.bestAnts, self.bestAreas
+        return self.bestAnts, self.bestAreas, self.bestWeights
 
     def buildAntSolution(self, antsArea, antsWeight):
         """
