@@ -5,18 +5,12 @@ import os
 import pandas as pd
 import time
 
-try:
-    from .masterProblem import MasterProblem
-    from .solver_ACO import SolverACO
-    from .sub.utilities import buildSingleStack, stackInfo_creation_weight
-    from .sub.config import ONE_LAYER
-    from .sol_representation import *
-except ImportError:
-    from masterProblem import MasterProblem
-    from solver_ACO import SolverACO
-    from sub.utilities import buildSingleStack, stackInfo_creation_weight
-    from sub.config import ONE_LAYER
-    from sol_representation import *
+
+from benchmark.aco_master.masterProblem import MasterProblem
+from benchmark.aco.solver_ACO import SolverACO
+from benchmark.aco.sub.utilities import buildSingleStack, stackInfo_creation_weight
+from benchmark.aco_master.sub.config import ONE_LAYER
+from sol_representation import *
 
 
 class masterAco:
