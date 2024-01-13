@@ -8,12 +8,13 @@ import statistics as st
 
 from benchmark.aco.sub.utilities import *
 from benchmark.aco.sub.stack import Stack
-
-from benchmark.aco.sub.aco_bin_packing import ACO
-
-# from benchmark.aco.sub.aco_bin_packing_slices import ACO
-from sol_representation import *
 from benchmark.aco.sub.config import *
+
+if SLICES:
+    from benchmark.aco.sub.aco_bin_packing_slices import ACO
+else:
+    from benchmark.aco.sub.aco_bin_packing import ACO
+from sol_representation import *
 
 
 class SolverACO:
