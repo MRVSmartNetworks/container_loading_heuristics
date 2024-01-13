@@ -482,7 +482,7 @@ def stackInfo_creation_weight(df_items):
     """
     # Retrieve information about the features of the items given their stackability code,
     # then a sorting is needed for the correct performance of states creation
-    df_items = map_items_weight(df_items)
+    df_items = weight_clustering(df_items)
     stackInfo_App = df_items[
         ["length", "width", "stackability_code", "forced_orientation", "classWeight"]
     ].drop_duplicates()
@@ -521,7 +521,7 @@ def stackInfo_creation_weight(df_items):
     return df_items, stackInfo
 
 
-def map_items_weight(df_items):
+def weight_clustering(df_items):
     # TODO: da fare in modo più intelligente
     codes = df_items.stackability_code.drop_duplicates()
     data = []
@@ -661,6 +661,6 @@ def stackInfo_creation(df_items):
 
     # Only when some modification happen to the stackability code the mapping must be done
     if not stackInfo.equals(stackInfo_App):
-        df_items = map_items(df_items, stackInfo_App)
+        df_items = map_items_old(df_items, stackInfo_App)
 
     return df_items, stackInfo
