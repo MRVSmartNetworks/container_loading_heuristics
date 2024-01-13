@@ -1,23 +1,33 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-import numpy as np
-import pandas as pd
 import random
 
+import numpy as np
+import pandas as pd
+
 try:
-    from .stack import Stack
     from .config import N_WEIGHT_CLUSTERS, ONE_LAYER
+    from .stack import Stack
 except ImportError:
-    from sub.stack import Stack
     from sub.config import N_WEIGHT_CLUSTERS, ONE_LAYER
+    from sub.stack import Stack
 
 
 def buildSingleStack(
-    df_items, stackInfo, vehicle, n_items, stack_code, orient, avg_stack_W, tot_weight
+    df_items,
+    stackInfo,
+    vehicle,
+    n_items,
+    stack_code,
+    orient,
+    avg_stack_W,
+    tot_weight,
 ):
     item_lost = False
 
-    stack_feat = (stackInfo[stackInfo.stackability_code == stack_code].values)[0]
+    stack_feat = (stackInfo[stackInfo.stackability_code == stack_code].values)[
+        0
+    ]
     stack = Stack(int(stack_code), stack_feat[0], stack_feat[1], stack_feat[3])
 
     # Vehicle constrain in a dictionary, ready to be passed to the addItem function
@@ -43,11 +53,16 @@ def buildSingleStack(
 
     avg_height = vehicle.height / n_items
     if len(unique_height) > 0:
-        if min(unique_height) * (n_items - 1) + max(unique_height) > vehicle.height:
+        if (
+            min(unique_height) * (n_items - 1) + max(unique_height)
+            > vehicle.height
+        ):
             minFlag = True
 
     while (
-        stack.n_items < n_items and new_stack_needed == False and len(items_code) != 0
+        stack.n_items < n_items
+        and new_stack_needed == False
+        and len(items_code) != 0
     ):
         # Optimization on weight
         if tot_weight <= avg_stack_W:
@@ -58,9 +73,13 @@ def buildSingleStack(
         if not ONE_LAYER:
             # Optimization on height
             if stack.height <= avg_height * k and not minFlag:
-                items_code = items_code.sort_values(by=["height"], ascending=False)
+                items_code = items_code.sort_values(
+                    by=["height"], ascending=False
+                )
             else:
-                items_code = items_code.sort_values(by=["height"], ascending=True)
+                items_code = items_code.sort_values(
+                    by=["height"], ascending=True
+                )
                 if stack.n_items + 2 == n_items:
                     minFlag = False
 
@@ -82,14 +101,22 @@ def buildSingleStack(
                     h = 0
                     while h < len(unique_height) and not fit:
                         # If an item respect the height constrain is found, all the other constrain are also checked
-                        if unique_height[h] + stack.height <= constraints["max_height"]:
+                        if (
+                            unique_height[h] + stack.height
+                            <= constraints["max_height"]
+                        ):
                             valid_items = items_code[
                                 items_code.height == unique_height[h]
                             ]
                             i = 0
                             while i < len(valid_items) and not fit:
                                 # If all the constrain are respected the item is added to the stack
-                                if stack.addItem(valid_items.iloc[i], constraints) == 1:
+                                if (
+                                    stack.addItem(
+                                        valid_items.iloc[i], constraints
+                                    )
+                                    == 1
+                                ):
                                     fit = True
                                     df_items = df_items[
                                         df_items["id_item"]
@@ -119,7 +146,12 @@ def buildSingleStack(
                             ]
                             i = 0
                             while i < len(valid_items) and not fit:
-                                if stack.addItem(valid_items.iloc[i], constraints) == 1:
+                                if (
+                                    stack.addItem(
+                                        valid_items.iloc[i], constraints
+                                    )
+                                    == 1
+                                ):
                                     fit = True
                                     df_items = df_items[
                                         df_items["id_item"]
@@ -147,7 +179,12 @@ def buildSingleStack(
                             ]
                             i = 0
                             while i < len(valid_items) and not fit:
-                                if stack.addItem(valid_items.iloc[i], constraints) == 1:
+                                if (
+                                    stack.addItem(
+                                        valid_items.iloc[i], constraints
+                                    )
+                                    == 1
+                                ):
                                     fit = True
                                     df_items = df_items[
                                         df_items["id_item"]
@@ -251,7 +288,9 @@ def buildStacks(vehicle, df_items, stackInfo):
                                 while i < len(valid_items) and not fit:
                                     # If all the constrain are respected the item is added to the stack
                                     if (
-                                        stack.addItem(valid_items.iloc[i], constraints)
+                                        stack.addItem(
+                                            valid_items.iloc[i], constraints
+                                        )
                                         == 1
                                     ):
                                         fit = True
@@ -281,7 +320,9 @@ def buildStacks(vehicle, df_items, stackInfo):
                                 i = 0
                                 while i < len(valid_items) and not fit:
                                     if (
-                                        stack.addItem(valid_items.iloc[i], constraints)
+                                        stack.addItem(
+                                            valid_items.iloc[i], constraints
+                                        )
                                         == 1
                                     ):
                                         fit = True
@@ -301,7 +342,9 @@ def buildStacks(vehicle, df_items, stackInfo):
                         fit = False
                         w = 0
                         while w < len(unique_weight) and not fit:
-                            density = (unique_weight[w] + stack.weight) / stack.area
+                            density = (
+                                unique_weight[w] + stack.weight
+                            ) / stack.area
                             if density <= constraints["max_density"]:
                                 valid_items = items_code[
                                     items_code.weight == unique_weight[w]
@@ -309,7 +352,9 @@ def buildStacks(vehicle, df_items, stackInfo):
                                 i = 0
                                 while i < len(valid_items) and not fit:
                                     if (
-                                        stack.addItem(valid_items.iloc[i], constraints)
+                                        stack.addItem(
+                                            valid_items.iloc[i], constraints
+                                        )
                                         == 1
                                     ):
                                         fit = True
@@ -478,17 +523,29 @@ def stackInfo_creation_weight(df_items):
     stackInfo_creation
     ------------------
     Creation of a dataframe containing the carachteristics of items per
-    stackability code
+    stackability code.
+
+    This function adds a column with the stack weight (`classWeight`) that can
+    be used to group the stacks based on their weight.
+
+    Args:
+        df_items:
     """
     # Retrieve information about the features of the items given their stackability code,
     # then a sorting is needed for the correct performance of states creation
     df_items = map_items_weight(df_items)
     stackInfo_App = df_items[
-        ["length", "width", "stackability_code", "forced_orientation", "classWeight"]
+        [
+            "length",
+            "width",
+            "stackability_code",
+            "forced_orientation",
+            "classWeight",
+        ]
     ].drop_duplicates()
-    stackInfo_App = stackInfo_App.sort_values(by=["stackability_code"]).reset_index(
-        drop=True
-    )
+    stackInfo_App = stackInfo_App.sort_values(
+        by=["stackability_code"]
+    ).reset_index(drop=True)
     stackInfo = (
         stackInfo_App[["length", "width", "stackability_code", "classWeight"]]
         .drop_duplicates()
@@ -522,24 +579,45 @@ def stackInfo_creation_weight(df_items):
 
 
 def map_items_weight(df_items):
-    # TODO: da fare in modo più intelligente
+    """
+    Group the items into different weight classes for each stackability code.
+
+    Args:
+        df_items: dataframe of items
+
+    Returns:
+        The same dataframe, with an additional column `classWeight` indicating
+        the weight cluster it belongs to.
+    """
+    # FIXME: this function takes a long time to run! The issue is the use of
+    # `searchsorted`
     codes = df_items.stackability_code.drop_duplicates()
     data = []
     for code in codes:
-        items_code = df_items[df_items.stackability_code == code]
-        maxIt_W = max(items_code["weight"])
-        cols = np.linspace(0, maxIt_W, num=N_WEIGHT_CLUSTERS)
-        classWeight = np.searchsorted(cols, items_code.loc[:, "weight"])
+        items_code = df_items[
+            df_items.stackability_code == code
+        ]  # Get items with current code
+        maxIt_W = max(items_code["weight"])  # Get maximum weight of these items
+        cols = np.linspace(
+            0, maxIt_W, num=N_WEIGHT_CLUSTERS
+        )  # Define the weight clusters (by value)
+        classWeight = np.searchsorted(
+            cols, items_code.loc[:, "weight"]
+        )  # Separate the items in the corresponding weight classes
         items_code.loc[:, ["classWeight"]] = classWeight
 
-        for i, row in items_code.iterrows():
+        for _, row in items_code.iterrows():
             data.append(row)
     df = pd.DataFrame(data)
     return df
 
 
 def loadingBar(
-    current_iter: int, tot_iter: int, n_chars: int = 10, ch: str = "=", n_ch: str = " "
+    current_iter: int,
+    tot_iter: int,
+    n_chars: int = 10,
+    ch: str = "=",
+    n_ch: str = " ",
 ) -> str:
     """
     loadingBar
@@ -633,9 +711,9 @@ def stackInfo_creation(df_items):
     stackInfo_App = df_items[
         ["length", "width", "stackability_code", "forced_orientation"]
     ].drop_duplicates()
-    stackInfo_App = stackInfo_App.sort_values(by=["stackability_code"]).reset_index(
-        drop=True
-    )
+    stackInfo_App = stackInfo_App.sort_values(
+        by=["stackability_code"]
+    ).reset_index(drop=True)
     stackInfo = (
         stackInfo_App[["length", "width", "stackability_code"]]
         .drop_duplicates()
@@ -661,6 +739,6 @@ def stackInfo_creation(df_items):
 
     # Only when some modification happen to the stackability code the mapping must be done
     if not stackInfo.equals(stackInfo_App):
-        df_items = map_items(df_items, stackInfo_App)
+        df_items = map_items_old(df_items, stackInfo_App)
 
     return df_items, stackInfo
