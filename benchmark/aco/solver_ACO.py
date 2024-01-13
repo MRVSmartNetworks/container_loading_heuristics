@@ -196,15 +196,15 @@ class SolverACO:
 
         # Loop parameters
         # Area and weight are set in this way to choose the efficient vehicle at the first cicle
-        area_ratio = 1
-        weightRatio = 0
+        prev_area_ratio = 1
+        prev_weight_ratio = 0
         i = 0
         id_prev_truck = None
         # Loop until there are no more items left
         while more_items:
             # Decision for the most convenient vehicle
             vehicle, last_iter = self.vehicle_decision(
-                df_vehicles, df_items, area_ratio, weightRatio
+                df_vehicles, df_items, prev_area_ratio, prev_weight_ratio
             )
             aco.getVehicle(vehicle)
 
@@ -233,10 +233,11 @@ class SolverACO:
                 print("Truck: ", self.id_vehicle)
 
             # Method to solve the 2D bin packing problem
-            bestAnts, bestAreas = aco.aco_2D_bin(last_iter=last_iter)
+            bestAnts, bestAreas, bestWeights = aco.aco_2D_bin(last_iter=last_iter)
             # Pick only the first one among the best
             bestAnt = bestAnts[0]
-
+            prev_weight_ratio = bestWeights[0]
+            prev_area_ratio = bestAreas[0]
             self.solUpdate(bestAnt, vehicle)
 
             # Remove the items already added to the solution
