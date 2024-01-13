@@ -79,9 +79,15 @@ class SolverACO:
             # When the code is runned normally (one or multiple solution)
             # only this part is executed
             if TEST_PAR == False:
-                df_sol, tot_cost, time_spent = self.solver(
-                    df_items, df_vehicles, time_limit
-                )
+                (
+                    df_sol,
+                    tot_cost,
+                    pattern_list,
+                    pattern_info,
+                    time_spent,
+                    out_df_items,
+                    stackInfo,
+                ) = self.solver(df_items, df_vehicles, time_limit)
                 iter_time.append(time_spent)
 
                 # Adjust the value when a better solution is found
@@ -105,9 +111,15 @@ class SolverACO:
                 for _ in range(PARAM_ITER):
                     print(f"Iteration number : {test_ind}")
                     test_ind += 1
-                    df_sol, tot_cost, time_spent = self.solver(
-                        df_items, df_vehicles, time_limit
-                    )
+                    (
+                        df_sol,
+                        tot_cost,
+                        pattern_list,
+                        pattern_info,
+                        time_spent,
+                        out_df_items,
+                        stackInfo,
+                    ) = self.solver(df_items, df_vehicles, time_limit)
                     list_cost.append(tot_cost)
                     iter_time.append(time_spent)
 
@@ -189,11 +201,12 @@ class SolverACO:
         # Creation of a dataframe containing information related
         # to the items and useful for the creation of stacks
         df_items, stackInfo = stackInfo_creation_weight(df_items)
+        out_df_items = df_items.copy()
 
         # Initialization of the ACO object
         aco = ACO(stackInfo, alpha=ALPHA, beta=BETA, n_ants=N_ANTS, n_iter=N_ITER)
         more_items = True
-        totCost = 0
+        tot_cost = 0
 
         # Loop parameters
         # Area and weight are set in this way to choose the efficient vehicle at the first cicle
@@ -201,6 +214,9 @@ class SolverACO:
         prev_weight_ratio = 0
         i = 0
         id_prev_truck = None
+        pattern_list = []
+        pattern_info = []
+        Npattern = 0
         # Loop until there are no more items left
         while more_items:
             # Decision for the most convenient vehicle
@@ -239,11 +255,41 @@ class SolverACO:
             bestAnt = bestAnts[0]
             prev_weight_ratio = bestWeights[0]
             prev_area_ratio = bestAreas[0]
+
+            column = np.zeros(len(stackInfo))
+
+            for stack in bestAnt:
+                # TODO: use code to state
+                column[int(stack.stack_code)] += len(stack.items)
+
+                pattern_info.append(
+                    {
+                        "pattern": Npattern,
+                        "vehicle": vehicle["id_truck"],
+                        "stack_code": int(stack.stack_code),
+                        "stack_Nitems": stack.n_items,
+                        "stack_weight": stack.weight,
+                        "x_origin": stack.vertexes[0][0],
+                        "y_origin": stack.vertexes[0][1],
+                        "orient": stack.orient,
+                    }
+                )
+
+            Npattern += 1
+
+            pattern_list.append(
+                {
+                    "pattern": column,
+                    "vehicle": vehicle["id_truck"],
+                    "area": bestAreas[0],
+                }
+            )
+
             self.solUpdate(bestAnt, vehicle)
 
             # Remove the items already added to the solution
             df_items = df_items[df_items.id_item.isin(self.sol["id_item"]) == False]
-            totCost += vehicle["cost"]
+            tot_cost += vehicle["cost"]
 
             n_items_after = df_items.shape[0]
 
@@ -273,7 +319,7 @@ class SolverACO:
         # Printing step of the solution
         df_sol = pd.DataFrame.from_dict(self.sol)
         print("\nN trucks = ", df_sol["idx_vehicle"].nunique())
-        print("Tot cost: ", totCost)
+        print("Tot cost: ", tot_cost)
         print("Tot items: ", len(self.sol["id_item"]))
 
         # Evaluating the time taken by every iteration
@@ -281,7 +327,116 @@ class SolverACO:
         print(f"\nTime: {time_spent} s")
 
         # Return the dataframe solution and its cost to check the best solution among all the iteration
-        return df_sol, totCost, time_spent
+        return (
+            df_sol,
+            tot_cost,
+            pattern_list,
+            pattern_info,
+            time_spent,
+            out_df_items,
+            stackInfo,
+        )
+
+    def solver_end(self, df_items, df_vehicles, sol):
+        """
+        solver
+        ------
+
+        #### INPUT PARAMETERS:
+        - df_items: dataframe containing all the items
+                    that are to be put into the trucks
+        - df_vehicles: dataframe containing all the different
+                       types of trucks that can be choose
+        - time_limit: time limit imposed externally to conclude the iteration after a certain amount of time
+        """
+        st_time = time.time()
+
+        # Id of the vehicle used for solution format
+        self.id_vehicle = (sol["idx_vehicle"][-1]) + 1
+        self.sol = sol
+
+        # Improvement od the vehicle dataframe with useful data
+        # as area, volume and efficiency
+        df_vehicles = df_vehicles_improv(df_vehicles)
+
+        # Creation of a dataframe containing information related
+        # to the items and useful for the creation of stacks
+        df_items, stackInfo = stackInfo_creation_weight(df_items)
+
+        # Initialization of the ACO object
+        aco = ACO(stackInfo, alpha=ALPHA, beta=BETA, n_ants=N_ANTS, n_iter=N_ITER)
+        more_items = True
+        tot_cost = 0
+
+        # Loop parameters
+        # Area and weight are set in this way to choose the efficient vehicle at the first cicle
+        area_ratio = 1
+        weightRatio = 0
+        i = 0
+        id_prev_truck = None
+        # Loop until there are no more items left
+        while more_items:
+            # Decision for the most convenient vehicle
+            vehicle, last_iter = self.vehicle_decision(
+                df_vehicles, df_items, area_ratio, weightRatio
+            )
+            aco.getVehicle(vehicle)
+
+            if id_prev_truck is not None:
+                n_stacks_before = len(aco.stack_lst)
+
+            n_items_before = df_items.shape[0]
+
+            # Create the stacks given a vehicle and give it to ACO
+            if vehicle.id_truck != id_prev_truck:
+                stack_list, stack_quantity = buildStacks(vehicle, df_items, stackInfo)
+                aco.getStacks(stack_list, stack_quantity)
+            else:
+                update_stack_lst(bestAnt, aco.stack_lst, aco.stack_quantity)
+
+            n_stacks_after = len(aco.stack_lst)
+            if DEBUG_LOCAL and id_prev_truck is not None:
+                if vehicle.id_truck == id_prev_truck:
+                    assert n_stacks_before - n_stacks_after == len(bestAnt)
+                    print("Stacks add up")
+
+            id_prev_truck = vehicle.id_truck
+
+            # Check if there are stacks left
+            if VERB_LOCAL:
+                print(f"Truck: {self.id_vehicle}")
+
+            # Method to solve the 2D bin packing problem
+            bestAnts, bestAreas = aco.aco_2D_bin(last_iter=last_iter)
+            bestAnt = bestAnts[0]
+
+            self.solUpdate(bestAnt, vehicle)
+
+            # Remove the items already added to the solution
+            df_items = df_items[df_items.id_item.isin(self.sol["id_item"]) == False]
+
+            if DEBUG_LOCAL:
+                n_items_after = df_items.shape[0]
+                # Get items placed in each stack of the best ant
+                n_items_placed = sum([s.n_items for s in bestAnt])
+                assert (
+                    n_items_before - n_items_after == n_items_placed
+                ), f"Items placed = {n_items_placed}, but {n_items_before - n_items_after} have been removed"
+
+            if df_items.empty:
+                more_items = False
+
+        # Printing step of the solution
+        df_sol = pd.DataFrame.from_dict(self.sol)
+        print("\nN trucks = ", df_sol["idx_vehicle"].nunique())
+        print("Tot items: ", len(self.sol["id_item"]))
+
+        # Evaluating the time taken by every iteration
+        time_spent = time.time() - st_time
+        print(f"\nTime: {time_spent} s")
+
+        # Return the dataframe solution and its cost to check the best solution among all the iteration
+        return df_sol
 
     def solUpdate(self, bestAnt, vehicle):
         """
