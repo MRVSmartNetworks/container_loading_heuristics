@@ -5,6 +5,7 @@ from copy import copy
 from .config import *
 from .stack import *
 from .utilities import *
+import time
 
 
 class ACO:
@@ -256,13 +257,13 @@ class ACO:
             _iter += 1
 
         if PRINT:
-            print(f"\nVehicle: {self.vehicle['id_truck']}")
+            print(f" Vehicle: {self.vehicle['id_truck']}")
             for i in range(n_bestAnts):
                 print(
-                    f"Area ratio: {self.bestAreas[i]},\n Weight ratio: {self.bestWeights[i]} "
+                    f" Area ratio: {round(self.bestAreas[i], 2)},\n Weight ratio: {round(self.bestWeights[i], 2)}\n Time: {round(time.time()-t1, 2)} s"
                 )
 
-        return self.bestAnts, self.bestAreas
+        return self.bestAnts, self.bestAreas, self.bestWeights
 
     def buildSlice(
         self,
