@@ -4,6 +4,7 @@ import numpy as np
 from solver.group23.sub.utilities import *
 from solver.group23.config import *
 from copy import copy
+import time
 
 VERB_LOCAL = False
 
@@ -75,7 +76,7 @@ class ACO:
             - last_iter: When True the left items can be stored all in the selected vehicle.\n
                             In this way ACO parameters are changed to boost performance.
         """
-
+        t1 = time.time()
         # When True the parameters of the ACO are changed.
         # The number of iteration and ants are highly increased the probability for the ACO
         # to complete the simulation with the filling of the last truck.
@@ -220,8 +221,9 @@ class ACO:
             _iter += 1
 
         if PRINT:
+            print(f" Vehicle: {self.vehicle['id_truck']}")
             print(
-                f"Area ratio: {bestArea},\n Weight ratio: {weightRatio} vehicle: {self.vehicle['id_truck']}"
+                f" Area ratio: {bestArea},\n Weight ratio: {weightRatio} vehicle: {self.vehicle['id_truck']}\n Time: {round(time.time()-t1,2)} s"
             )
         return bestAnt, area_ratio, weightRatio
 
