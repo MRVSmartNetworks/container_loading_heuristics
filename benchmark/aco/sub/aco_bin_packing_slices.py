@@ -84,6 +84,7 @@ class ACO:
         - weightRatio: ratio of total item weight / max. truck weight for current best
         ant
         """
+        t1 = time.time()
         self.ants = []
         self.bestAnts = []
         self.bestWeights = []
