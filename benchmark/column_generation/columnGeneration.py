@@ -1,25 +1,18 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-import numpy as np
-import time
-import random
-import pandas as pd
 import os
+import random
+import time
 
-try:
-    from .masterProblem import MasterProblem
-    from .sub.utilities import stackInfo_creation_weight, buildStacks, buildSingleStack
-    from .sub.aco_bin_packing import ACO
-    from .sub.config import ALPHA, BETA, N_ANTS, N_ITER
-    from .sub.configCG import N_INIT_COLS, N_COLS, TIME_LIMIT, PRINT_SLACK
-except ImportError:
-    from masterProblem import MasterProblem
-    from sub.utilities import stackInfo_creation_weight, buildStacks, buildSingleStack
-    from sub.aco_bin_packing import ACO
-    from sub.config import ALPHA, BETA, N_ANTS, N_ITER
-    from sub.configCG import N_INIT_COLS, N_COLS, TIME_LIMIT, PRINT_SLACK
+import numpy as np
+import pandas as pd
 
-# from sub.aco_bin_packing import ACO
+from .masterProblem import MasterProblem
+from .sub.aco_bin_packing import ACO
+from .sub.config import ALPHA, BETA, N_ANTS, N_ITER
+from .sub.configCG import N_COLS, N_INIT_COLS, PRINT_SLACK, TIME_LIMIT
+from .sub.utilities import (buildSingleStack, buildStacks,
+                            stackInfo_creation_weight)
 
 
 class columnGeneration:
@@ -155,7 +148,9 @@ class columnGeneration:
                     f" with area {round(self.pattern_list[i]['area'], 3)}"
                     f" Pattern: {self.pattern_list[i]['pattern']}"
                 )
-                df_items_copy = self.generateSolution(int(v.X), i, df_items_copy)
+                df_items_copy = self.generateSolution(
+                    int(v.X), i, df_items_copy
+                )
 
         print(f"\nItems not inserted: {len(df_items_copy)}")
         df_sol = pd.DataFrame.from_dict(self.sol)
@@ -178,7 +173,9 @@ class columnGeneration:
         )
 
         # Solve the 2D bin packing problem
-        bestAnts, bestAreas = self.aco.aco_2D_bin(n_bestAnts=n_cols, dualVars=duals)
+        bestAnts, bestAreas = self.aco.aco_2D_bin(
+            n_bestAnts=n_cols, dualVars=duals
+        )
         for j, ant in enumerate(bestAnts):
             for stack in ant:
                 # TODO: use code to state
@@ -242,11 +239,16 @@ class columnGeneration:
         print("BUILDING STACKS FOR EACH VEHICLE\n")
         for i in range(self.n_vehicles):
             id_truck = self.df_vehicles.iloc[i]["id_truck"]
-            self.stack_lst[id_truck], self.stack_quantity[id_truck] = buildStacks(
+            (
+                self.stack_lst[id_truck],
+                self.stack_quantity[id_truck],
+            ) = buildStacks(
                 self.df_vehicles.iloc[i], self.df_items, self.stackInfo
             )
             print(f"Stack for vehicle {id_truck} created")
-        print(f"\nElapsed time to create stacks: {round(time.time() - t_start, 2)} s")
+        print(
+            f"\nElapsed time to create stacks: {round(time.time() - t_start, 2)} s"
+        )
 
     def generateSolution(self, nTruck, index, df_items):
         pattern = [row for row in self.pattern_info if row["pattern"] == index]

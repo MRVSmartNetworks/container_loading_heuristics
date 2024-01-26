@@ -2,15 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import os
-import pandas as pd
 import time
 
-
-from benchmark.aco_master.masterProblem import MasterProblem
+import pandas as pd
 from benchmark.aco.solver_ACO import SolverACO
-from benchmark.aco.sub.utilities import buildSingleStack, stackInfo_creation_weight
-from benchmark.aco_master.sub.config import ONE_LAYER
+from benchmark.aco.sub.utilities import (buildSingleStack,
+                                         stackInfo_creation_weight)
+
 from sol_representation import *
+
+from .masterProblem import MasterProblem
+from .sub.config import ONE_LAYER
 
 
 class masterAco:
@@ -124,7 +126,9 @@ class masterAco:
         print(of)
 
         master = MasterProblem(pattern_list, self.df_vehicles, self.df_items)
-        master.solveModel(file_name=f"benchmark/aco_master/results/{sol_file_name}.lp")
+        master.solveModel(
+            file_name=f"benchmark/aco_master/results/{sol_file_name}.lp"
+        )
 
         df_items_copy = self.df_items.copy()
         vars = master.getVars()
@@ -136,7 +140,12 @@ class masterAco:
                     f" Pattern: {pattern_list[i]['pattern']}"
                 )
                 df_items_copy = self.generateSolution(
-                    int(v.X), i, df_items_copy, stackInfo, patterInfo, pattern_list
+                    int(v.X),
+                    i,
+                    df_items_copy,
+                    stackInfo,
+                    patterInfo,
+                    pattern_list,
                 )
 
         if len(df_items_copy) != 0:
