@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 
-from .column_generation import columnGeneration
-from .ortools import solverORTools
-from .aco_master import masterAco
 from .aco import SolverACO
+from .aco_master import masterAco
+from .column_generation import columnGeneration
+from .exact import ExactSolver
+from .ortools import solverORTools
 
-# from .aco import *
-# from .exact import *
+# Only export the solvers - that's what "main.py" uses
 
-__all__ = ["columnGeneration", "solverORTools", "masterAco", "SolverACO"]
+__all__ = [
+    "columnGeneration",
+    "solverORTools",
+    "masterAco",
+    "SolverACO",
+    "ExactSolver",
+]

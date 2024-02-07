@@ -2,21 +2,18 @@
 # -*- coding: utf-8 -*-
 
 import os
-import pandas as pd
 import time
 
-try:
-    from .masterProblem import MasterProblem
-    from .solver_ACO import SolverACO
-    from .sub.utilities import buildSingleStack, stackInfo_creation_weight
-    from .sub.config import ONE_LAYER
-    from .sol_representation import *
-except ImportError:
-    from masterProblem import MasterProblem
-    from solver_ACO import SolverACO
-    from sub.utilities import buildSingleStack, stackInfo_creation_weight
-    from sub.config import ONE_LAYER
-    from sol_representation import *
+import pandas as pd
+from benchmark.aco.solver_ACO import SolverACO
+from benchmark.aco.sub.utilities import buildSingleStack, stackInfo_creation_weight
+
+from sol_representation import *
+
+from .masterProblem import MasterProblem
+from .sub.config import ONE_LAYER
+
+N_PAT_SKIP = 0
 
 
 class masterAco:
@@ -57,6 +54,7 @@ class masterAco:
     def generateSolution(
         self, nTruck, index, df_items, stackInfo, patterInfo, pattern_list
     ):
+        global N_PAT_SKIP
         pattern = [row for row in patterInfo if row["pattern"] == index]
         n_stack = len(pattern)
         vehicle = self.df_vehicles[
@@ -67,40 +65,49 @@ class masterAco:
             n_it = 0
             true_n_it = 0
             items_lost = False
-            for j in range(n_stack):
-                avg_stack_W = (vehicle.max_weight / n_stack) * j
-                stack, df_items, tot_weight, items_lost = buildSingleStack(
-                    df_items,
-                    stackInfo,
-                    vehicle,
-                    pattern[j]["stack_Nitems"],
-                    pattern[j]["stack_code"],
-                    pattern[j]["orient"],
-                    avg_stack_W,
-                    tot_weight,
-                )
+            jump_pattern = False
 
-                z_origin = 0
-                # Saving all the item with their information in the dictionary solution
-                for y in range(stack.n_items):
-                    self.sol["type_vehicle"].append(vehicle["id_truck"])
-                    self.sol["idx_vehicle"].append(self.id_vehicle)
-                    self.sol["id_stack"].append(f"S{self.id_stack}")
-                    self.sol["id_item"].append(stack.items[y])
-                    self.sol["x_origin"].append(pattern[j]["x_origin"])
-                    self.sol["y_origin"].append(pattern[j]["y_origin"])
-                    self.sol["z_origin"].append(z_origin)
-                    self.sol["orient"].append(pattern[j]["orient"])
-                    z_origin += stack.h_items[y]
-                self.id_stack += 1
-                n_it += stack.n_items
-                true_n_it += pattern[j]["stack_Nitems"]
-                if items_lost:
-                    print("Items lost")
-                # Update of the vehicle id
-            self.id_vehicle += 1
-            # print(f"\nTot_weight = {round(tot_weight,1)} N_it = {n_it}\nVel_weight = {vehicle.max_weight} T_Nit = {true_n_it} StackCode items are finished? -> {items_lost}\n\n")
+            for stack_code, n_it in enumerate(pattern_list[index]["pattern"]):
+                n_it = int(n_it)
+                if len(df_items[df_items["stackability_code"] == stack_code]) < n_it:
+                    jump_pattern = True
+                    break
+            if not jump_pattern:
+                for j in range(n_stack):
+                    avg_stack_W = (vehicle.max_weight / n_stack) * j
+                    stack, df_items, tot_weight, items_lost = buildSingleStack(
+                        df_items,
+                        stackInfo,
+                        vehicle,
+                        pattern[j]["stack_Nitems"],
+                        pattern[j]["stack_code"],
+                        pattern[j]["orient"],
+                        avg_stack_W,
+                        tot_weight,
+                    )
 
+                    z_origin = 0
+                    # Saving all the item with their information in the dictionary solution
+                    for y in range(stack.n_items):
+                        self.sol["type_vehicle"].append(vehicle["id_truck"])
+                        self.sol["idx_vehicle"].append(self.id_vehicle)
+                        self.sol["id_stack"].append(f"S{self.id_stack}")
+                        self.sol["id_item"].append(stack.items[y])
+                        self.sol["x_origin"].append(pattern[j]["x_origin"])
+                        self.sol["y_origin"].append(pattern[j]["y_origin"])
+                        self.sol["z_origin"].append(z_origin)
+                        self.sol["orient"].append(pattern[j]["orient"])
+                        z_origin += stack.h_items[y]
+                    self.id_stack += 1
+                    n_it += stack.n_items
+                    true_n_it += pattern[j]["stack_Nitems"]
+                    # if items_lost:
+                    #     print("Items lost")
+                    # Update of the vehicle id
+                self.id_vehicle += 1
+                # print(f"\nTot_weight = {round(tot_weight,1)} N_it = {n_it}\nVel_weight = {vehicle.max_weight} T_Nit = {true_n_it} StackCode items are finished? -> {items_lost}\n\n")
+            else:
+                N_PAT_SKIP += 1
         return df_items
 
     def solve(self, df_items, df_vehicles, sol_file_name):
@@ -142,7 +149,12 @@ class masterAco:
                     f" Pattern: {pattern_list[i]['pattern']}"
                 )
                 df_items_copy = self.generateSolution(
-                    int(v.X), i, df_items_copy, stackInfo, patterInfo, pattern_list
+                    int(v.X),
+                    i,
+                    df_items_copy,
+                    stackInfo,
+                    patterInfo,
+                    pattern_list,
                 )
 
         if len(df_items_copy) != 0:
@@ -150,5 +162,7 @@ class masterAco:
             df_sol = sol_aco.solver_end(df_items_copy, df_vehicles, self.sol)
         df_sol.to_csv(os.path.join("results", sol_file_name), index=False)
 
+        print(f"Number of pattern not inserted:", N_PAT_SKIP)
+        print("Optimal value of solverACO:", totCost)
         t = round(time.time() - t1, 2)
         return t
