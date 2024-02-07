@@ -14,7 +14,7 @@ PARAM_FILE = "solver\group23\parameters_file\datasetF"
 PRINT = True
 
 # If true select the ACO version with slices
-SLICES = True
+SLICES = False
 
 # Set number of weight clusters (set 1 for avoid clustering)
 N_WEIGHT_CLUSTERS = 1
