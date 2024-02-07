@@ -407,7 +407,7 @@ class SolverACO:
                 print(f"Truck: {self.id_vehicle}")
 
             # Method to solve the 2D bin packing problem
-            bestAnts, bestAreas = aco.aco_2D_bin(last_iter=last_iter)
+            bestAnts, bestAreas, bestWeights = aco.aco_2D_bin(last_iter=last_iter)
             bestAnt = bestAnts[0]
 
             self.solUpdate(bestAnt, vehicle)
