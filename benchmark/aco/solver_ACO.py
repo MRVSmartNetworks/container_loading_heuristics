@@ -8,11 +8,13 @@ import statistics as st
 
 from benchmark.aco.sub.utilities import *
 from benchmark.aco.sub.stack import Stack
-
-# from solver.benchmark.aco.aco_bin_packing import ACO
-from benchmark.aco.sub.aco_bin_packing_slices import ACO
-from sol_representation import *
 from benchmark.aco.sub.config import *
+
+if SLICES:
+    from benchmark.aco.sub.aco_bin_packing_slices import ACO
+else:
+    from benchmark.aco.sub.aco_bin_packing import ACO
+from sol_representation import *
 
 
 class SolverACO:
@@ -77,9 +79,15 @@ class SolverACO:
             # When the code is runned normally (one or multiple solution)
             # only this part is executed
             if TEST_PAR == False:
-                df_sol, tot_cost, time_spent = self.solver(
-                    df_items, df_vehicles, time_limit
-                )
+                (
+                    df_sol,
+                    tot_cost,
+                    pattern_list,
+                    pattern_info,
+                    time_spent,
+                    out_df_items,
+                    stackInfo,
+                ) = self.solver(df_items, df_vehicles, time_limit)
                 iter_time.append(time_spent)
 
                 # Adjust the value when a better solution is found
@@ -103,9 +111,15 @@ class SolverACO:
                 for _ in range(PARAM_ITER):
                     print(f"Iteration number : {test_ind}")
                     test_ind += 1
-                    df_sol, tot_cost, time_spent = self.solver(
-                        df_items, df_vehicles, time_limit
-                    )
+                    (
+                        df_sol,
+                        tot_cost,
+                        pattern_list,
+                        pattern_info,
+                        time_spent,
+                        out_df_items,
+                        stackInfo,
+                    ) = self.solver(df_items, df_vehicles, time_limit)
                     list_cost.append(tot_cost)
                     iter_time.append(time_spent)
 
@@ -187,11 +201,172 @@ class SolverACO:
         # Creation of a dataframe containing information related
         # to the items and useful for the creation of stacks
         df_items, stackInfo = stackInfo_creation_weight(df_items)
+        out_df_items = df_items.copy()
 
         # Initialization of the ACO object
         aco = ACO(stackInfo, alpha=ALPHA, beta=BETA, n_ants=N_ANTS, n_iter=N_ITER)
         more_items = True
-        totCost = 0
+        tot_cost = 0
+
+        # Loop parameters
+        # Area and weight are set in this way to choose the efficient vehicle at the first cicle
+        prev_area_ratio = 1
+        prev_weight_ratio = 0
+        i = 0
+        id_prev_truck = None
+        pattern_list = []
+        pattern_info = []
+        Npattern = 0
+        # Loop until there are no more items left
+        while more_items:
+            # Decision for the most convenient vehicle
+            vehicle, last_iter = self.vehicle_decision(
+                df_vehicles, df_items, prev_area_ratio, prev_weight_ratio
+            )
+            aco.getVehicle(vehicle)
+
+            if id_prev_truck is not None:
+                n_stacks_before = len(aco.stack_lst)
+
+            n_items_before = df_items.shape[0]
+
+            # Create the stacks given a vehicle and give it to ACO
+            if vehicle.id_truck != id_prev_truck:
+                stack_list, stack_quantity = buildStacks(vehicle, df_items, stackInfo)
+                aco.getStacks(stack_list, stack_quantity)
+            else:
+                update_stack_lst(bestAnt, aco.stack_lst, aco.stack_quantity)
+
+            n_stacks_after = len(aco.stack_lst)
+            if DEBUG_LOCAL and id_prev_truck is not None:
+                if vehicle.id_truck == id_prev_truck:
+                    assert n_stacks_before - n_stacks_after == len(bestAnt)
+                    print("Stacks add up")
+
+            id_prev_truck = vehicle.id_truck
+
+            # Check if there are stacks left
+            if VERB_LOCAL:
+                print("Truck: ", self.id_vehicle)
+
+            # Method to solve the 2D bin packing problem
+            bestAnts, bestAreas, bestWeights = aco.aco_2D_bin(last_iter=last_iter)
+            # Pick only the first one among the best
+            bestAnt = bestAnts[0]
+            prev_weight_ratio = bestWeights[0]
+            prev_area_ratio = bestAreas[0]
+
+            column = np.zeros(len(stackInfo))
+
+            for stack in bestAnt:
+                # TODO: use code to state
+                column[int(stack.stack_code)] += len(stack.items)
+
+                pattern_info.append(
+                    {
+                        "pattern": Npattern,
+                        "vehicle": vehicle["id_truck"],
+                        "stack_code": int(stack.stack_code),
+                        "stack_Nitems": stack.n_items,
+                        "stack_weight": stack.weight,
+                        "x_origin": stack.vertexes[0][0],
+                        "y_origin": stack.vertexes[0][1],
+                        "orient": stack.orient,
+                    }
+                )
+
+            Npattern += 1
+
+            pattern_list.append(
+                {
+                    "pattern": column,
+                    "vehicle": vehicle["id_truck"],
+                    "area": bestAreas[0],
+                }
+            )
+
+            self.solUpdate(bestAnt, vehicle)
+
+            # Remove the items already added to the solution
+            df_items = df_items[df_items.id_item.isin(self.sol["id_item"]) == False]
+            tot_cost += vehicle["cost"]
+
+            n_items_after = df_items.shape[0]
+
+            if DEBUG_LOCAL:
+                # Get items placed in each stack of the best ant
+                n_items_placed = sum([s.n_items for s in bestAnt])
+                assert (
+                    n_items_before - n_items_after == n_items_placed
+                ), f"Items placed = {n_items_placed}, but {n_items_before - n_items_after} have been removed"
+
+            # Boolean to print every 2D vehicle plot
+            if SINGLE_PLOT:
+                orthogonal_plane(
+                    df_items_or,
+                    df_vehicles_or,
+                    pd.DataFrame.from_dict(self.sol),
+                    idx_vehicle=i,
+                )
+                i += 1
+
+            if df_items.empty or (time.time() - st_time) >= time_limit:
+                if time_limit != 0 or df_items.empty:
+                    more_items = False
+                    if (time.time() - st_time) >= time_limit:
+                        print("[!] - Time limit exceeded!")
+
+        # Printing step of the solution
+        df_sol = pd.DataFrame.from_dict(self.sol)
+        print("\nN trucks = ", df_sol["idx_vehicle"].nunique())
+        print("Tot cost: ", tot_cost)
+        print("Tot items: ", len(self.sol["id_item"]))
+
+        # Evaluating the time taken by every iteration
+        time_spent = time.time() - st_time
+        print(f"\nTime: {time_spent} s")
+
+        # Return the dataframe solution and its cost to check the best solution among all the iteration
+        return (
+            df_sol,
+            tot_cost,
+            pattern_list,
+            pattern_info,
+            time_spent,
+            out_df_items,
+            stackInfo,
+        )
+
+    def solver_end(self, df_items, df_vehicles, sol):
+        """
+        solver
+        ------
+
+        #### INPUT PARAMETERS:
+        - df_items: dataframe containing all the items
+                    that are to be put into the trucks
+        - df_vehicles: dataframe containing all the different
+                       types of trucks that can be choose
+        - time_limit: time limit imposed externally to conclude the iteration after a certain amount of time
+        """
+        st_time = time.time()
+
+        # Id of the vehicle used for solution format
+        self.id_vehicle = (sol["idx_vehicle"][-1]) + 1
+        self.sol = sol
+
+        # Improvement od the vehicle dataframe with useful data
+        # as area, volume and efficiency
+        df_vehicles = df_vehicles_improv(df_vehicles)
+
+        # Creation of a dataframe containing information related
+        # to the items and useful for the creation of stacks
+        df_items, stackInfo = stackInfo_creation_weight(df_items)
+
+        # Initialization of the ACO object
+        aco = ACO(stackInfo, alpha=ALPHA, beta=BETA, n_ants=N_ANTS, n_iter=N_ITER)
+        more_items = True
+        tot_cost = 0
 
         # Loop parameters
         # Area and weight are set in this way to choose the efficient vehicle at the first cicle
@@ -229,48 +404,31 @@ class SolverACO:
 
             # Check if there are stacks left
             if VERB_LOCAL:
-                print("Truck: ", self.id_vehicle)
+                print(f"Truck: {self.id_vehicle}")
 
             # Method to solve the 2D bin packing problem
-            bestAnts, bestAreas = aco.aco_2D_bin(last_iter=last_iter)
-            # Pick only the first one among the best
+            bestAnts, bestAreas, bestWeights = aco.aco_2D_bin(last_iter=last_iter)
             bestAnt = bestAnts[0]
 
             self.solUpdate(bestAnt, vehicle)
 
             # Remove the items already added to the solution
             df_items = df_items[df_items.id_item.isin(self.sol["id_item"]) == False]
-            totCost += vehicle["cost"]
-
-            n_items_after = df_items.shape[0]
 
             if DEBUG_LOCAL:
+                n_items_after = df_items.shape[0]
                 # Get items placed in each stack of the best ant
                 n_items_placed = sum([s.n_items for s in bestAnt])
                 assert (
                     n_items_before - n_items_after == n_items_placed
                 ), f"Items placed = {n_items_placed}, but {n_items_before - n_items_after} have been removed"
 
-            # Boolean to print every 2D vehicle plot
-            if SINGLE_PLOT:
-                orthogonal_plane(
-                    df_items_or,
-                    df_vehicles_or,
-                    pd.DataFrame.from_dict(self.sol),
-                    idx_vehicle=i,
-                )
-                i += 1
-
-            if df_items.empty or (time.time() - st_time) >= time_limit:
-                if time_limit != 0 or df_items.empty:
-                    more_items = False
-                    if (time.time() - st_time) >= time_limit:
-                        print("[!] - Time limit exceeded!")
+            if df_items.empty:
+                more_items = False
 
         # Printing step of the solution
         df_sol = pd.DataFrame.from_dict(self.sol)
         print("\nN trucks = ", df_sol["idx_vehicle"].nunique())
-        print("Tot cost: ", totCost)
         print("Tot items: ", len(self.sol["id_item"]))
 
         # Evaluating the time taken by every iteration
@@ -278,179 +436,7 @@ class SolverACO:
         print(f"\nTime: {time_spent} s")
 
         # Return the dataframe solution and its cost to check the best solution among all the iteration
-        return df_sol, totCost, time_spent
-
-    def buildStacks(self, vehicle, df_items, stackInfo):
-        """
-        buildStacks
-        -----------
-        Function used to create the stack with all the specificity of the selected truck.
-
-        #### INPUT PARAMETERS:
-            - vehicle: vehicle type, needed to check the height, weight, max density and max\n
-                            stack weight for creating the stacks for this specific truck
-            - df_items: dataframe containing all the items that will be put into the trucks
-            - stackInfo: dataframe containing all the main information fro each stackability code
-        #### OUTPUT PARAMETERS:
-            - stack_lst: list of all the stack created
-            - stack_quantity: dictionary containing all the numbers of the items divided in stackability codes
-        """
-
-        removed = []
-        stack_lst = []
-        stack_quantity = {code: 0 for code in stackInfo.stackability_code}
-
-        # Vehicle constrain in a dictionary, ready to be passed to the addItem function
-        constraints = {
-            "max_height": vehicle["height"],
-            "max_weight_stack": vehicle["max_weight_stack"],
-            "max_density": vehicle["max_density"],
-        }
-
-        # Loop over all the stackability code
-        for code in stackInfo.stackability_code:
-            stack_quantity[code] = 0
-            stack_feat = (stackInfo[stackInfo.stackability_code == code].values)[0]
-            stack = Stack(code, stack_feat[0], stack_feat[1], stack_feat[3])
-
-            # Taking only the first n items of the specific stack code to speed up the computation
-            items_code = df_items[df_items.stackability_code == code]  # .head(1000)
-
-            # Obtaining all the unique value of height and weight for a better stack creation
-            unique_height = np.sort(items_code.height.unique())[::-1]
-            unique_weight = np.sort(items_code.weight.unique())[::-1]
-
-            # Loop over the items for the stack creation
-            for i, row in items_code.iterrows():
-                new_stack_needed = False
-
-                # Check that the item is not already been used
-                if not row.id_item in removed:
-                    stack_added = stack.addItem(row, constraints)
-
-                    # Returned code 0 means that the max stackability code is reached
-                    if stack_added == 0:
-                        new_stack_needed = True
-
-                    # Returned code -1 means max_height reached
-                    if stack_added == -1:
-                        new_stack_needed = True
-
-                        # If other item with different height exist then another iteam is searched to be fitted in this stack
-                        if len(unique_height) > 1:
-                            fit = False
-                            h = 0
-                            while h < len(unique_height) and not fit:
-                                # If an item respect the height constrain is found, all the other constrain are also checked
-                                if (
-                                    unique_height[h] + stack.height
-                                    <= constraints["max_height"]
-                                ):
-                                    valid_items = items_code[
-                                        items_code.height == unique_height[h]
-                                    ]
-                                    i = 0
-                                    while i < len(valid_items) and not fit:
-                                        # If all the constrain are respected the item is added to the stack
-                                        if (
-                                            stack.addItem(
-                                                valid_items.iloc[i], constraints
-                                            )
-                                            == 1
-                                        ):
-                                            fit = True
-                                            id_item = valid_items.iloc[i].id_item
-                                            items_code = items_code[
-                                                items_code.id_item
-                                                != valid_items.iloc[i].id_item
-                                            ]
-                                            removed.append(id_item)
-                                        i += 1
-                                h += 1
-
-                    # Returned code -2 means max_weight reached(the following procedure is the same as the height)
-                    if stack_added == -2:
-                        new_stack_needed = True
-                        if len(unique_weight) > 1:
-                            fit = False
-                            w = 0
-                            while w < len(unique_weight) and not fit:
-                                if (
-                                    unique_weight[w] + stack.weight
-                                    <= constraints["max_weight_stack"]
-                                ):
-                                    valid_items = items_code[
-                                        items_code.weight == unique_weight[w]
-                                    ]
-                                    i = 0
-                                    while i < len(valid_items) and not fit:
-                                        if (
-                                            stack.addItem(
-                                                valid_items.iloc[i], constraints
-                                            )
-                                            == 1
-                                        ):
-                                            fit = True
-                                            id_item = valid_items.iloc[i].id_item
-                                            items_code = items_code[
-                                                items_code.id_item
-                                                != valid_items.iloc[i].id_item
-                                            ]
-                                            removed.append(id_item)
-                                        i += 1
-                                w += 1
-
-                    # Returned code -3 means max_density reached(another item is searched)
-                    if stack_added == -3:
-                        new_stack_needed = True
-                        if len(unique_weight) > 1:
-                            fit = False
-                            w = 0
-                            while w < len(unique_weight) and not fit:
-                                density = (unique_weight[w] + stack.weight) / stack.area
-                                if density <= constraints["max_density"]:
-                                    valid_items = items_code[
-                                        items_code.weight == unique_weight[w]
-                                    ]
-                                    i = 0
-                                    while i < len(valid_items) and not fit:
-                                        if (
-                                            stack.addItem(
-                                                valid_items.iloc[i], constraints
-                                            )
-                                            == 1
-                                        ):
-                                            fit = True
-                                            id_item = valid_items.iloc[i].id_item
-                                            items_code = items_code[
-                                                items_code.id_item
-                                                != valid_items.iloc[i].id_item
-                                            ]
-                                            removed.append(id_item)
-                                        i += 1
-                                w += 1
-
-                    # Returned code 1 means item correctly added to the stack
-                    if stack_added == 1:
-                        items_code = items_code[items_code.id_item != row.id_item]
-
-                    # When the stack il ready must be added to the stackList
-                    if new_stack_needed:
-                        stack.updateHeight()
-                        stack_lst.append(stack)
-                        stack_quantity[code] += 1
-
-                        stack = Stack(code, stack_feat[0], stack_feat[1], stack_feat[3])
-                        stack.addItem(row, constraints)
-                        items_code = items_code[items_code.id_item != row.id_item]
-
-            # After the loop if the last stack created have some items must be added
-            if stack.n_items > 0:
-                stack.updateHeight()
-                stack_lst.append(stack)
-                stack_quantity[code] += 1
-
-        return stack_lst, stack_quantity
+        return df_sol
 
     def solUpdate(self, bestAnt, vehicle):
         """
