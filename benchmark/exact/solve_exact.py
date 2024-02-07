@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
-import time
-import pandas as pd
 import pickle
+import time
+
 import gurobipy as grb
-from exact.check.check_sol import check_above, check_3D
 import numpy as np
+import pandas as pd
+
+from .check.check_sol import check_3D, check_above
 
 ### Config:
 DEBUG = True
@@ -86,7 +88,9 @@ class ExactSolver:
         # Tot volume - NOTE: the nesting height is not considered
         tot_item_vol = np.sum(w * l * h)
         assert tot_item_vol <= (
-            self.vehicle["length"] * self.vehicle["width"] * self.vehicle["height"]
+            self.vehicle["length"]
+            * self.vehicle["width"]
+            * self.vehicle["height"]
         ), "The item volume exceeds the volume of the truck"
 
         # Ensure surface is lower than total surface (FIXME - may be removed because of next one)
@@ -103,25 +107,31 @@ class ExactSolver:
             if df_items.iloc[i]["forced_orientation"] == "lengthwise":
                 # If lengthwise, i.e., no rotation:
                 assert (
-                    w[i] <= self.vehicle["width"] and l[i] <= self.vehicle["length"]
+                    w[i] <= self.vehicle["width"]
+                    and l[i] <= self.vehicle["length"]
                 ), f"Item {i} cannot be placed in the truck"
             elif df_items.iloc[i]["forced_orientation"] == "widthwise":
                 # If widthwise, i.e., rotation:
                 assert (
-                    w[i] <= self.vehicle["length"] and l[i] <= self.vehicle["width"]
+                    w[i] <= self.vehicle["length"]
+                    and l[i] <= self.vehicle["width"]
                 ), f"Item {i} cannot be placed in the truck"
             else:
                 # If no imposed orientation, check item can fit either rotated or not
                 assert (
-                    w[i] <= self.vehicle["width"] and l[i] <= self.vehicle["length"]
+                    w[i] <= self.vehicle["width"]
+                    and l[i] <= self.vehicle["length"]
                 ) or (
-                    w[i] <= self.vehicle["length"] and l[i] <= self.vehicle["width"]
+                    w[i] <= self.vehicle["length"]
+                    and l[i] <= self.vehicle["width"]
                 ), f"Item {i} cannot be placed in the truck"
 
         # Create a new model
         self.model = grb.Model("EasyModel")
 
-        self.has_constraints = False  # true if the constraints have been initialized
+        self.has_constraints = (
+            False  # true if the constraints have been initialized
+        )
         # Set output folder for the model
         if model_path is None:
             script_folder = os.path.dirname(__file__)
@@ -156,12 +166,18 @@ class ExactSolver:
         )
 
         # R_i: 1 if item i is rotatated widthwise
-        self.R = self.model.addVars(self.n_items, vtype=grb.GRB.BINARY, name="R")
+        self.R = self.model.addVars(
+            self.n_items, vtype=grb.GRB.BINARY, name="R"
+        )
 
         # X_d: coordinate (bottom) left point (as defined in project)
-        self.X = self.model.addVars(self.n_items, 3, vtype=grb.GRB.CONTINUOUS, name="X")
+        self.X = self.model.addVars(
+            self.n_items, 3, vtype=grb.GRB.CONTINUOUS, name="X"
+        )
 
-        self.obj = grb.quicksum(self.X[i, d] for i in self.items for d in range(3))
+        self.obj = grb.quicksum(
+            self.X[i, d] for i in self.items for d in range(3)
+        )
         # NB: il modello con obj = 1 è più veloce, con 50 items però non trova sol feasible.
         # NB: this also imply a preference from (0,0) on
         self.model.setObjective(self.obj, grb.GRB.MINIMIZE)
@@ -180,7 +196,8 @@ class ExactSolver:
             # Element i fits entirely along truck length
             # (Rotation determines which dimension is along x)
             size = (
-                self.df_items.iloc[i][self.dimensions_names[0]] * (1 - self.R[i])
+                self.df_items.iloc[i][self.dimensions_names[0]]
+                * (1 - self.R[i])
                 + self.df_items.iloc[i][self.dimensions_names[1]] * self.R[i]
             )
             self.model.addConstr(
@@ -189,7 +206,8 @@ class ExactSolver:
             )
             # Element i fits entirely along truck width
             size = (
-                self.df_items.iloc[i][self.dimensions_names[1]] * (1 - self.R[i])
+                self.df_items.iloc[i][self.dimensions_names[1]]
+                * (1 - self.R[i])
                 + self.df_items.iloc[i][self.dimensions_names[0]] * self.R[i]
             )
             self.model.addConstr(
@@ -209,7 +227,10 @@ class ExactSolver:
         # Prevent 2 items from having the same coordinates
         self.model.addConstrs(
             (
-                grb.quicksum(self.B[i, j, d] + self.B[j, i, d] for d in range(3)) >= 1
+                grb.quicksum(
+                    self.B[i, j, d] + self.B[j, i, d] for d in range(3)
+                )
+                >= 1
                 for i in self.items
                 for j in range(i + 1, self.n_items)
             ),
@@ -225,7 +246,8 @@ class ExactSolver:
                     size = (
                         self.df_items.iloc[i][self.dimensions_names[0]]
                         * (1 - self.R[i])
-                        + self.df_items.iloc[i][self.dimensions_names[1]] * self.R[i]
+                        + self.df_items.iloc[i][self.dimensions_names[1]]
+                        * self.R[i]
                     )
                     self.model.addConstr(
                         self.X[j, 0]
@@ -235,7 +257,8 @@ class ExactSolver:
                     size = (
                         self.df_items.iloc[i][self.dimensions_names[1]]
                         * (1 - self.R[i])
-                        + self.df_items.iloc[i][self.dimensions_names[0]] * self.R[i]
+                        + self.df_items.iloc[i][self.dimensions_names[0]]
+                        * self.R[i]
                     )
                     self.model.addConstr(
                         self.X[j, 1]
@@ -269,10 +292,13 @@ class ExactSolver:
 
         # Item cannot be 'before' itself
         self.model.addConstrs(
-            (self.B[i, i, d] == 0 for i in self.items for d in range(3)), "null_B_ii"
+            (self.B[i, i, d] == 0 for i in self.items for d in range(3)),
+            "null_B_ii",
         )
         # Same, but for V
-        self.model.addConstrs((self.V[i, i] == 0 for i in self.items), "null_V_ii")
+        self.model.addConstrs(
+            (self.V[i, i] == 0 for i in self.items), "null_V_ii"
+        )
 
         # Stackability code:
         for i in self.items:
@@ -317,10 +343,16 @@ class ExactSolver:
         # TODO: CHECK BELOW: [fixed]
         # ROTATIONS:
         for i in self.items:
-            if self.df_items.iloc[i]["forced_orientation"] == "widthwise":  # Rotated
-                self.model.addConstr(self.R[i] == 1, name=f"I{i}]rotation_widthwise")
+            if (
+                self.df_items.iloc[i]["forced_orientation"] == "widthwise"
+            ):  # Rotated
+                self.model.addConstr(
+                    self.R[i] == 1, name=f"I{i}]rotation_widthwise"
+                )
             elif self.df_items.iloc[i]["forced_orientation"] == "lenghtwise":
-                self.model.addConstr(self.R[i] == 0, name=f"I{i}]rotation_lenghtwise")
+                self.model.addConstr(
+                    self.R[i] == 0, name=f"I{i}]rotation_lenghtwise"
+                )
 
         self.model.addConstrs(
             (
@@ -430,8 +462,10 @@ class ExactSolver:
         for i in range(self.n_items):
             for d in range(2):
                 sizes[i, d] = (
-                    self.df_items.iloc[i][self.dimensions_names[d]] * (1 - self.R[i].X)
-                    + self.df_items.iloc[i][self.dimensions_names[1 - d]] * self.R[i].X
+                    self.df_items.iloc[i][self.dimensions_names[d]]
+                    * (1 - self.R[i].X)
+                    + self.df_items.iloc[i][self.dimensions_names[1 - d]]
+                    * self.R[i].X
                 )
 
                 coordinates[i, d] = self.X[i, d].X

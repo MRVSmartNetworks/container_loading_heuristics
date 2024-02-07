@@ -1,8 +1,11 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-import numpy as np
-from .config import AREA_RATIO, WEIGHT_RATIO, PRINT
 from copy import copy
+import time
+
+import numpy as np
+
+from .config import AREA_RATIO, PRINT, WEIGHT_RATIO
 
 
 class ACO:
@@ -32,7 +35,13 @@ class ACO:
     """
 
     def __init__(
-        self, stackInfo, alpha=1, beta=1, n_ants=50, n_iter=20, evaporationCoeff=0.2
+        self,
+        stackInfo,
+        alpha=1,
+        beta=1,
+        n_ants=50,
+        n_iter=20,
+        evaporationCoeff=0.2,
     ):
         self.stackInfo = stackInfo
         self.alpha = alpha
@@ -77,6 +86,7 @@ class ACO:
         # When True the parameters of the ACO are changed.
         # The number of iteration and ants are highly increased the probability for the ACO
         # to complete the simulation with the filling of the last truck.
+        t1 = time.time()
         if last_iter:
             self.n_ants += int(0.5 * self.n_iter)
             self.n_iter += int(0.5 * self.n_iter)
@@ -118,21 +128,27 @@ class ACO:
             _iter += 1
 
         if PRINT:
-            print(f"Vehicle: {self.vehicle['id_truck']}")
+            print(f" Vehicle: {self.vehicle['id_truck']}")
             for i in range(n_bestAnts):
                 print(
-                    f"\n{i + 1}:\n Area ratio: {self.bestAreas[i]},\n Weight ratio: {self.bestWeights[i]} "
+                    f" Area ratio: {round(self.bestAreas[i], 2)},\n Weight ratio: {round(self.bestWeights[i], 2)}\n Time: {round(time.time()-t1, 2)} s"
                 )
 
-        return self.bestAnts, self.bestAreas
+        return self.bestAnts, self.bestAreas, self.bestWeights
 
     def buildAntSolution(self, antsArea, antsWeight):
         """
-        TODO: ALE commenta!
+        Build the solution for the single ant, i.e., the .
+
+        Args:
+            antsArea: list with the area occupation of all ants; this function
+            will append the result for the new ant
+            antsWeight: list with the weight used by all ants; this function
+            will append the new result
+
+        Returns: *nothing*
         """
-        stack_lst_ant = [
-            stack for stack in self.stack_lst
-        ]  # NOTE: [ele for ele in stack_lst] better????
+        stack_lst_ant = [stack for stack in self.stack_lst]
         stack_quantity_ant = self.stack_quantity.copy()
         pr_move = self.pr_move.copy()
 
@@ -167,7 +183,9 @@ class ACO:
             ):
                 ant_k.append(toAddStack)
                 totArea += toAddStack.length * toAddStack.width
-                totVolume += toAddStack.length * toAddStack.width * toAddStack.height
+                totVolume += (
+                    toAddStack.length * toAddStack.width * toAddStack.height
+                )
                 totWeight += toAddStack.weight
                 prev_s_code = next_s_code
             else:
@@ -184,13 +202,17 @@ class ACO:
                 # If there are no more stacks of a certain code then set the pr_move to that specific
                 # code to zero and distribute the probability over the others rows(stackability codes)
                 if stack_quantity_ant[self.state_to_code(code)] == 0:
-                    prob_to_distr = pr_move[:, code] + pr_move[:, code + self.n_code]
+                    prob_to_distr = (
+                        pr_move[:, code] + pr_move[:, code + self.n_code]
+                    )
                     pr_move[:, [code, code + self.n_code]] = 0
                     if np.any(pr_move):
                         prob_to_distr = (
                             prob_to_distr / pr_move[:, pr_move.any(0)].shape[1]
                         )
-                        pr_move[:, pr_move.any(0)] += prob_to_distr.reshape(-1, 1)
+                        pr_move[:, pr_move.any(0)] += prob_to_distr.reshape(
+                            -1, 1
+                        )
             else:
                 free_space = False
 
@@ -306,7 +328,11 @@ class ACO:
 
                 # Loop until the stack is added or there is no more space for it
                 # The loop is on the stacks of contained in the first line
-                while not stack_added and toAddStack != None and k < len(stack_1_line):
+                while (
+                    not stack_added
+                    and toAddStack != None
+                    and k < len(stack_1_line)
+                ):
                     # Check if the possible origin of the new stack is in the middle of the extremes
                     # of the k-th stack
                     if (
@@ -326,7 +352,8 @@ class ACO:
                             # Check if there is an overlap
                             if (
                                 x_pos_right <= stack_1_line[j].vertexes[3][0]
-                                and x_pos_right >= stack_1_line[j].vertexes[2][0]
+                                and x_pos_right
+                                >= stack_1_line[j].vertexes[2][0]
                                 and stack_1_line[j].vertexes[3][1] >= y_pos_tmp
                             ):
                                 # Update the y position of the origin of the new stack
@@ -336,7 +363,8 @@ class ACO:
 
                         if (
                             x_pos + toAddStack.length <= self.vehicle["length"]
-                            and y_pos_tmp + toAddStack.width <= self.vehicle["width"]
+                            and y_pos_tmp + toAddStack.width
+                            <= self.vehicle["width"]
                         ):
                             toAddStack.position(x_pos, y_pos_tmp)
                             x_pos += toAddStack.length
@@ -448,7 +476,9 @@ class ACO:
                     if (
                         (l_stack > app)
                         and (l_stack <= self.vehicle["width"])
-                        and (self.stack_quantity[self.state_to_code(j + i)] != 0)
+                        and (
+                            self.stack_quantity[self.state_to_code(j + i)] != 0
+                        )
                     ):
                         app = (
                             self.stackInfo.iloc[i]["length"]
@@ -470,7 +500,9 @@ class ACO:
                     if (
                         (w_stack > app)
                         and (w_stack <= self.vehicle["width"])
-                        and (self.stack_quantity[self.state_to_code(j + i)] != 0)
+                        and (
+                            self.stack_quantity[self.state_to_code(j + i)] != 0
+                        )
                     ):
                         app = (
                             self.stackInfo.iloc[i]["width"]
@@ -530,11 +562,15 @@ class ACO:
 
         # Self.pr_move and attractiveness creation with all the information obtained before
         self.pr_move = (
-            np.full((self.dim_matr, self.dim_matr), 1.0 / (self.dim_matr - code_sub))
+            np.full(
+                (self.dim_matr, self.dim_matr), 1.0 / (self.dim_matr - code_sub)
+            )
             * pr_mat
         )
         self.attractiveness = (
-            np.full((len(self.pr_move), len(self.pr_move)), 0.5) * attr_mat * pr_mat
+            np.full((len(self.pr_move), len(self.pr_move)), 0.5)
+            * attr_mat
+            * pr_mat
         )
         self.prMoveUpdate()
         # NOTE: Items preferred lengthwise (longest side in respect to the length of the truck)
@@ -561,7 +597,9 @@ class ACO:
         row_to_choose = pr_move[prev_state][:]
 
         # Selecting the next state where the ant will move
-        next_state = int(np.random.choice(range(len(row_to_choose)), p=row_to_choose))
+        next_state = int(
+            np.random.choice(range(len(row_to_choose)), p=row_to_choose)
+        )
 
         return next_state
 
@@ -709,7 +747,9 @@ class ACO:
                 # Update with better value
                 self.bestAreas[i] = area_ratio
                 self.bestAnts[i] = self.ants[i_max]
-                self.bestWeights[i] = antsWeight[i_max] / self.vehicle["max_weight"]
+                self.bestWeights[i] = (
+                    antsWeight[i_max] / self.vehicle["max_weight"]
+                )
                 update = True
             else:
                 pass
@@ -721,4 +761,6 @@ class ACO:
         return self.index_code[index]
 
     def code_to_state(self, code):
-        return self.stackInfo.index[self.stackInfo["stackability_code"] == code][0]
+        return self.stackInfo.index[
+            self.stackInfo["stackability_code"] == code
+        ][0]
