@@ -110,7 +110,7 @@ class masterAco:
                 N_PAT_SKIP += 1
         return df_items
 
-    def solve(self, df_items, df_vehicles, sol_file_name):
+    def solve(self, df_items, df_vehicles, sol_file_name, time_limit=300):
         t1 = time.time()
         self.df_items = df_items
         self.df_vehicles = df_vehicles
@@ -134,7 +134,7 @@ class masterAco:
         ) = sol_aco.solver(self.df_items, self.df_vehicles, 60000)
 
         of = sol_check(df_sol, self.df_vehicles, self.df_items)
-        print(of)
+        # print(of)
 
         master = MasterProblem(pattern_list, self.df_vehicles, self.df_items)
         master.solveModel(file_name=f"benchmark/aco_master/results/{sol_file_name}.lp")
