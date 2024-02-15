@@ -38,6 +38,7 @@ class solverORTools:
         trucks: pd.DataFrame,
         max_truck_n: List[int] = [],
         sol_file_name=None,
+        time_limit=TIME_LIMIT,
     ):
         """
         Solve the problem using OR Tools' CP solver.
@@ -349,7 +350,7 @@ class solverORTools:
         self.model.Minimize(obj=objective)
         # Solve!
         self.solver = cp_model.CpSolver()
-        self.solver.parameters.max_time_in_seconds = TIME_LIMIT
+        self.solver.parameters.max_time_in_seconds = time_limit
         self.solver.parameters.log_search_progress = True
         self.solver.log_callback = print
         # Enumerate all solutions.
