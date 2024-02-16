@@ -212,7 +212,7 @@ class SolverACO:
         # Area and weight are set in this way to choose the efficient vehicle at the first cicle
         prev_area_ratio = 1
         prev_weight_ratio = 0
-        i = 0
+        iter = 0
         id_prev_truck = None
         pattern_list = []
         pattern_info = []
@@ -246,11 +246,16 @@ class SolverACO:
             id_prev_truck = vehicle.id_truck
 
             # Check if there are stacks left
-            if VERB_LOCAL:
-                print("Truck: ", self.id_vehicle)
 
             # Method to solve the 2D bin packing problem
+            t_aco = time.time()
             bestAnts, bestAreas, bestWeights = aco.aco_2D_bin(last_iter=last_iter)
+            if VERB_LOCAL:
+                print(f" Vehicle[{iter}]: {vehicle.id_truck }")
+                for i in range(len(bestAnts)):
+                    print(
+                        f" Area ratio: {round(bestAreas[i], 2)}, Weight ratio: {round(bestWeights[i], 2)}, Time: {round(time.time()-t_aco, 2)} s"
+                    )
             # Pick only the first one among the best
             bestAnt = bestAnts[0]
             prev_weight_ratio = bestWeights[0]
@@ -308,7 +313,7 @@ class SolverACO:
                     pd.DataFrame.from_dict(self.sol),
                     idx_vehicle=i,
                 )
-                i += 1
+            iter += 1
 
             if df_items.empty or (time.time() - st_time) >= time_limit:
                 if time_limit != 0 or df_items.empty:
@@ -318,13 +323,12 @@ class SolverACO:
 
         # Printing step of the solution
         df_sol = pd.DataFrame.from_dict(self.sol)
-        print("\nN trucks = ", df_sol["idx_vehicle"].nunique())
-        print("Tot cost: ", tot_cost)
-        print("Tot items: ", len(self.sol["id_item"]))
-
-        # Evaluating the time taken by every iteration
         time_spent = time.time() - st_time
-        print(f"\nTime: {time_spent} s")
+        if SUMMARY:
+            print("\nN trucks = ", df_sol["idx_vehicle"].nunique())
+            print("Tot cost: ", tot_cost)
+            print("Tot items: ", len(self.sol["id_item"]))
+            print(f"\nTime: {time_spent} s")
 
         # Return the dataframe solution and its cost to check the best solution among all the iteration
         return (
@@ -372,7 +376,7 @@ class SolverACO:
         # Area and weight are set in this way to choose the efficient vehicle at the first cicle
         area_ratio = 1
         weightRatio = 0
-        i = 0
+        iter = 0
         id_prev_truck = None
         # Loop until there are no more items left
         while more_items:
@@ -402,13 +406,17 @@ class SolverACO:
 
             id_prev_truck = vehicle.id_truck
 
-            # Check if there are stacks left
-            if VERB_LOCAL:
-                print(f"Truck: {self.id_vehicle}")
-
             # Method to solve the 2D bin packing problem
+            t_aco = time.time()
             bestAnts, bestAreas, bestWeights = aco.aco_2D_bin(last_iter=last_iter)
+            # FIXME: rendere uguale a solver
             bestAnt = bestAnts[0]
+            if VERB_LOCAL:
+                print(f" Vehicle[{iter}]: {vehicle.id_truck }")
+                for i in range(len(bestAnts)):
+                    print(
+                        f" Area ratio: {round(bestAreas[i], 2)}, Weight ratio: {round(bestWeights[i], 2)}, Time: {round(time.time()-t_aco, 2)} s"
+                    )
 
             self.solUpdate(bestAnt, vehicle)
 
@@ -425,15 +433,15 @@ class SolverACO:
 
             if df_items.empty:
                 more_items = False
+            iter += 1
 
         # Printing step of the solution
         df_sol = pd.DataFrame.from_dict(self.sol)
-        print("\nN trucks = ", df_sol["idx_vehicle"].nunique())
-        print("Tot items: ", len(self.sol["id_item"]))
-
-        # Evaluating the time taken by every iteration
         time_spent = time.time() - st_time
-        print(f"\nTime: {time_spent} s")
+        if SUMMARY:
+            print("\nN trucks = ", df_sol["idx_vehicle"].nunique())
+            print("Tot items: ", len(self.sol["id_item"]))
+            print(f"\nTime: {time_spent} s")
 
         # Return the dataframe solution and its cost to check the best solution among all the iteration
         return df_sol
