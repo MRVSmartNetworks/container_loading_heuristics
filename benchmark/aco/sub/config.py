@@ -37,7 +37,10 @@ ONE_LAYER = False
 AREA_RATIO = 0.93
 WEIGHT_RATIO = 0.98
 
-VERB_LOCAL = True
+VERB_LOCAL = False
 DEBUG_LOCAL = False
 ACO_ITERATIONS = False
 SUMMARY = True
+
+SAVE_CHECKPOINT = True
+CHECKPOINT_PATH = "./results/checkpoints/"

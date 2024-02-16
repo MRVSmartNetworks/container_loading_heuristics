@@ -2,6 +2,8 @@ import numpy as np
 import gurobipy as gp
 from gurobipy import GRB
 
+TIME_LIMIT = 120
+
 
 class MasterProblem:
     """
@@ -12,7 +14,9 @@ class MasterProblem:
     """
 
     def __init__(self, patternList, df_vehicles, df_items):
-        self.model = gp.Model("MasterProblem")
+        env = gp.Env()
+        env.setParam("TimeLimit", TIME_LIMIT)
+        self.model = gp.Model("MasterProblem", env=env)
         self.obj = 0
         self.patternlist = patternList
         self.items_type = len(patternList[0]["pattern"])
