@@ -118,7 +118,7 @@ class ACO:
         # All the ACO is done n_iter time or until a good solution is found.
         # The good solution is found when the filled area ratio of the truck reach a certain treshold
         while _iter < self.n_iter and not good_sol:
-            if VERB_LOCAL:
+            if ACO_ITERATIONS:
                 print("> ACO Iteration: {}              ".format(_iter))
             self.ants = []
             antsArea = []
@@ -129,7 +129,7 @@ class ACO:
             # At the end only the best solution of all the ants will be taken
             # into account.
             for ant_index in range(self.n_ants):
-                if VERB_LOCAL:
+                if ACO_ITERATIONS:
                     # Print status bar:
                     print(
                         loadingBar(ant_index, self.n_ants, 20)
@@ -153,9 +153,7 @@ class ACO:
                 totArea = 0
                 totWeight = 0
                 totVolume = 0
-                ant_k = (
-                    []
-                )  # It will contain the list of stacks used by current ant
+                ant_k = []  # It will contain the list of stacks used by current ant
 
                 """
                 Slice definition: list of stacks that are placed along the x
@@ -182,9 +180,7 @@ class ACO:
 
                     if new_slice != []:
                         # Some element was placed!
-                        slice_added = (
-                            []
-                        )  # Only add elements that fit (weight check)
+                        slice_added = []  # Only add elements that fit (weight check)
                         for s in new_slice:
                             st = s[0]  # Extract the actual Stack object
                             ant_k.append(st)
@@ -228,13 +224,9 @@ class ACO:
                         else:
                             # If there are no more stacks of a certain code then set the pr_move to that specific
                             # code to zero and distribute the probability over the others rows(stackability codes)
-                            if (
-                                stack_quantity_ant[self.state_to_code(code)]
-                                == 0
-                            ):
+                            if stack_quantity_ant[self.state_to_code(code)] == 0:
                                 prob_to_distr = (
-                                    pr_move[:, code]
-                                    + pr_move[:, code + self.n_code]
+                                    pr_move[:, code] + pr_move[:, code + self.n_code]
                                 )
                                 pr_move[:, [code, code + self.n_code]] = 0
                                 if np.any(pr_move):
@@ -242,9 +234,9 @@ class ACO:
                                         prob_to_distr
                                         / pr_move[:, pr_move.any(0)].shape[1]
                                     )
-                                    pr_move[
-                                        :, pr_move.any(0)
-                                    ] += prob_to_distr.reshape(-1, 1)
+                                    pr_move[:, pr_move.any(0)] += prob_to_distr.reshape(
+                                        -1, 1
+                                    )
                     else:
                         free_space = False
 
@@ -265,13 +257,6 @@ class ACO:
             good_sol = self.dynamicEvapCoeff(area_ratio, _iter)
 
             _iter += 1
-
-        if PRINT:
-            print(f" Vehicle: {self.vehicle['id_truck']}")
-            for i in range(n_bestAnts):
-                print(
-                    f" Area ratio: {round(self.bestAreas[i], 2)},\n Weight ratio: {round(self.bestWeights[i], 2)}\n Time: {round(time.time()-t1, 2)} s"
-                )
 
         return self.bestAnts, self.bestAreas, self.bestWeights
 
@@ -343,9 +328,7 @@ class ACO:
             next_s_code = 0
             while toAddStack is None and sum(track_codes) > 0:
                 # Choice of the next state (stackability code)
-                next_s_code = self.choose_move(
-                    prev_code, prob_move_mat, track_codes
-                )
+                next_s_code = self.choose_move(prev_code, prob_move_mat, track_codes)
 
                 if next_s_code is not None:
                     if DEBUG_LOCAL:
@@ -354,9 +337,7 @@ class ACO:
                             and track_codes[next_s_code] != 0
                         ), "A code with null probability was chosen"
 
-                    cd = next_s_code - (
-                        self.n_code * (next_s_code >= self.n_code)
-                    )
+                    cd = next_s_code - (self.n_code * (next_s_code >= self.n_code))
 
                     if DEBUG_LOCAL:
                         assert (
@@ -373,17 +354,13 @@ class ACO:
                     # Make sure that the stack can be added to the current slice
                     # The returned x is the x value where the stack 'ends'
                     # (FIXME: maybe remove)
-                    toAddStack, x_upd = self.addStack2Slice(
-                        new_stack, x_low, max_width
-                    )
+                    toAddStack, x_upd = self.addStack2Slice(new_stack, x_low, max_width)
 
                     if toAddStack is None:
                         track_codes[next_s_code] = 0
                 else:
                     # Set all other track codes to 0 - cannot add stacks anymore
-                    track_codes = np.zeros(
-                        (len(prob_move_mat[0]),), dtype=np.int32
-                    )
+                    track_codes = np.zeros((len(prob_move_mat[0]),), dtype=np.int32)
                     toAddStack = None
 
             # Check if a stack can be added due to the vehicle weight constrain
@@ -416,8 +393,7 @@ class ACO:
                 # code to zero and distribute the probability over the others rows(stackability codes)
                 if stack_quantity_ant[self.state_to_code(code)] == 0:
                     prob_to_distr = (
-                        prob_move_mat[:, code]
-                        + prob_move_mat[:, code + self.n_code]
+                        prob_move_mat[:, code] + prob_move_mat[:, code + self.n_code]
                     )
                     prob_move_mat[:, [code, code + self.n_code]] = 0
                     if np.any(prob_move_mat):
@@ -425,9 +401,9 @@ class ACO:
                             prob_to_distr
                             / prob_move_mat[:, prob_move_mat.any(0)].shape[1]
                         )
-                        prob_move_mat[
-                            :, prob_move_mat.any(0)
-                        ] += prob_to_distr.reshape(-1, 1)
+                        prob_move_mat[:, prob_move_mat.any(0)] += prob_to_distr.reshape(
+                            -1, 1
+                        )
             else:
                 slice_full = True
 
@@ -537,9 +513,7 @@ class ACO:
 
             # Loop until the stack is added or there is no more space for it
             # The loop is on the stacks of contained in the first line
-            while (
-                not stack_added and toAddStack != None and k < len(stack_1_line)
-            ):
+            while not stack_added and toAddStack != None and k < len(stack_1_line):
                 # Check if the possible origin of the new stack is in the middle of the extremes
                 # of the k-th stack
                 if (
@@ -569,8 +543,7 @@ class ACO:
 
                     if (
                         x_pos + toAddStack.length <= self.vehicle["length"]
-                        and y_pos_tmp + toAddStack.width
-                        <= self.vehicle["width"]
+                        and y_pos_tmp + toAddStack.width <= self.vehicle["width"]
                     ):
                         toAddStack.position(x_pos, y_pos_tmp)
                         x_pos += toAddStack.length
@@ -716,9 +689,7 @@ class ACO:
             # Increase the index from 0 until the element of the old bound is bigger
             ind_extra = 0
 
-            while bound[ind_extra][0] < new_bound[-1][0] and ind_extra < len(
-                bound
-            ):
+            while bound[ind_extra][0] < new_bound[-1][0] and ind_extra < len(bound):
                 # ind_extra locates the 1st corner in the old bound which has x bigger
                 # than the current last element in the new bound
                 ind_extra += 1
@@ -782,9 +753,9 @@ class ACO:
         # Pr_move parameters
         # Used to put at 0 the row in respect to the stack no more available and the ones with orientation constrain
         pr_mat = np.ones((self.dim_matr, self.dim_matr))
-        pr_mat[
-            :, self.dim_matr - 1
-        ] = 0  # last state is the empty truck, no ants can go in this state apart from the start
+        pr_mat[:, self.dim_matr - 1] = (
+            0  # last state is the empty truck, no ants can go in this state apart from the start
+        )
 
         # loop over all the stackability code for checking the orientation and the presence of stack
         for i, code in enumerate(self.stackInfo.stackability_code):
@@ -834,9 +805,7 @@ class ACO:
                     if (
                         (l_stack > app)
                         and (l_stack <= self.vehicle["width"])
-                        and (
-                            self.stack_quantity[self.state_to_code(j + i)] != 0
-                        )
+                        and (self.stack_quantity[self.state_to_code(j + i)] != 0)
                     ):
                         app = (
                             self.stackInfo.iloc[i]["length"]
@@ -858,9 +827,7 @@ class ACO:
                     if (
                         (w_stack > app)
                         and (w_stack <= self.vehicle["width"])
-                        and (
-                            self.stack_quantity[self.state_to_code(j + i)] != 0
-                        )
+                        and (self.stack_quantity[self.state_to_code(j + i)] != 0)
                     ):
                         app = (
                             self.stackInfo.iloc[i]["width"]
@@ -923,15 +890,11 @@ class ACO:
 
         # Self.pr_move and attractiveness creation with all the information obtained before
         self.pr_move = (
-            np.full(
-                (self.dim_matr, self.dim_matr), 1.0 / (self.dim_matr - code_sub)
-            )
+            np.full((self.dim_matr, self.dim_matr), 1.0 / (self.dim_matr - code_sub))
             * pr_mat
         )
         self.attractiveness = (
-            np.full((len(self.pr_move), len(self.pr_move)), 0.5)
-            * attr_mat
-            * pr_mat
+            np.full((len(self.pr_move), len(self.pr_move)), 0.5) * attr_mat * pr_mat
         )
         self.prMoveUpdate()
         # NOTE: Items preferred lengthwise (longest side in respect to the length of the truck)
@@ -1112,9 +1075,7 @@ class ACO:
                     stack_copy.orient = "l"
 
                 return stack_copy, stack_lst, stack_quantity
-        raise Exception(
-            f"[popStack]: No more stacks with specified code {code}"
-        )
+        raise Exception(f"[popStack]: No more stacks with specified code {code}")
 
     def getFirstStack(self, stack_lst, stack_quantity, code):
         """
@@ -1149,9 +1110,7 @@ class ACO:
                     stack_copy.orient = "l"
                 return stack_copy
 
-        raise Exception(
-            f"[getStack]: No more stacks with specified code {code}"
-        )
+        raise Exception(f"[getStack]: No more stacks with specified code {code}")
 
     def get_min_stack_weight(self, stack_lst, code):
         """
@@ -1197,9 +1156,7 @@ class ACO:
                 # Update with better value
                 self.bestAreas[i] = area_ratio
                 self.bestAnts[i] = self.ants[i_max]
-                self.bestWeights[i] = (
-                    antsWeight[i_max] / self.vehicle["max_weight"]
-                )
+                self.bestWeights[i] = antsWeight[i_max] / self.vehicle["max_weight"]
                 update = True
 
                 assert self.bestWeights[i] <= 1.0
@@ -1230,6 +1187,4 @@ class ACO:
         return self.index_code[index]
 
     def code_to_state(self, code):
-        return self.stackInfo.index[
-            self.stackInfo["stackability_code"] == code
-        ][0]
+        return self.stackInfo.index[self.stackInfo["stackability_code"] == code][0]
