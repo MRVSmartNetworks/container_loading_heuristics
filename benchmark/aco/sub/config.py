@@ -11,10 +11,10 @@ PARAM_ITER = 1
 PARAM_FILE = "solver\group23\parameters_file\datasetF"
 
 # To print information related to area and weight ratio of trucks
-PRINT = True
+PRINT = False
 
 # If true select the ACO version with slices
-SLICES = False
+SLICES = True
 
 # Set number of weight clusters (set 1 for avoid clustering)
 N_WEIGHT_CLUSTERS = 1
@@ -37,5 +37,7 @@ ONE_LAYER = False
 AREA_RATIO = 0.93
 WEIGHT_RATIO = 0.98
 
-VERB_LOCAL = False
+VERB_LOCAL = True
 DEBUG_LOCAL = False
+ACO_ITERATIONS = False
+SUMMARY = True
