@@ -330,6 +330,19 @@ class SolverACO:
             print("Tot items: ", len(self.sol["id_item"]))
             print(f"\nTime: {time_spent} s")
 
+        if SAVE_CHECKPOINT:
+            f_checkp = open(
+                CHECKPOINT_PATH + f"{self.name}_DATASET_checkpoint.csv", "a"
+            )
+            if (
+                os.stat(CHECKPOINT_PATH + f"{self.name}_DATASET_checkpoint.csv").st_size
+                == 0
+            ):
+                f_checkp.write(f"cost,time\n")
+            f_checkp.write(f"{tot_cost},{time_spent}\n")
+
+            f_checkp.close()
+
         # Return the dataframe solution and its cost to check the best solution among all the iteration
         return (
             df_sol,
