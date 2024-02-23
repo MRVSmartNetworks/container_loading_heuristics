@@ -1,4 +1,5 @@
 solver,dataset,n_vehicles,vehicles,cost,time
+solverACO,thpack9_1,52,['V0'],52.0,9.38
 solverACO,datasetI,70,['V0' 'V4'],344795.37,129.3
 solverACO,datasetI,69,['V0' 'V4'],339837.21,445.41
 solORTools,MODdatasetG,10,['V6' 'V2'],10855.24,277.11
