@@ -1,4 +1,5 @@
 import os
+import time
 import warnings
 from typing import Dict, List, Tuple
 
@@ -6,7 +7,6 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import time
 
 from ortools.sat.python import cp_model
 
@@ -130,7 +130,8 @@ class solverORTools:
                     [
                         self.model.NewIntVar(
                             0,
-                            self.trucks.loc[j, "length"] - self.items.iloc[i]["length"],
+                            self.trucks.loc[j, "length"]
+                            - self.items.iloc[i]["length"],
                             name=f"x_({i},{j},{k})",
                         )
                         for k in range(self.max_truck_n[j])
@@ -141,7 +142,8 @@ class solverORTools:
                     [
                         self.model.NewIntVar(
                             0,
-                            self.trucks.loc[j, "width"] - self.items.iloc[i]["width"],
+                            self.trucks.loc[j, "width"]
+                            - self.items.iloc[i]["width"],
                             name=f"y_({i},{j},{k})",
                         )
                         for k in range(self.max_truck_n[j])
@@ -188,7 +190,8 @@ class solverORTools:
                     [
                         self.model.NewIntVar(
                             0,
-                            self.trucks.loc[j, "length"] - self.items.iloc[i]["width"],
+                            self.trucks.loc[j, "length"]
+                            - self.items.iloc[i]["width"],
                             name=f"x_rot_({i},{j},{k})",
                         )
                         for k in range(self.max_truck_n[j])
@@ -200,7 +203,8 @@ class solverORTools:
                     [
                         self.model.NewIntVar(
                             0,
-                            self.trucks.loc[j, "width"] - self.items.iloc[i]["length"],
+                            self.trucks.loc[j, "width"]
+                            - self.items.iloc[i]["length"],
                             name=f"y_rot_({i},{j},{k})",
                         )
                         for k in range(self.max_truck_n[j])
@@ -213,7 +217,8 @@ class solverORTools:
                         self.model.NewOptionalIntervalVar(
                             start=x_vars_rot[i][j][k],
                             size=self.items.iloc[i]["width"],
-                            end=x_vars_rot[i][j][k] + self.items.iloc[i]["width"],
+                            end=x_vars_rot[i][j][k]
+                            + self.items.iloc[i]["width"],
                             is_present=c_vars_rot[i][j][k],
                             name=f"x_interval_rot_({i},{j},{k})",
                         )
@@ -225,7 +230,8 @@ class solverORTools:
                         self.model.NewOptionalIntervalVar(
                             start=y_vars_rot[i][j][k],
                             size=self.items.iloc[i]["length"],
-                            end=y_vars_rot[i][j][k] + self.items.iloc[i]["length"],
+                            end=y_vars_rot[i][j][k]
+                            + self.items.iloc[i]["length"],
                             is_present=c_vars_rot[i][j][k],
                             name=f"y_interval_rot_({i},{j},{k})",
                         )
@@ -329,7 +335,9 @@ class solverORTools:
                 y_interval_vars_jk = [y[j][k] for y in y_interval_vars] + [
                     y[j][k] for y in y_interval_vars_rot
                 ]
-                self.model.AddNoOverlap2D(x_interval_vars_jk, y_interval_vars_jk)
+                self.model.AddNoOverlap2D(
+                    x_interval_vars_jk, y_interval_vars_jk
+                )
 
                 # Weight constraint
                 self.model.Add(
@@ -453,9 +461,15 @@ class solverORTools:
                 for k in range(self.max_truck_n[j]):
                     # Check curr. truck contains at least 1 element
                     if sum(
-                        [self.solver.Value(c_vars[i][j][k]) for i in range(n_items)]
+                        [
+                            self.solver.Value(c_vars[i][j][k])
+                            for i in range(n_items)
+                        ]
                     ) or sum(
-                        [self.solver.Value(c_vars_rot[i][j][k]) for i in range(n_items)]
+                        [
+                            self.solver.Value(c_vars_rot[i][j][k])
+                            for i in range(n_items)
+                        ]
                     ):
                         n_used_trucks += 1
                         fig, ax = plt.subplots(1)
@@ -480,8 +494,12 @@ class solverORTools:
                                 ax.add_patch(
                                     patches.Rectangle(
                                         (
-                                            self.solver.Value(x_vars_rot[i][j][k]),
-                                            self.solver.Value(y_vars_rot[i][j][k]),
+                                            self.solver.Value(
+                                                x_vars_rot[i][j][k]
+                                            ),
+                                            self.solver.Value(
+                                                y_vars_rot[i][j][k]
+                                            ),
                                         ),
                                         self.items.iloc[i]["width"],
                                         self.items.iloc[i]["length"],
@@ -497,7 +515,9 @@ class solverORTools:
                         plt.show()
             return n_used_trucks
         else:
-            warnings.warn("No solution was found yet! Please run the model first")
+            warnings.warn(
+                "No solution was found yet! Please run the model first"
+            )
             return -1
 
     def assembleSolution(self, var_list: List) -> Dict:
@@ -559,7 +579,10 @@ class solverORTools:
                 if sum(
                     [self.solver.Value(c_vars[i][j][k]) for i in range(n_items)]
                 ) + sum(
-                    [self.solver.Value(c_vars_rot[i][j][k]) for i in range(n_items)]
+                    [
+                        self.solver.Value(c_vars_rot[i][j][k])
+                        for i in range(n_items)
+                    ]
                 ):
                     for i in range(n_items):
                         if (
