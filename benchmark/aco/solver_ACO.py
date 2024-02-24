@@ -267,21 +267,26 @@ class SolverACO:
 
             column = np.zeros(len(stackInfo))
 
-            for stack in bestAnt:
-                # TODO: use code to state
-                column[int(stack.stack_code)] += len(stack.items)
+            try:
+                for stack in bestAnt:
+                    # TODO: use code to state
+                    column[int(stack.stack_code)] += len(stack.items)
 
-                pattern_info.append(
-                    {
-                        "pattern": Npattern,
-                        "vehicle": vehicle["id_truck"],
-                        "stack_code": int(stack.stack_code),
-                        "stack_Nitems": stack.n_items,
-                        "stack_weight": stack.weight,
-                        "x_origin": stack.vertexes[0][0],
-                        "y_origin": stack.vertexes[0][1],
-                        "orient": stack.orient,
-                    }
+                    pattern_info.append(
+                        {
+                            "pattern": Npattern,
+                            "vehicle": vehicle["id_truck"],
+                            "stack_code": int(stack.stack_code),
+                            "stack_Nitems": stack.n_items,
+                            "stack_weight": stack.weight,
+                            "x_origin": stack.vertexes[0][0],
+                            "y_origin": stack.vertexes[0][1],
+                            "orient": stack.orient,
+                        }
+                    )
+            except:
+                raise Our_exception(
+                    "No vehicles can carry certain items due to constrain not respected"
                 )
 
             Npattern += 1
