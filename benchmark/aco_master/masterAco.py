@@ -165,4 +165,4 @@ class masterAco:
         print(f"Number of pattern not inserted:", N_PAT_SKIP)
         print("Optimal value of solverACO:", totCost)
         t = round(time.time() - t1, 2)
-        return t
+        return t, totCost
