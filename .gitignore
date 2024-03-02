@@ -77,7 +77,7 @@ target/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Pycharm 
+# Pycharm
 .idea
 
 # IPython
@@ -164,10 +164,10 @@ Temporary Items
 
 
 logs/*
-!logs/.gitkeep 
+!logs/.gitkeep
 
 benchmark/results/*
-!benchmark/results/.gitkeep 
+!benchmark/results/.gitkeep
 !results/benchmark.csv
 
 */__pycache__/
@@ -195,3 +195,6 @@ tags
 
 # Do not sync editor settings file
 .vscode
+
+# BENG folder
+beng/
