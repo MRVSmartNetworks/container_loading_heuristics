@@ -1,19 +1,20 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import os
-import time
-import pandas as pd
-import numpy as np
 import statistics as st
+import time
 
-from benchmark.aco.sub.utilities import *
-from benchmark.aco.sub.stack import Stack
+import numpy as np
+import pandas as pd
 from benchmark.aco.sub.config import *
+from benchmark.aco.sub.stack import Stack
+from benchmark.aco.sub.utilities import *
 
 if SLICES:
     from benchmark.aco.sub.aco_bin_packing_slices import ACO
 else:
     from benchmark.aco.sub.aco_bin_packing import ACO
+
 from sol_representation import *
 
 
@@ -163,7 +164,7 @@ class SolverACO:
         best_sol.to_csv(os.path.join("results", sol_file_name), index=False)
 
         t = round(time.time() - t1, 2)
-        return t
+        return t, best_cost
 
     def solver(self, df_items, df_vehicles, time_limit):
         """
