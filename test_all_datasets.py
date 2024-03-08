@@ -1,19 +1,26 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import os
-import time
-import pandas as pd
-from benchmark import SolverACO, columnGeneration, masterAco, solverORTools, ExactSolver
-from sol_representation import *
-import numpy as np
 import random
+import time
+
+import numpy as np
+import pandas as pd
+
+from benchmark import (ExactSolver, SolverACO, columnGeneration, masterAco,
+                       solverORTools)
 from benchmark.aco.solver_ACO import Our_exception
+from sol_representation import *
 
 N_ITER = 10
 CHECKPOINT_PATH = "./results/checkpoints/"
+os.makedirs(CHECKPOINT_PATH, exist_ok=True)
 SUMMARY_PATH = "./results/summaries/"
+os.makedirs(SUMMARY_PATH, exist_ok=True)
 ONLY_STATS = False
-IVANCIC = True
+IVANCIC = False
+
+all_solvers = (ExactSolver, SolverACO, columnGeneration, masterAco, solverORTools)
 
 
 def eval_cost(
@@ -38,9 +45,9 @@ def stats_properties(
     avg_cost = df_checkp["cost"].mean()
     std_cost = df_checkp["cost"].std()
     min_cost = df_checkp["cost"].min()
-    avg_cost_ACO = df_checkp["solverACO_cost"].mean()
-    std_cost_ACO = df_checkp["solverACO_cost"].std()
-    min_cost_ACO = df_checkp["solverACO_cost"].min()
+    avg_cost_ACO = df_checkp["solver_cost"].mean()
+    std_cost_ACO = df_checkp["solver_cost"].std()
+    min_cost_ACO = df_checkp["solver_cost"].min()
     avg_t = df_checkp["time"].mean()
     std_t = df_checkp["time"].std()
 
@@ -109,25 +116,38 @@ if __name__ == "__main__":
         # "thpack9_30",
         # "thpack9_31",
         # "thpack9_32",
-        "thpack9_33",
-        "thpack9_34",
-        "thpack9_35",
-        "thpack9_36",
-        "thpack9_37",
-        "thpack9_38",
-        "thpack9_39",
-        "thpack9_40",
-        "thpack9_41",
-        "thpack9_42",
-        "thpack9_43",
-        "thpack9_44",
-        "thpack9_45",
-        "thpack9_46",
-        "thpack9_47",
+        # "thpack9_33",
+        # "thpack9_34",
+        # "thpack9_35",
+        # "thpack9_36",
+        # "thpack9_37",
+        # "thpack9_38",
+        # "thpack9_39",
+        # "thpack9_40",
+        # "thpack9_41",
+        # "thpack9_42",
+        # "thpack9_43",
+        # "thpack9_44",
+        # "thpack9_45",
+        # "thpack9_46",
+        # "thpack9_47",
+    ]
+
+    beng_datasets = [
+        "BENG01",
+        "BENG02",
+        "BENG03",
+        "BENG04",
+        "BENG05",
+        "BENG06",
+        "BENG07",
+        "BENG08",
+        "BENG09",
+        "BENG10",
     ]
 
     solver = masterAco()
-    for d, dataset in enumerate(ivancic_datasets):
+    for d, dataset in enumerate(beng_datasets):
         df_items = pd.read_csv(
             os.path.join(".", "data", dataset, "items.csv"),
         )
@@ -145,16 +165,19 @@ if __name__ == "__main__":
                 print(f"++++++++++++++++++ Iteration {i+1} ++++++++++++++++++")
                 try:
                     solver = masterAco()
+                    # Need common API:
+                    #  time, cost = solve(items, vehicles, out_filename, time_limit)
 
-                    t, solverACO_cost = solver.solve(
+                    t, solver_cost = solver.solve(
                         df_items, df_vehicles, sol_file_name, time_limit=300
                     )
                     # read dataframe solution
                     df_sol = pd.read_csv(
                         os.path.join("results", sol_file_name),
                     )
+                    os.makedirs(os.path.join(".", "results", dataset), exist_ok=True)
                     df_sol.to_csv(
-                        f"./results/{dataset}/{sol_file_name}_{random.randint(0,100)}"
+                        f"./results/{dataset}/{random.randint(0,100)}_{sol_file_name}"
                     )
                     # Check if solution is correct
                     try:
@@ -169,7 +192,8 @@ if __name__ == "__main__":
 
                     # save checkpoint
                     f_checkp = open(
-                        CHECKPOINT_PATH + f"{solver.name}_{dataset}_checkpoint.csv", "a"
+                        CHECKPOINT_PATH + f"{solver.name}_{dataset}_checkpoint.csv",
+                        "a",
                     )
                     if (
                         os.stat(
@@ -177,8 +201,8 @@ if __name__ == "__main__":
                         ).st_size
                         == 0
                     ):
-                        f_checkp.write(f"cost,time,solverACO_cost\n")
-                    f_checkp.write(f"{cost},{t},{solverACO_cost}\n")
+                        f_checkp.write(f"cost,time,solver_cost\n")
+                    f_checkp.write(f"{cost},{t},{solver_cost}\n")
 
                     f_checkp.close()
                 except Our_exception:
