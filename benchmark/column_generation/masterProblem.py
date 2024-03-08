@@ -1,5 +1,5 @@
-import numpy as np
 import gurobipy as gp
+import numpy as np
 from gurobipy import GRB
 
 try:
@@ -91,7 +91,7 @@ class MasterProblem:
 
     def getDuals(self):
         return self.relaxedModel.getAttr("Pi", self.model.getConstrs())
-    
+
     def getSlack(self):
         return self.relaxedModel.getAttr("Slack", self.model.getConstrs())
 
@@ -108,6 +108,7 @@ class MasterProblem:
         self.model.optimize()
         if file_name:
             self.model.write(file_name)
+        return self.model.objVal
 
     def getVars(self):
         return self.model.getVars()
