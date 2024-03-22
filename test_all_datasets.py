@@ -19,6 +19,7 @@ Example usage:
 """
 
 datasets = [
+    "dataset_small",
     "datasetA",
     "datasetB",
     "datasetC",
@@ -29,7 +30,6 @@ datasets = [
     "datasetH",
     "datasetI",
     "datasetJ",
-    "dataset_small",
     "easy_dataset",
     "MODdatasetG",
 ]
@@ -190,8 +190,6 @@ if __name__ == "__main__":
         used_solvers.append("solverORTools")
 
     for k in used_solvers:
-        solver = RUNS[k]["solver"]()
-
         for ds_list in RUNS[k]["datasets"]:
             for i, dataset_name in enumerate(ds_list):
                 df_items = pd.read_csv(
@@ -202,7 +200,7 @@ if __name__ == "__main__":
                 )
                 if ds_list == ivancic_datasets:
                     df_vehicles = df_vehicles.iloc[1].to_frame().T
-                sol_file_name = f"{solver.name}_{dataset_name}_sol.csv"
+                sol_file_name = f"{k}_{dataset_name}_sol.csv"
                 # measure execution time
 
                 print(f"{dataset_name}\n============================================\n")
@@ -210,7 +208,7 @@ if __name__ == "__main__":
                     for i in range(N_ITER):
                         print(f"++++++++++++++++++ Iteration {i+1} ++++++++++++++++++")
                         try:
-                            solver = solverORTools()
+                            solver = RUNS[k]["solver"]()
                             # Need common API:
                             #  time, cost = solve(items, vehicles, out_filename, time_limit)
 
