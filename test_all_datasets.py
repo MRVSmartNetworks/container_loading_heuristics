@@ -185,12 +185,12 @@ if __name__ == "__main__":
     if args.exact:
         used_solvers.append("ExactSolver")
     if args.master_aco:
-        used_solvers.append("masterACO")
+        used_solvers.append("masterAco")
     if args.or_tools:
         used_solvers.append("solverORTools")
 
     for k in used_solvers:
-        solver = RUNS[k]["solver"]
+        solver = RUNS[k]["solver"]()
 
         for ds_list in RUNS[k]["datasets"]:
             for i, dataset_name in enumerate(ds_list):
