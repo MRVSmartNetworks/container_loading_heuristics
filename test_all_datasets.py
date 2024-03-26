@@ -8,8 +8,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from benchmark import (ExactSolver, SolverACO, columnGeneration, masterAco,
-                       solverORTools)
+from benchmark import ExactSolver, SolverACO, columnGeneration, masterAco, solverORTools
 from benchmark.aco.solver_ACO import Our_exception
 from sol_representation import *
 
@@ -121,7 +120,6 @@ os.makedirs(CHECKPOINT_PATH, exist_ok=True)
 SUMMARY_PATH = "./results/summaries/"
 os.makedirs(SUMMARY_PATH, exist_ok=True)
 ONLY_STATS = False
-IVANCIC = False
 
 all_solvers = (ExactSolver, SolverACO, columnGeneration, masterAco, solverORTools)
 
@@ -145,26 +143,30 @@ def stats_properties(
     path_checkpoint: str, path_summary: str, dataset_name: str
 ) -> None:
     df_checkp = pd.read_csv(path_checkpoint, sep=",")
+    # masterACO info
     avg_cost = df_checkp["cost"].mean()
     std_cost = df_checkp["cost"].std()
     min_cost = df_checkp["cost"].min()
+    avg_t = df_checkp["time"].mean()
+    std_t = df_checkp["time"].std()
+    # Solver ACO info
     avg_cost_ACO = df_checkp["solver_cost"].mean()
     std_cost_ACO = df_checkp["solver_cost"].std()
     min_cost_ACO = df_checkp["solver_cost"].min()
-    avg_t = df_checkp["time"].mean()
-    std_t = df_checkp["time"].std()
+    avg_ACO_t = df_checkp["ACO_time"].mean()
+    std_ACO_t = df_checkp["ACO_time"].std()
 
     print(
-        f"\n{dataset_name},{(avg_cost):.2f},{std_cost:.2f},{min_cost},{(avg_cost_ACO):.2f},{std_cost_ACO:.2f},{min_cost_ACO},{avg_t:.2f},{std_t:.2f}\n"
+        f"\n{dataset_name},{(avg_cost):.2f},{std_cost:.2f},{min_cost},{avg_t:.2f},{std_t:.2f},{(avg_cost_ACO):.2f},{std_cost_ACO:.2f},{min_cost_ACO},{avg_ACO_t:.2f},{std_ACO_t:.2f}\n"
     )
     f = open(path_summary, "a")
     if os.stat(path_summary).st_size == 0:
         f.write(
-            f"dataset,avg_cost,std_cost,minimum_cost,avg_cost_ACO,std_cost_ACO,min_cost_ACO,avg_time,std_time,iterations\n"
+            f"dataset,avg_cost,std_cost,minimum_cost,avg_time,std_time,avg_cost_ACO,std_cost_ACO,min_cost_ACO,avg_ACO_time,std_ACO_time,iterations\n"
         )
 
     f.write(
-        f"{dataset_name},{(avg_cost):.2f},{std_cost:.2f},{min_cost},{(avg_cost_ACO):.2f},{std_cost_ACO:.2f},{min_cost_ACO},{avg_t:.2f},{std_t:.2f},{N_ITER}\n"
+        f"{dataset_name},{(avg_cost):.2f},{std_cost:.2f},{min_cost},{avg_t:.2f},{std_t:.2f},{(avg_cost_ACO):.2f},{std_cost_ACO:.2f},{min_cost_ACO},{avg_ACO_t:.2f},{std_ACO_t:.2f},{N_ITER}\n"
     )
     f.close()
 
@@ -212,7 +214,7 @@ if __name__ == "__main__":
                             # Need common API:
                             #  time, cost = solve(items, vehicles, out_filename, time_limit)
 
-                            t, solver_cost = solver.solve(
+                            t, tACO, solver_cost = solver.solve(
                                 df_items,
                                 df_vehicles,
                                 sol_file_name=sol_file_name,
@@ -253,8 +255,8 @@ if __name__ == "__main__":
                                 ).st_size
                                 == 0
                             ):
-                                f_checkp.write(f"cost,time,solver_cost\n")
-                            f_checkp.write(f"{cost},{t},{solver_cost}\n")
+                                f_checkp.write(f"cost,time,solver_cost,ACO_time\n")
+                            f_checkp.write(f"{cost},{t},{solver_cost},{tACO}\n")
 
                             f_checkp.close()
                         except Our_exception:

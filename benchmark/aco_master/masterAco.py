@@ -122,6 +122,7 @@ class masterAco:
             # df_vehicles["max_weight_stack"] = 100000
             self.df_items["height"] = 1000
 
+        t2 = time.time()
         sol_aco = SolverACO()
         (
             df_sol,
@@ -132,6 +133,7 @@ class masterAco:
             self.df_items,
             stackInfo,
         ) = sol_aco.solver(self.df_items, self.df_vehicles, 60000)
+        tACO = round(time.time() - t2, 2)
 
         of = sol_check(df_sol, self.df_vehicles, self.df_items)
         # print(of)
@@ -165,4 +167,4 @@ class masterAco:
         print(f"Number of pattern not inserted:", N_PAT_SKIP)
         print("Optimal value of solverACO:", totCost)
         t = round(time.time() - t1, 2)
-        return t, totCost
+        return t, tACO, totCost
