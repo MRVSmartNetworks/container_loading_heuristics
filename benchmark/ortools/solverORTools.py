@@ -12,7 +12,7 @@ from ortools.sat.python import cp_model
 
 DEBUG = False
 VERB = False
-TIME_LIMIT = 600  # seconds
+TIME_LIMIT = 100  # seconds
 
 # Instance - Need to ensure all elements can fit in the bin, else the solution
 # will be infeasible
@@ -331,6 +331,16 @@ class solverORTools:
                 ]
                 self.model.AddNoOverlap2D(x_interval_vars_jk, y_interval_vars_jk)
 
+                for i in range(n_items):
+                    self.model.Add(
+                        c_vars[i][j][k] * int(self.items.iloc[i]["weight"])
+                        <= self.trucks.loc[j, "max_weight_stack"]
+                    )
+                for i in range(n_items):
+                    self.model.Add(
+                        c_vars_rot[i][j][k] * int(self.items.iloc[i]["weight"])
+                        <= self.trucks.loc[j, "max_weight_stack"]
+                    )
                 # Weight constraint
                 self.model.Add(
                     sum(
