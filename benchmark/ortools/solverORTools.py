@@ -10,9 +10,9 @@ import pandas as pd
 
 from ortools.sat.python import cp_model
 
-DEBUG = True
+DEBUG = False
 VERB = False
-TIME_LIMIT = 300  # seconds
+TIME_LIMIT = 600  # seconds
 
 # Instance - Need to ensure all elements can fit in the bin, else the solution
 # will be infeasible
@@ -396,8 +396,9 @@ class solverORTools:
 
         var_1 = [c_vars, x_vars, y_vars]
         var_2 = [c_vars_rot, x_vars_rot, y_vars_rot]
-        self.used_trucks_sol = self.printSolution(var_1, var_2)
-        print(f"> {self.used_trucks_sol} trucks have been used")
+        if VERB:
+            self.used_trucks_sol = self.printSolution(var_1, var_2)
+            print(f"> {self.used_trucks_sol} trucks have been used")
         print("+--------------------------------------------+")
 
         # Store solution - converted to the usual format

@@ -33,6 +33,14 @@ datasets = [
     "MODdatasetG",
 ]
 
+mod_datasets = [
+    "MODdatasetA",
+    "MODdatasetC",
+    "MODdatasetG",
+    "MODdatasetH",
+    "MODdatasetJ",
+]
+
 ivancic_datasets = [
     "thpack9_1",
     "thpack9_2",
@@ -96,6 +104,7 @@ beng_datasets = [
     "BENG10",
 ]
 
+app = []
 # Configuration:
 RUNS = {
     "ExactSolver": {
@@ -106,15 +115,16 @@ RUNS = {
     # "columnGeneration": (),
     "masterAco": {
         "solver": masterAco,
-        "datasets": (datasets, ivancic_datasets, beng_datasets),
+        "datasets": (datasets, app),
+        # "datasets": (datasets, ivancic_datasets, beng_datasets),
     },
     "solverORTools": {
         "solver": solverORTools,
-        "datasets": (),
+        "datasets": (mod_datasets, app),
     },
 }
 
-N_ITER = 10
+N_ITER = 5
 CHECKPOINT_PATH = "./results/checkpoints/"
 os.makedirs(CHECKPOINT_PATH, exist_ok=True)
 SUMMARY_PATH = "./results/summaries/"
