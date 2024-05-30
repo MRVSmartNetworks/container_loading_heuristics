@@ -1,6 +1,7 @@
 import os
 import time
 import warnings
+import math
 from typing import Dict, List, Tuple
 
 import matplotlib.patches as patches
@@ -333,22 +334,22 @@ class solverORTools:
 
                 for i in range(n_items):
                     self.model.add(
-                        c_vars[i][j][k] * int(self.items.iloc[i]["weight"])
+                        c_vars[i][j][k] * int(np.ceil(self.items.iloc[i]["weight"]))
                         <= self.trucks.loc[j, "max_weight_stack"]
                     )
                 for i in range(n_items):
                     self.model.add(
-                        c_vars_rot[i][j][k] * int(self.items.iloc[i]["weight"])
+                        c_vars_rot[i][j][k] * int(np.ceil(self.items.iloc[i]["weight"]))
                         <= self.trucks.loc[j, "max_weight_stack"]
                     )
                 # Weight constraint
                 self.model.add(
                     sum(
-                        c_vars[i][j][k] * int(self.items.iloc[i]["weight"])
+                        c_vars[i][j][k] * int(np.ceil(self.items.iloc[i]["weight"]))
                         for i in range(n_items)
                     )
                     + sum(
-                        c_vars_rot[i][j][k] * int(self.items.iloc[i]["weight"])
+                        c_vars_rot[i][j][k] * int(np.ceil(self.items.iloc[i]["weight"]))
                         for i in range(n_items)
                     )
                     <= self.trucks.loc[j, "max_weight"]
