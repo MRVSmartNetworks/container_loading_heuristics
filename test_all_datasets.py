@@ -35,9 +35,14 @@ datasets = [
 
 mod_datasets = [
     "MODdatasetA",
+    "MODdatasetB",
     "MODdatasetC",
+    "MODdatasetD",
+    "MODdatasetE",
+    "MODdatasetF",
     "MODdatasetG",
     "MODdatasetH",
+    "MODdatasetI",
     "MODdatasetJ",
 ]
 
