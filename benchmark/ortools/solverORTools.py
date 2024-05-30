@@ -151,7 +151,7 @@ class solverORTools:
                 # Interval vars definition (x and y)
                 x_interval_vars[i].append(
                     [
-                        self.model.NewOptionalIntervalVar(
+                        self.model.new_optional_interval_var(
                             start=x_vars[i][j][k],
                             size=self.items.iloc[i]["length"],
                             end=x_vars[i][j][k] + self.items.iloc[i]["length"],
@@ -163,7 +163,7 @@ class solverORTools:
                 )
                 y_interval_vars[i].append(
                     [
-                        self.model.NewOptionalIntervalVar(
+                        self.model.new_optional_interval_var(
                             start=y_vars[i][j][k],
                             size=self.items.iloc[i]["width"],
                             end=y_vars[i][j][k] + self.items.iloc[i]["width"],
@@ -210,7 +210,7 @@ class solverORTools:
                 # Interval vars definition (x and y) - rotated items
                 x_interval_vars_rot[i].append(
                     [
-                        self.model.NewOptionalIntervalVar(
+                        self.model.new_optional_interval_var(
                             start=x_vars_rot[i][j][k],
                             size=self.items.iloc[i]["width"],
                             end=x_vars_rot[i][j][k] + self.items.iloc[i]["width"],
@@ -222,7 +222,7 @@ class solverORTools:
                 )
                 y_interval_vars_rot[i].append(
                     [
-                        self.model.NewOptionalIntervalVar(
+                        self.model.new_optional_interval_var(
                             start=y_vars_rot[i][j][k],
                             size=self.items.iloc[i]["length"],
                             end=y_vars_rot[i][j][k] + self.items.iloc[i]["length"],
