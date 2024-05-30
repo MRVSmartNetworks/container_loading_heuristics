@@ -13,7 +13,7 @@ from ortools.sat.python import cp_model
 
 DEBUG = False
 VERB = False
-TIME_LIMIT = 100  # seconds
+TIME_LIMIT = 300  # seconds
 
 # Instance - Need to ensure all elements can fit in the bin, else the solution
 # will be infeasible
