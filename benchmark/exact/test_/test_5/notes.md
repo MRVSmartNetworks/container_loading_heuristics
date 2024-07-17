@@ -1,1 +1,0 @@
-same as test 3 but 0 over 1 violet limit on weight

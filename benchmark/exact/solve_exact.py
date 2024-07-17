@@ -2,6 +2,8 @@
 import os
 import pickle
 import time
+from pathlib import Path
+from typing import Optional
 
 import gurobipy as grb
 import numpy as np
@@ -38,100 +40,22 @@ class ExactSolver:
 
     def __init__(
         self,
-        df_items: pd.DataFrame,
-        df_vehicles: pd.DataFrame,
-        model_path: str = None,
-        pickle_path: str = None,
+        model_path: Optional[str] = None,
     ):
         """
         ExactSolver
         ---
-        ### inputs:
-        - df_items: dataframe containing items
-        - df_vehicles: dataframe containing vehicles
-        - model_path (default: None): path where to store the '.lp' model
+        Args
+            model_path (default: None): path where to store the '.lp' model
         """
-        if VERB:
-            print("Items:")
-            print(df_items, "\n")
-
-        self.df_items = df_items
-
-        # Define sets
-        self.n_items = len(df_items)
-        self.items = range(self.n_items)
-        self.n_vehicles = len(df_vehicles)
-        self.vehicles = range(self.n_vehicles)
-
         self.orientations = ["widthwise", "lengthwise"]
         self.dimensions_names = ["length", "width", "height"]
-
-        # The model assumes only 1 vehicle was provided (and all items can fit inside it)
-        self.vehicle = df_vehicles.iloc[0].to_dict()
-        self.df_vehicles = df_vehicles[["length", "width", "height"]].to_numpy()
-        if VERB:
-            print("Vehicle:")
-            print(df_vehicles, "\n")
-
-        dimensions_names = ["length", "width", "height"]
-
-        w = df_items["width"].to_numpy()
-        l = df_items["length"].to_numpy()
-        h = df_items["height"].to_numpy()
-
-        # Check for possible issues (e.g., missing data):
-        assert len(w) == len(l) and len(l) == len(
-            h
-        ), "The items are missing data (dimensions don't match)"
-
-        # Check: volume, surfaces, dimensions, weight
-        # Tot volume - NOTE: the nesting height is not considered
-        tot_item_vol = np.sum(w * l * h)
-        assert tot_item_vol <= (
-            self.vehicle["length"]
-            * self.vehicle["width"]
-            * self.vehicle["height"]
-        ), "The item volume exceeds the volume of the truck"
-
-        # Ensure surface is lower than total surface (FIXME - may be removed because of next one)
-        all_item_surf = (
-            w * l
-        )  # Array of surfaces of all items (XY) - check each is lower than truck area
-        assert all(
-            all_item_surf < (self.df_vehicles[0, 0] * self.df_vehicles[0, 1])
-        ), "Some items have bigger surface than the truck"
-
-        # Ensure all dimensions are smaller than the the corresponding truck
-        # dimensions and, if the item can be rotated, of the opposite ones
-        for i in self.items:
-            if df_items.iloc[i]["forced_orientation"] == "lengthwise":
-                # If lengthwise, i.e., no rotation:
-                assert (
-                    w[i] <= self.vehicle["width"]
-                    and l[i] <= self.vehicle["length"]
-                ), f"Item {i} cannot be placed in the truck"
-            elif df_items.iloc[i]["forced_orientation"] == "widthwise":
-                # If widthwise, i.e., rotation:
-                assert (
-                    w[i] <= self.vehicle["length"]
-                    and l[i] <= self.vehicle["width"]
-                ), f"Item {i} cannot be placed in the truck"
-            else:
-                # If no imposed orientation, check item can fit either rotated or not
-                assert (
-                    w[i] <= self.vehicle["width"]
-                    and l[i] <= self.vehicle["length"]
-                ) or (
-                    w[i] <= self.vehicle["length"]
-                    and l[i] <= self.vehicle["width"]
-                ), f"Item {i} cannot be placed in the truck"
+        self.name = "ExactSolver"
 
         # Create a new model
         self.model = grb.Model("EasyModel")
 
-        self.has_constraints = (
-            False  # true if the constraints have been initialized
-        )
+        self.has_constraints = False  # true if the constraints have been initialized
         # Set output folder for the model
         if model_path is None:
             script_folder = os.path.dirname(__file__)
@@ -145,20 +69,23 @@ class ExactSolver:
             os.makedirs(self.model_folder)
         self.model_path = os.path.join(self.model_folder, "model.lp")
 
-        self.path_sol = pickle_path
-
         # Time for solution
         self.comp_time = None
 
-        """ Define problem variables """
+    def define_model(self):
+        """
+        define_model
+        ---
+        Add constraints to Gurobi model.
+
+        This method was created to isolate the definition of the constraints from the
+        rest.
+        """
+        # Define problem variables
         # V_ij: 1 if item i is "immediately" below item j
         self.V = self.model.addVars(
             self.n_items, self.n_items, vtype=grb.GRB.BINARY, name="V"
         )
-
-        # W_ij: 1 if item i is below item j
-        # FIXME: not needed - redundant with B_ij2
-        # W = self.model.addVars(n_items, n_items, vtype=grb.GRB.BINARY, name="W")
 
         # B_ijd: 1 if item i comes before item j on dimension d
         self.B = self.model.addVars(
@@ -166,38 +93,22 @@ class ExactSolver:
         )
 
         # R_i: 1 if item i is rotatated widthwise
-        self.R = self.model.addVars(
-            self.n_items, vtype=grb.GRB.BINARY, name="R"
-        )
+        self.R = self.model.addVars(self.n_items, vtype=grb.GRB.BINARY, name="R")
 
         # X_d: coordinate (bottom) left point (as defined in project)
-        self.X = self.model.addVars(
-            self.n_items, 3, vtype=grb.GRB.CONTINUOUS, name="X"
-        )
+        self.X = self.model.addVars(self.n_items, 3, vtype=grb.GRB.CONTINUOUS, name="X")
 
-        self.obj = grb.quicksum(
-            self.X[i, d] for i in self.items for d in range(3)
-        )
+        self.obj = grb.quicksum(self.X[i, d] for i in self.items for d in range(3))
         # NB: il modello con obj = 1 è più veloce, con 50 items però non trova sol feasible.
         # NB: this also imply a preference from (0,0) on
         self.model.setObjective(self.obj, grb.GRB.MINIMIZE)
 
-    def defModel(self):
-        """
-        defModel
-        ---
-        Add constraints to Gurobi model.
-
-        This method was created to isolate the definition of the constraints from the rest.
-        """
-
-        """ Constraints definition """
+        # Constraints definition
         for i in self.items:
             # Element i fits entirely along truck length
             # (Rotation determines which dimension is along x)
             size = (
-                self.df_items.iloc[i][self.dimensions_names[0]]
-                * (1 - self.R[i])
+                self.df_items.iloc[i][self.dimensions_names[0]] * (1 - self.R[i])
                 + self.df_items.iloc[i][self.dimensions_names[1]] * self.R[i]
             )
             self.model.addConstr(
@@ -206,8 +117,7 @@ class ExactSolver:
             )
             # Element i fits entirely along truck width
             size = (
-                self.df_items.iloc[i][self.dimensions_names[1]]
-                * (1 - self.R[i])
+                self.df_items.iloc[i][self.dimensions_names[1]] * (1 - self.R[i])
                 + self.df_items.iloc[i][self.dimensions_names[0]] * self.R[i]
             )
             self.model.addConstr(
@@ -227,10 +137,7 @@ class ExactSolver:
         # Prevent 2 items from having the same coordinates
         self.model.addConstrs(
             (
-                grb.quicksum(
-                    self.B[i, j, d] + self.B[j, i, d] for d in range(3)
-                )
-                >= 1
+                grb.quicksum(self.B[i, j, d] + self.B[j, i, d] for d in range(3)) >= 1
                 for i in self.items
                 for j in range(i + 1, self.n_items)
             ),
@@ -246,8 +153,7 @@ class ExactSolver:
                     size = (
                         self.df_items.iloc[i][self.dimensions_names[0]]
                         * (1 - self.R[i])
-                        + self.df_items.iloc[i][self.dimensions_names[1]]
-                        * self.R[i]
+                        + self.df_items.iloc[i][self.dimensions_names[1]] * self.R[i]
                     )
                     self.model.addConstr(
                         self.X[j, 0]
@@ -257,8 +163,7 @@ class ExactSolver:
                     size = (
                         self.df_items.iloc[i][self.dimensions_names[1]]
                         * (1 - self.R[i])
-                        + self.df_items.iloc[i][self.dimensions_names[0]]
-                        * self.R[i]
+                        + self.df_items.iloc[i][self.dimensions_names[0]] * self.R[i]
                     )
                     self.model.addConstr(
                         self.X[j, 1]
@@ -296,9 +201,7 @@ class ExactSolver:
             "null_B_ii",
         )
         # Same, but for V
-        self.model.addConstrs(
-            (self.V[i, i] == 0 for i in self.items), "null_V_ii"
-        )
+        self.model.addConstrs((self.V[i, i] == 0 for i in self.items), "null_V_ii")
 
         # Stackability code:
         for i in self.items:
@@ -343,16 +246,10 @@ class ExactSolver:
         # TODO: CHECK BELOW: [fixed]
         # ROTATIONS:
         for i in self.items:
-            if (
-                self.df_items.iloc[i]["forced_orientation"] == "widthwise"
-            ):  # Rotated
-                self.model.addConstr(
-                    self.R[i] == 1, name=f"I{i}]rotation_widthwise"
-                )
+            if self.df_items.iloc[i]["forced_orientation"] == "widthwise":  # Rotated
+                self.model.addConstr(self.R[i] == 1, name=f"I{i}]rotation_widthwise")
             elif self.df_items.iloc[i]["forced_orientation"] == "lenghtwise":
-                self.model.addConstr(
-                    self.R[i] == 0, name=f"I{i}]rotation_lenghtwise"
-                )
+                self.model.addConstr(self.R[i] == 0, name=f"I{i}]rotation_lenghtwise")
 
         self.model.addConstrs(
             (
@@ -387,19 +284,49 @@ class ExactSolver:
         self.model.write(self.model_path)
         self.has_constraints = True
 
-    def solve(self, time_limit_s: float = TIME_LIMIT, plots: bool = True):
+    def solve(
+        self,
+        df_items,
+        df_vehicles,
+        *,
+        sol_file_name: Optional[str] = None,
+        time_limit: float = TIME_LIMIT,
+        **kwargs,
+    ):
         """
         solve
         ---
         Solve the exact model using Gurobi.
 
-        It is possible to specify a time limit (defaults to TIME_LIMIT)
+        Args:   
+            df_items: items data frame
+            df_vehicles: vehicles data frame
+            *
+            sol_file_nema: path of the solution (stored using pickle)
+            time_limit: solver time limit
         """
+        self.df_items = df_items
+
+        # Define sets
+        self.n_items = len(df_items)
+        self.items = range(self.n_items)
+        self.n_vehicles = len(df_vehicles)
+        self.vehicles = range(self.n_vehicles)
+
+        # The model assumes only 1 vehicle was provided (and all items can fit inside it)
+        self.vehicle = df_vehicles.iloc[0].to_dict()
+        self.df_vehicles = df_vehicles[["length", "width", "height"]].to_numpy()
+        if VERB:
+            print("Vehicle:")
+            print(df_vehicles, "\n")
+
+        self.check_valid_data()
+
         if not self.has_constraints:
-            self.defModel()
+            self.define_model()
 
         # Set TIME LIMIT:
-        self.model.setParam("TimeLimit", TIME_LIMIT)
+        self.model.setParam("TimeLimit", time_limit)
         # -----
         start = time.time()
         self.model.optimize()
@@ -462,10 +389,8 @@ class ExactSolver:
         for i in range(self.n_items):
             for d in range(2):
                 sizes[i, d] = (
-                    self.df_items.iloc[i][self.dimensions_names[d]]
-                    * (1 - self.R[i].X)
-                    + self.df_items.iloc[i][self.dimensions_names[1 - d]]
-                    * self.R[i].X
+                    self.df_items.iloc[i][self.dimensions_names[d]] * (1 - self.R[i].X)
+                    + self.df_items.iloc[i][self.dimensions_names[1 - d]] * self.R[i].X
                 )
 
                 coordinates[i, d] = self.X[i, d].X
@@ -480,14 +405,18 @@ class ExactSolver:
             y_e[i] = y_o[i] + sizes[i, 1]
 
         # Save the information needed for plotting the solution using pickle
-        if self.path_sol is not None:
+        if sol_file_name:
+            fname_corr_extension = ".".join(sol_file_name.split(".")[:-1]) + ".pkl"
+            file_path = Path(os.path.join("results", fname_corr_extension))
+            os.makedirs(file_path.parent, exist_ok=True)
             exact_solution = {
                 "coordinates": coordinates,
                 "sizes": sizes,
                 "n_items": self.n_items,
                 "df_vehicles": self.df_vehicles,
             }
-            pickle.dump(exact_solution, self.path_sol)
+            with open(file_path, "wb") as f:
+                pickle.dump(exact_solution, f)
 
         check_3D(
             coordinates=coordinates,
@@ -495,6 +424,59 @@ class ExactSolver:
             n_items=self.n_items,
             df_vehicles=self.df_vehicles,
         )
+
+        # TODO: return time and cost ?
+        return self.comp_time, self.vehicle["cost"]
+
+    def check_valid_data(self):
+        """
+        Perform checks on the validity of the provided data set.
+        """
+        # Checks
+        w = self.df_items["width"].to_numpy()
+        l = self.df_items["length"].to_numpy()
+        h = self.df_items["height"].to_numpy()
+
+        # Check for possible issues (e.g., missing data):
+        assert len(w) == len(l) and len(l) == len(
+            h
+        ), "The items are missing data (dimensions don't match)"
+
+        # Check: volume, surfaces, dimensions, weight
+        # Tot volume - NOTE: the nesting height is not considered
+        tot_item_vol = np.sum(w * l * h)
+        assert tot_item_vol <= (
+            self.vehicle["length"] * self.vehicle["width"] * self.vehicle["height"]
+        ), "The item volume exceeds the volume of the truck"
+
+        # Ensure surface is lower than total surface
+        all_item_surf = (
+            w * l
+        )  # Array of surfaces of all items (XY) - check each is lower than truck area
+        assert all(
+            all_item_surf < (self.df_vehicles[0, 0] * self.df_vehicles[0, 1])
+        ), "Some items have bigger surface than the truck"
+
+        # Ensure all dimensions are smaller than the the corresponding truck
+        # dimensions and, if the item can be rotated, of the opposite ones
+        for i in self.items:
+            if self.df_items.iloc[i]["forced_orientation"] == "lengthwise":
+                # If lengthwise, i.e., no rotation:
+                assert (
+                    w[i] <= self.vehicle["width"] and l[i] <= self.vehicle["length"]
+                ), f"Item {i} cannot be placed in the truck"
+            elif self.df_items.iloc[i]["forced_orientation"] == "widthwise":
+                # If widthwise, i.e., rotation:
+                assert (
+                    w[i] <= self.vehicle["length"] and l[i] <= self.vehicle["width"]
+                ), f"Item {i} cannot be placed in the truck"
+            else:
+                # If no imposed orientation, check item can fit either rotated or not
+                assert (
+                    w[i] <= self.vehicle["width"] and l[i] <= self.vehicle["length"]
+                ) or (
+                    w[i] <= self.vehicle["length"] and l[i] <= self.vehicle["width"]
+                ), f"Item {i} cannot be placed in the truck"
 
 
 if __name__ == "__main__":
@@ -507,5 +489,5 @@ if __name__ == "__main__":
         os.path.join("paper-tests", "test_", dataset, "vehicles.csv"),
     )
 
-    solver = ExactSolver(df_items, df_vehicles)
-    solver.solve()
+    solver = ExactSolver()
+    solver.solve(df_items, df_vehicles)
