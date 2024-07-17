@@ -3,6 +3,7 @@
 
 import os
 import time
+from typing import Dict, Optional
 
 import pandas as pd
 from benchmark.aco.solver_ACO import SolverACO
@@ -110,7 +111,7 @@ class masterAco:
                 N_PAT_SKIP += 1
         return df_items
 
-    def solve(self, df_items, df_vehicles, sol_file_name, time_limit=300):
+    def solve(self, df_items, df_vehicles, sol_file_name, *, time_limit=300, pass_t_aco: Dict[str, float] = {}):
         t1 = time.time()
         self.df_items = df_items
         self.df_vehicles = df_vehicles
@@ -134,6 +135,8 @@ class masterAco:
             stackInfo,
         ) = sol_aco.solver(self.df_items, self.df_vehicles, 60000)
         tACO = round(time.time() - t2, 2)
+
+        pass_t_aco["tACO"] = tACO
 
         of = sol_check(df_sol, self.df_vehicles, self.df_items)
         # print(of)
@@ -167,4 +170,4 @@ class masterAco:
         print(f"Number of pattern not inserted:", N_PAT_SKIP)
         print("Optimal value of solverACO:", totCost)
         t = round(time.time() - t1, 2)
-        return t, tACO, totCost
+        return t, totCost

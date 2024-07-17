@@ -6,6 +6,7 @@ import time
 
 import numpy as np
 import pandas as pd
+
 from benchmark.aco.sub.config import *
 from benchmark.aco.sub.stack import Stack
 from benchmark.aco.sub.utilities import *
@@ -47,7 +48,9 @@ class SolverACO:
             "orient": [],
         }
 
-    def solve(self, df_items, df_vehicles, sol_file_name, time_limit=30 * 60):
+    def solve(
+        self, df_items, df_vehicles, sol_file_name, *, time_limit=30 * 60, **kwargs
+    ):
         """
         solve
         -----

@@ -1,14 +1,13 @@
+import math
 import os
 import time
 import warnings
-import math
 from typing import Dict, List, Tuple
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
 from ortools.sat.python import cp_model
 
 DEBUG = False
@@ -37,9 +36,11 @@ class solverORTools:
         self,
         items: pd.DataFrame,
         trucks: pd.DataFrame,
-        max_truck_n: List[int] = [],
+        *,
         sol_file_name=None,
         time_limit=TIME_LIMIT,
+        max_truck_n: List[int] = [],
+        **kwargs,
     ):
         """
         Solve the problem using OR Tools' CP solver.
