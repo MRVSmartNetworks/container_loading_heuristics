@@ -133,7 +133,7 @@ class columnGeneration:
             except KeyboardInterrupt:
                 break
 
-        final_obj_val = master.solveModel(file_name="benchmark/results/model.lp")
+        final_obj_val = master.solveModel(file_name="./results/model.lp")
         tot_time = time.time() - t_start
         print(f"\nTotal elapsed time: {round(tot_time, 2)} s")
 
