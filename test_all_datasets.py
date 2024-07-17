@@ -18,7 +18,6 @@ Example usage:
 """
 
 datasets = [
-    "dataset_small",
     "datasetA",
     "datasetB",
     "datasetC",
@@ -29,8 +28,6 @@ datasets = [
     "datasetH",
     "datasetI",
     "datasetJ",
-    "easy_dataset",
-    "MODdatasetG",
 ]
 
 mod_datasets = [
@@ -105,8 +102,6 @@ beng_datasets = [
     "BENG06",
     "BENG07",
     "BENG08",
-    "BENG09",
-    "BENG10",
 ]
 
 app = []
