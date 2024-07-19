@@ -24,8 +24,8 @@ The available solvers are:
 
 start_ch = "A"
 end_ch = "J"
-datasets = [f"dataset{x}" for x in range(ord(start_ch), ord(end_ch) * 1)]
-mod_datasets = [f"MODdataset{x}" for x in range(ord(start_ch), ord(end_ch) * 1)]
+datasets = [f"dataset{chr(x)}" for x in range(ord(start_ch), ord(end_ch) * 1)]
+mod_datasets = [f"MODdataset{chr(x)}" for x in range(ord(start_ch), ord(end_ch) * 1)]
 ivancic_datasets = [f"thpack9_{x}" for x in range(1, 48)]
 beng_datasets = [f"BENG0{x}" for x in range(1, 9)]
 exact_datasets = [f"test_exact_{x}" for x in range(1, 10)]
