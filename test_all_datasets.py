@@ -45,7 +45,7 @@ SUMMARY_PATH = "./results/summaries/"
 os.makedirs(SUMMARY_PATH, exist_ok=True)
 ONLY_STATS = False
 
-all_solvers = (ExactSolver, SolverACO, columnGeneration, masterAco, solverORTools)
+all_solvers = (ExactSolver, SolverACO, masterAco, solverORTools)
 
 
 def eval_cost(
