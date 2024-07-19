@@ -30,6 +30,14 @@ ivancic_datasets = [f"thpack9_{x}" for x in range(1, 48)]
 beng_datasets = [f"BENG0{x}" for x in range(1, 9)]
 exact_datasets = [f"test_exact_{x}" for x in range(1, 10)]
 
+MAP_DS = {
+    "realistic-ds": datasets,
+    "mod-ds": mod_datasets,
+    "ivancic-ds": ivancic_datasets,
+    "beng-ds": beng_datasets,
+    "exact-ds": exact_datasets,
+}
+
 app = []
 # Configuration:
 RUNS = {
@@ -105,15 +113,12 @@ def stats_properties(
 
 
 def main(args):
-    print(args.solver)
-    print(args.dataset)
-
     used_solvers = args.solver
 
     used_ds = {}
     if args.dataset is not None and args.dataset != []:
         for solv in used_solvers:
-            used_ds[solv] = args.dataset
+            used_ds[solv] = (MAP_DS[ds] for ds in args.dataset)
     else:
         for solv in used_solvers:
             used_ds[solv] = RUNS[solv]["default_datasets"]
