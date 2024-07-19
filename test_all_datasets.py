@@ -33,9 +33,9 @@ exact_datasets = [f"test_exact_{x}" for x in range(1, 10)]
 app = []
 # Configuration:
 RUNS = {
-    "ExactSolver": {"solver": ExactSolver, "datasets": (exact_datasets,)},
-    "masterAco": {"solver": masterAco, "datasets": (datasets, app)},
-    "solverORTools": {"solver": solverORTools, "datasets": (mod_datasets, app)},
+    "exact-solver": {"solver": ExactSolver, "default_datasets": (exact_datasets,)},
+    "master-aco": {"solver": masterAco, "default_datasets": (datasets, app)},
+    "or-tools": {"solver": solverORTools, "default_datasets": (mod_datasets, app)},
 }
 
 N_ITER = 5
@@ -105,28 +105,21 @@ def stats_properties(
 
 
 def main(args):
-    used_solvers = []
-    if args.exact:
-        used_solvers.append("ExactSolver")
-    if args.master_aco:
-        used_solvers.append("masterAco")
-    if args.or_tools:
-        used_solvers.append("solverORTools")
+    print(args.solver)
+    print(args.dataset)
 
-    used_ds = []
-    if args.realistic_ds:
-        used_ds.append(datasets)
-    if args.mod_ds:
-        used_ds.append(mod_datasets)
-    if args.ivancic_ds:
-        used_ds.append(ivancic_datasets)
-    if args.beng_ds:
-        used_ds.append(beng_datasets)
-    if args.exact_ds:
-        used_ds.append(exact_datasets)
+    used_solvers = args.solver
+
+    used_ds = {}
+    if args.dataset is not None and args.dataset != []:
+        for solv in used_solvers:
+            used_ds[solv] = args.dataset
+    else:
+        for solv in used_solvers:
+            used_ds[solv] = RUNS[solv]["default_datasets"]
 
     for k in used_solvers:
-        for ds_list in used_ds:
+        for ds_list in used_ds[k]:
             for i, dataset_name in enumerate(ds_list):
                 df_items = pd.read_csv(
                     os.path.join(".", "data", dataset_name, "items.csv"),
@@ -214,24 +207,27 @@ def main(args):
 
 
 if __name__ == "__main__":
+    supported_solvers = list(RUNS.keys())
+    supported_datasets = ("realistic-ds", "mod-ds", "ivancic-ds", "beng-ds", "exact-ds")
     parser = argparse.ArgumentParser(description=docstring)
-    parser.add_argument("--exact", action="store_true", help="Select exact solver")
-    parser.add_argument("--master-aco", action="store_true", help="Select Master ACO")
     parser.add_argument(
-        "--or-tools", action="store_true", help="Select OR Tools solver"
+        "--solver",
+        metavar="SOLVER",
+        required=True,
+        type=str,
+        choices=supported_solvers,
+        nargs="+",
+        help=f"solver(s) to be used; supports: {supported_solvers}"
     )
     parser.add_argument(
-        "--realistic-ds", action="store_true", help="Use realistic data sets"
+        "--dataset",
+        metavar="DATASET",
+        required=False,
+        type=str,
+        choices=supported_datasets,
+        nargs="+",
+        help=f"dataset(s) to be used - if not specified, will use the default ones for the solver(s); supports: {supported_datasets}"
     )
-    parser.add_argument("--mod-ds", action="store_true", help="Use MOD data sets")
-    parser.add_argument(
-        "--ivancic-ds", action="store_true", help="Use Ivancic data sets"
-    )
-    parser.add_argument("--beng-ds", action="store_true", help="Use BENG data sets")
-    parser.add_argument(
-        "--exact-ds", action="store_true", help="Use data sets for exact solver"
-    )
-
     args = parser.parse_args()
 
     main(args)
