@@ -1,0 +1,2 @@
+id_truck,length,width,height,max_weight,max_weight_stack,cost,max_density
+V00,20,40,10,30000,100000,1500,1500
