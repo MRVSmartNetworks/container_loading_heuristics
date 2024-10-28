@@ -11,8 +11,8 @@ abort() {
 
 trap abort ERR SIGINT INT
 
-IN_REPO="https://github.com/ktnr/BinPacking2D"
-DS_DIR="BinPacking2D/data/input/BPP/CLASS"
+IN_REPO="https://github.com/Oscar-Oliveira/OR-Datasets"
+DS_DIR="OR-Datasets/Cutting-and-Packing/2D/Datasets/CLASS/json"
 py_script="$(realpath "$0" | xargs dirname)/2dbpp_benchmark_dataset.py"
 tmp_dir=$(mktemp -d)
 

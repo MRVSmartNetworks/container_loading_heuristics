@@ -27,12 +27,12 @@ mod_datasets = [f"MODdataset{chr(x)}" for x in range(ord(start_ch), ord(end_ch) 
 ivancic_datasets = [f"thpack9_{x}" for x in range(1, 48)]
 beng_datasets = [f"BENG0{x}" for x in range(1, 9)]
 exact_datasets = [f"test_exact_{x}" for x in range(1, 10)]
-bpp_datasets_pattern = "CLASS0*"
-bpp_datasets = [
+class_datasets_pattern = "CLASS0*"
+class_datasets = [
     os.path.basename(os.path.normpath(f))
-    for f in glob.glob(os.path.join("data", bpp_datasets_pattern))
+    for f in glob.glob(os.path.join("data", class_datasets_pattern))
 ]
-bpp_datasets.sort()
+class_datasets.sort()
 
 MAP_DS = {
     "realistic-ds": datasets,
@@ -40,7 +40,7 @@ MAP_DS = {
     "ivancic-ds": ivancic_datasets,
     "beng-ds": beng_datasets,
     "exact-ds": exact_datasets,
-    "2dbpp": bpp_datasets,
+    "2dbpp": class_datasets,
 }
 
 app = []
