@@ -1,15 +1,13 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import argparse
+import glob
 import os
 import random
-import time
 
-import numpy as np
 import pandas as pd
 
-from benchmark import (ExactSolver, SolverACO, masterAco,
-                       solverORTools)
+from benchmark import ExactSolver, SolverACO, masterAco, solverORTools
 from benchmark.aco.solver_ACO import Our_exception
 from sol_representation import *
 
@@ -29,6 +27,12 @@ mod_datasets = [f"MODdataset{chr(x)}" for x in range(ord(start_ch), ord(end_ch) 
 ivancic_datasets = [f"thpack9_{x}" for x in range(1, 48)]
 beng_datasets = [f"BENG0{x}" for x in range(1, 9)]
 exact_datasets = [f"test_exact_{x}" for x in range(1, 10)]
+bpp_datasets_pattern = "CLASS0*"
+bpp_datasets = [
+    os.path.basename(os.path.normpath(f))
+    for f in glob.glob(os.path.join("data", bpp_datasets_pattern))
+]
+bpp_datasets.sort()
 
 MAP_DS = {
     "realistic-ds": datasets,
@@ -36,6 +40,7 @@ MAP_DS = {
     "ivancic-ds": ivancic_datasets,
     "beng-ds": beng_datasets,
     "exact-ds": exact_datasets,
+    "2dbpp": bpp_datasets,
 }
 
 app = []
@@ -213,7 +218,14 @@ def main(args):
 
 if __name__ == "__main__":
     supported_solvers = list(RUNS.keys())
-    supported_datasets = ("realistic-ds", "mod-ds", "ivancic-ds", "beng-ds", "exact-ds")
+    supported_datasets = (
+        "realistic-ds",
+        "mod-ds",
+        "ivancic-ds",
+        "beng-ds",
+        "exact-ds",
+        "2dbpp",
+    )
     parser = argparse.ArgumentParser(description=docstring)
     parser.add_argument(
         "--solver",
@@ -222,7 +234,7 @@ if __name__ == "__main__":
         type=str,
         choices=supported_solvers,
         nargs="+",
-        help=f"solver(s) to be used; supports: {supported_solvers}"
+        help=f"solver(s) to be used; supports: {supported_solvers}",
     )
     parser.add_argument(
         "--dataset",
@@ -231,7 +243,7 @@ if __name__ == "__main__":
         type=str,
         choices=supported_datasets,
         nargs="+",
-        help=f"dataset(s) to be used - if not specified, will use the default ones for the solver(s); supports: {supported_datasets}"
+        help=f"dataset(s) to be used - if not specified, will use the default ones for the solver(s); supports: {supported_datasets}",
     )
     args = parser.parse_args()
 
