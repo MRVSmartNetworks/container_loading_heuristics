@@ -543,9 +543,7 @@ class SolverACO:
             )
 
         # Possible last vehicles
-        Last_vehicles = Usable_vehicles[
-            Usable_vehicles.max_weight >= (tot_weight * 1.1)
-        ]
+        Last_vehicles = Usable_vehicles[Usable_vehicles.max_weight >= (tot_weight)]
         Last_vehicles = Last_vehicles[
             Last_vehicles.volume >= (tot_vol * 1.25)
         ]  # *1.25 is to have some margin
