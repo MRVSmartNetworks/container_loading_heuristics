@@ -34,6 +34,10 @@ class_datasets = [
 ]
 class_datasets.sort()
 
+cgcut_datasets = [f"cgcut{x}" for x in range(1, 4)]
+gcut_datasets = [f"gcut{x}" for x in range(1, 14)]
+ngcut_datasets = [f"ngcut{x}" for x in range(1, 13)]
+
 MAP_DS = {
     "realistic-ds": datasets,
     "mod-ds": mod_datasets,
@@ -41,6 +45,9 @@ MAP_DS = {
     "beng-ds": beng_datasets,
     "exact-ds": exact_datasets,
     "2dbpp": class_datasets,
+    "cgcut": cgcut_datasets,
+    "gcut": gcut_datasets,
+    "ngcut": ngcut_datasets
 }
 
 app = []
@@ -225,6 +232,9 @@ if __name__ == "__main__":
         "beng-ds",
         "exact-ds",
         "2dbpp",
+        "gcut",
+        "cgcut",
+        "ngcut"
     )
     parser = argparse.ArgumentParser(description=docstring)
     parser.add_argument(
