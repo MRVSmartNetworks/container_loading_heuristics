@@ -1,0 +1,8 @@
+id_item,length,width,height,weight,nesting_height,stackability_code,forced_orientation,max_stackability
+I1,15,2,1,1,0,1,l,1
+I2,15,2,1,1,0,2,l,1
+I3,7,3,1,1,0,3,l,1
+I4,9,1,1,1,0,4,l,1
+I5,8,3,1,1,0,5,l,1
+I6,12,2,1,1,0,6,l,1
+I7,12,2,1,1,0,7,l,1
