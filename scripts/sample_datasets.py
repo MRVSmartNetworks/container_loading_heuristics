@@ -11,10 +11,15 @@ for subdir, dirs, files in os.walk(rootDir):
         for newDir in newDatasetsDir:
             if not os.path.exists(newDir):
                 os.makedirs(newDir)
-            sampledItems = items.sample(frac=random.uniform(0.3, 0.5))
-            sampledItems.to_csv(newDir + "/items.csv")
-            vehicles.to_csv(newDir + "/vehicles.csv")
-            print("New dataset in", newDir)
+                if len(items) >= 2000:
+                    if len(items) > 4000:
+                        n = 3000
+                    else:
+                        n = 2000
+                    sampledItems = items.sample(n=n)
+                    sampledItems.to_csv(newDir + "/items.csv")
+                    vehicles.to_csv(newDir + "/vehicles.csv")
+                    print("New dataset in", newDir)
 
 
 
