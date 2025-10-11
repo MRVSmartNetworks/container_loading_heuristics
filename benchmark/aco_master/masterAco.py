@@ -17,7 +17,7 @@ from .sub.config import ONE_LAYER
 N_PAT_SKIP = 0
 
 
-class masterAco:
+class MasterAco:
     """
     acoMaster
     ---------

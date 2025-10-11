@@ -4,7 +4,7 @@ import os
 
 import pandas as pd
 
-from benchmark import ExactSolver, SolverACO, columnGeneration, masterAco, solverORTools
+from benchmark import ExactSolver, SolverACO, columnGeneration, MasterAco, SolverORTools
 
 # from solver import Solver23
 from sol_representation import *
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     df_vehicles = pd.read_csv(
         os.path.join(".", "data", dataset_name, "vehicles.csv"),
     )
-    
+
     solver = SolverACO()
     sol_file_name = f"{solver.name}_{dataset_name}_sol.csv"
     print(f"\n{solver.name}\n==========================================")

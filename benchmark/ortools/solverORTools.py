@@ -18,7 +18,7 @@ TIME_LIMIT = 300  # seconds
 # will be infeasible
 
 
-class solverORTools:
+class SolverORTools:
     def __init__(self) -> None:
         self.name = "solORTools"
         self.sol = {

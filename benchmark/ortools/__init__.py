@@ -1,3 +1,3 @@
-from .solverORTools import solverORTools
+from .solverORTools import SolverORTools
 
-__all__ = ["solverORTools"]
+__all__ = ["SolverORTools"]

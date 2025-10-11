@@ -19,7 +19,7 @@ else:
 from sol_representation import *
 
 
-class Our_exception(ValueError):
+class ACOException(ValueError):
     pass
 
 
@@ -289,7 +289,7 @@ class SolverACO:
                         }
                     )
             except:
-                raise Our_exception(
+                raise ACOException(
                     "No vehicles can carry certain items due to constrain not respected"
                 )
 
@@ -538,7 +538,7 @@ class SolverACO:
 
         # This exception happen when exist one or more items that singularly cannot be put in any truck
         if Usable_vehicles.empty:
-            raise Our_exception(
+            raise ACOException(
                 "No vehicles can carry certain items due to constrain not respected"
             )
 

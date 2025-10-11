@@ -1,3 +1,3 @@
-from .masterAco import masterAco
+from .masterAco import MasterAco
 
-__all__ = ["masterAco", "MasterProblem"]
+__all__ = ["MasterAco", "MasterProblem"]
