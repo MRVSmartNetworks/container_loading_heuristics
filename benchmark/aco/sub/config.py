@@ -14,7 +14,7 @@ PARAM_FILE = "solver\group23\parameters_file\datasetF"
 PRINT = False
 
 # If true select the ACO version with slices
-SLICES = True
+SLICES = False
 
 # Set number of weight clusters (set 1 for avoid clustering)
 N_WEIGHT_CLUSTERS = 1
@@ -44,3 +44,18 @@ SUMMARY = True
 
 SAVE_CHECKPOINT = True
 CHECKPOINT_PATH = "./results/checkpoints/"
+
+# ATTRACTIVENESS PARAMETERS 
+# if true adds the fit quality component to the attractiveness
+ATTRACTIVENESS_FIT_QUALITY_COMPONENT = True
+WEIGHT_FIT_QUALITY_COMPONENT = 0.5
+
+# If true adds the area component to the attractiveness
+ATTRACTIVENESS_AREA_COMPONENT = True
+WEIGHT_AREA_COMPONENT = 0.3
+
+# If true adds the penalty component to the attractiveness
+ATTRACTIVENESS_PENALTY_COMPONENT = True
+WEIGHT_PENALTY_COMPONENT = 0.2
+GAPS_AREA_THRESHOLD = 0.1
+GAPS_SCALING_FACTOR = 0.3

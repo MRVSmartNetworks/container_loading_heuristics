@@ -96,3 +96,7 @@ class Stack:
             (x_origin, y_origin + self.width), 
             (x_origin + self.length, y_origin + self.width)
         ]
+
+    def contains_point(self, x: float, y: float) -> bool:
+        """Check if point (x, y) is inside this rectangle"""
+        return self.vertexes[0][0] <= x < self.vertexes[1][0] and self.vertexes[0][1] <= y < self.vertexes[2][1]

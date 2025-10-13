@@ -40,7 +40,7 @@ def create_comparison(
     return new_comp
 
 if __name__ == "__main__":
-    dataset_name = "thpack9_47"
+    dataset_name = "datasetA"
     df_items = pd.read_csv(
         os.path.join(".", "data", dataset_name, "items.csv"),
     )

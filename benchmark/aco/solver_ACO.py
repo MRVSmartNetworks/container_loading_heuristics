@@ -49,7 +49,7 @@ class SolverACO:
         }
 
     def solve(
-        self, df_items, df_vehicles, sol_file_name, *, time_limit=30 * 60, **kwargs
+        self, df_items, df_vehicles, sol_file_name, *, time_limit=90 * 60, **kwargs
     ):
         """
         solve
