@@ -17,7 +17,7 @@ from multi_runs.config import (
     RUNS,
     SUMMARY_PATH,
 )
-from multi_runs.profiler import loop_timer
+from multi_runs.profiler import profile_usage
 from multi_runs.utils import eval_cost, stats_properties
 from sol_representation import sol_check
 
@@ -33,93 +33,89 @@ The available solvers are:
 all_solvers = (ExactSolver, SolverACO, MasterAco, SolverORTools)
 
 
-@loop_timer
+@profile_usage(interval=0.5)
+def single_run(
+    solver_name: str,
+    dataset_name: str,
+    run_number: int,
+):
+    """
+    Performs individual run for one solver, using a specific instance of a dataset.
+    This is meant to run `N_ITER` times.
+    """
+    df_items = pd.read_csv(
+        os.path.join(".", "data", dataset_name, "items.csv"),
+    )
+    df_vehicles = pd.read_csv(
+        os.path.join(".", "data", dataset_name, "vehicles.csv"),
+    )
+    if "thpack" in dataset_name:
+        df_vehicles = df_vehicles.iloc[1].to_frame().T
+    sol_file_name = f"{solver_name}_{dataset_name}_sol.csv"
+
+    try:
+        solver = RUNS[solver_name]["solver"]()
+        extra_res = {}  # Paceholder kwarg
+        # Common solver API:
+        #  time, cost = solver.solve(items, vehicles, out_filename, time_limit, ...)
+        t, solver_cost = solver.solve(
+            df_items,
+            df_vehicles,
+            sol_file_name=sol_file_name,
+            time_limit=300,
+            pass_t_aco=extra_res,
+        )
+        # Read dataframe solution
+        if os.path.exists(os.path.join("results", sol_file_name)):
+            df_sol = pd.read_csv(
+                os.path.join("results", sol_file_name),
+            )
+            os.makedirs(
+                os.path.join(".", "results", dataset_name),
+                exist_ok=True,
+            )
+            df_sol.to_csv(f"./results/{dataset_name}/{random.randint(0, 100)}_{sol_file_name}")
+            # Check if solution is correct
+            try:
+                of = sol_check(df_sol, df_vehicles, df_items)
+            except Exception as e:
+                of = f"{e}"
+                print(of)
+                return
+            # Evaluate the total cost
+            cost = eval_cost(df_sol, df_vehicles)
+            print(f"\nIteration {run_number}: cost={cost}, time={t}\n")
+
+            # save checkpoint
+            f_checkp = open(
+                CHECKPOINT_PATH / f"{solver_name}_{dataset_name}_checkpoint.csv",
+                "a",
+            )
+            if os.stat(CHECKPOINT_PATH / f"{solver_name}_{dataset_name}_checkpoint.csv").st_size == 0:
+                f_checkp.write(f"cost,time,solver_cost,ACO_time\n")
+            f_checkp.write(f"{cost},{t},{solver_cost},{-1 if 'tACO' not in extra_res else extra_res['tACO']}\n")
+
+            f_checkp.close()
+        else:
+            print("The solver did not generate a solution CSV.\nThis is to be expected if using `--exact`")
+    except ACOException:
+        print(f"\nItems cannot be stored in the proposed trucks for {dataset_name}.\n")
+
+
 def run_solver_datasets(solver_name: str, datasets: List[List[str]]):
     for ds_list in datasets:
         for i, dataset_name in enumerate(ds_list):
-            df_items = pd.read_csv(
-                os.path.join(".", "data", dataset_name, "items.csv"),
-            )
-            df_vehicles = pd.read_csv(
-                os.path.join(".", "data", dataset_name, "vehicles.csv"),
-            )
-            if "thpack" in dataset_name:
-                df_vehicles = df_vehicles.iloc[1].to_frame().T
-            sol_file_name = f"{solver_name}_{dataset_name}_sol.csv"
-
             print(f"{dataset_name}\n============================================\n")
             if ONLY_STATS:
                 continue
 
             for i in range(N_ITER):
                 print(f"++++++++++++++++++ Iteration {i + 1} ++++++++++++++++++")
-                try:
-                    solver = RUNS[solver_name]["solver"]()
-                    extra_res = {}  # Paceholder kwarg
-                    # Common solver API:
-                    #  time, cost = solver.solve(items, vehicles, out_filename, time_limit, ...)
-                    t, solver_cost = solver.solve(
-                        df_items,
-                        df_vehicles,
-                        sol_file_name=sol_file_name,
-                        time_limit=300,
-                        pass_t_aco=extra_res,
-                    )
-                    # Read dataframe solution
-                    if os.path.exists(os.path.join("results", sol_file_name)):
-                        df_sol = pd.read_csv(
-                            os.path.join("results", sol_file_name),
-                        )
-                        os.makedirs(
-                            os.path.join(".", "results", dataset_name),
-                            exist_ok=True,
-                        )
-                        df_sol.to_csv(
-                            f"./results/{dataset_name}/{random.randint(0, 100)}_{sol_file_name}"
-                        )
-                        # Check if solution is correct
-                        try:
-                            of = sol_check(df_sol, df_vehicles, df_items)
-                        except Exception as e:
-                            of = f"{e}"
-                            print(of)
-                            continue
-                        # Evaluate the total cost
-                        cost = eval_cost(df_sol, df_vehicles)
-                        print(f"\nIteration {i}: cost={cost}, time={t}\n")
-
-                        # save checkpoint
-                        f_checkp = open(
-                            CHECKPOINT_PATH
-                            / f"{solver.name}_{dataset_name}_checkpoint.csv",
-                            "a",
-                        )
-                        if (
-                            os.stat(
-                                CHECKPOINT_PATH
-                                / f"{solver.name}_{dataset_name}_checkpoint.csv"
-                            ).st_size
-                            == 0
-                        ):
-                            f_checkp.write(f"cost,time,solver_cost,ACO_time\n")
-                        f_checkp.write(
-                            f"{cost},{t},{solver_cost},{-1 if 'tACO' not in extra_res else extra_res['tACO']}\n"
-                        )
-
-                        f_checkp.close()
-                    else:
-                        print(
-                            "The solver did not generate a solution CSV\n"
-                            "This is to be expected if using `--exact`"
-                        )
-                except ACOException:
-                    print(
-                        f"\nItems cannot be stored in the proposed trucks for {dataset_name}.\n"
-                    )
+                single_run(solver_name, dataset_name, i)
 
             stats_properties(
-                CHECKPOINT_PATH / f"{solver.name}_{dataset_name}_checkpoint.csv",
-                SUMMARY_PATH / f"{solver.name}_summary.csv",
+                CHECKPOINT_PATH / f"{solver_name}_{dataset_name}_checkpoint.csv",
+                SUMMARY_PATH / f"{solver_name}_summary.csv",
                 dataset_name,
             )
 

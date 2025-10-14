@@ -16,7 +16,6 @@ def profile_usage(interval: float = 0.5):
     """
     Decorator to get metrics
     """
-
     def decorator(func: Callable):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -85,7 +84,6 @@ def profile_usage(interval: float = 0.5):
                 "TIMESTAMP",
                 "SOLVER",
                 "DATASET",
-                "INSTANCE",
                 "RUN",  # FIXME: keep?
                 "RUNTIME",
                 "CPU_TIME_USER",
@@ -107,7 +105,6 @@ def profile_usage(interval: float = 0.5):
                         str(args[0]),
                         str(args[1]),
                         str(args[2]),
-                        str(args[3]),
                         f"{runtime:.3f}",
                         f"{cpu_times_user:.3f}",
                         f"{cpu_times_system:.3f}",

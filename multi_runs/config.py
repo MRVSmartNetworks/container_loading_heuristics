@@ -38,7 +38,7 @@ RUNS = {
 
 project_root = Path(os.path.dirname(__file__)).parent
 
-N_ITER = 5
+N_ITER = 1
 CHECKPOINT_PATH = project_root / "results/checkpoints/"
 SUMMARY_PATH = project_root / "results/summaries/"
 ONLY_STATS = False
