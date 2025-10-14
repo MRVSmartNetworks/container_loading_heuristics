@@ -35,7 +35,7 @@ class MasterAco:
     """
 
     def __init__(self):
-        self.name = "masterAco"
+        self.name = "MasterAco"
         self.df_vehicles = None
         self.df_items = None
 

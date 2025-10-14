@@ -20,7 +20,7 @@ TIME_LIMIT = 300  # seconds
 
 class SolverORTools:
     def __init__(self) -> None:
-        self.name = "solORTools"
+        self.name = "SolverORTools"
         self.sol = {
             "type_vehicle": [],
             "idx_vehicle": [],
@@ -78,12 +78,7 @@ class SolverORTools:
         # t_jk = 1 if truck k of type j is used (k is self.max_truck_n[j])
         t_vars = []
         for j in range(n_trucks):
-            t_vars.append(
-                [
-                    self.model.new_bool_var(name=f"t_{j},{k}")
-                    for k in range(self.max_truck_n[j])
-                ]
-            )
+            t_vars.append([self.model.new_bool_var(name=f"t_{j},{k}") for k in range(self.max_truck_n[j])])
 
         # Initialize variables
         o_vars = []
@@ -121,12 +116,7 @@ class SolverORTools:
 
                 # Original items
                 # c_ijk: 1 if item i is in k-th truck of type j
-                c_vars[i].append(
-                    [
-                        self.model.new_bool_var(name=f"c_({i},{j},{k})")
-                        for k in range(self.max_truck_n[j])
-                    ]
-                )
+                c_vars[i].append([self.model.new_bool_var(name=f"c_({i},{j},{k})") for k in range(self.max_truck_n[j])])
                 # x_ijk: x coordinate of the origin of item i in k-th truck j
                 x_vars[i].append(
                     [
@@ -179,10 +169,7 @@ class SolverORTools:
                 # Rotated items - used if o_vars[i] == 1
                 # c_ijk: 1 if item i is in k-th truck of type j, rotated
                 c_vars_rot[i].append(
-                    [
-                        self.model.new_bool_var(name=f"c_rot_({i},{j},{k})")
-                        for k in range(self.max_truck_n[j])
-                    ]
+                    [self.model.new_bool_var(name=f"c_rot_({i},{j},{k})") for k in range(self.max_truck_n[j])]
                 )
                 # x_ijk: x coordinate of the origin of item i in k-th truck j if
                 # rotated
@@ -244,46 +231,18 @@ class SolverORTools:
         # Not rotated:
         for i in range(n_items):
             self.model.add(
-                sum(
-                    [
-                        c_vars[i][j][k]
-                        for j in range(n_trucks)
-                        for k in range(self.max_truck_n[j])
-                    ]
-                )
-                == 1
+                sum([c_vars[i][j][k] for j in range(n_trucks) for k in range(self.max_truck_n[j])]) == 1
             ).only_enforce_if(o_vars[i].Not())
             self.model.add(
-                sum(
-                    [
-                        c_vars_rot[i][j][k]
-                        for j in range(n_trucks)
-                        for k in range(self.max_truck_n[j])
-                    ]
-                )
-                == 0
+                sum([c_vars_rot[i][j][k] for j in range(n_trucks) for k in range(self.max_truck_n[j])]) == 0
             ).only_enforce_if(o_vars[i].Not())
 
             # Rotated (width-wise):
             self.model.add(
-                sum(
-                    [
-                        c_vars_rot[i][j][k]
-                        for j in range(n_trucks)
-                        for k in range(self.max_truck_n[j])
-                    ]
-                )
-                == 1
+                sum([c_vars_rot[i][j][k] for j in range(n_trucks) for k in range(self.max_truck_n[j])]) == 1
             ).only_enforce_if(o_vars[i])
             self.model.add(
-                sum(
-                    [
-                        c_vars[i][j][k]
-                        for j in range(n_trucks)
-                        for k in range(self.max_truck_n[j])
-                    ]
-                )
-                == 0
+                sum([c_vars[i][j][k] for j in range(n_trucks) for k in range(self.max_truck_n[j])]) == 0
             ).only_enforce_if(o_vars[i])
 
             # self.model.add(
@@ -305,12 +264,8 @@ class SolverORTools:
             # )
 
             # Link orientation to the forced orientation
-            self.model.add(o_vars[i] == 0).only_enforce_if(
-                self.items.iloc[i]["forced_orientation"] == "l"
-            )
-            self.model.add(o_vars[i] == 1).only_enforce_if(
-                self.items.iloc[i]["forced_orientation"] == "w"
-            )
+            self.model.add(o_vars[i] == 0).only_enforce_if(self.items.iloc[i]["forced_orientation"] == "l")
+            self.model.add(o_vars[i] == 1).only_enforce_if(self.items.iloc[i]["forced_orientation"] == "w")
 
         objective = 0
         for j in range(n_trucks):
@@ -318,19 +273,14 @@ class SolverORTools:
                 # Big-M constraint on the number of items in each truck - if the
                 # truck is not considered, no item can be placed inside it
                 self.model.add(
-                    sum([c_vars[i][j][k] for i in range(n_items)])
-                    + sum([c_vars_rot[i][j][k] for i in range(n_items)])
+                    sum([c_vars[i][j][k] for i in range(n_items)]) + sum([c_vars_rot[i][j][k] for i in range(n_items)])
                     <= t_vars[j][k]
                 ).only_enforce_if(t_vars[j][k].Not())
 
                 # Overlapping items - orientation should be taken into account
                 # by the definition of the interval variables
-                x_interval_vars_jk = [x[j][k] for x in x_interval_vars] + [
-                    x[j][k] for x in x_interval_vars_rot
-                ]
-                y_interval_vars_jk = [y[j][k] for y in y_interval_vars] + [
-                    y[j][k] for y in y_interval_vars_rot
-                ]
+                x_interval_vars_jk = [x[j][k] for x in x_interval_vars] + [x[j][k] for x in x_interval_vars_rot]
+                y_interval_vars_jk = [y[j][k] for y in y_interval_vars] + [y[j][k] for y in y_interval_vars_rot]
                 self.model.AddNoOverlap2D(x_interval_vars_jk, y_interval_vars_jk)
 
                 for i in range(n_items):
@@ -345,14 +295,8 @@ class SolverORTools:
                     )
                 # Weight constraint
                 self.model.add(
-                    sum(
-                        c_vars[i][j][k] * int(np.ceil(self.items.iloc[i]["weight"]))
-                        for i in range(n_items)
-                    )
-                    + sum(
-                        c_vars_rot[i][j][k] * int(np.ceil(self.items.iloc[i]["weight"]))
-                        for i in range(n_items)
-                    )
+                    sum(c_vars[i][j][k] * int(np.ceil(self.items.iloc[i]["weight"])) for i in range(n_items))
+                    + sum(c_vars_rot[i][j][k] * int(np.ceil(self.items.iloc[i]["weight"])) for i in range(n_items))
                     <= self.trucks.loc[j, "max_weight"]
                 )
 
@@ -393,15 +337,9 @@ class SolverORTools:
                 for k in range(self.max_truck_n[j]):
                     # Print
                     print(f"Truck {k + 1}, type {j + 1}:")
-                    print(
-                        f"> Number of items: {sum([self.solver.Value(c_vars[i][j][k]) for i in range(n_items)])}"
-                    )
+                    print(f"> Number of items: {sum([self.solver.Value(c_vars[i][j][k]) for i in range(n_items)])}")
                     curr_tot_weight = sum(
-                        [
-                            self.items.iloc[i]["weight"]
-                            for i in range(n_items)
-                            if self.solver.Value(c_vars[i][j][k]) > 0
-                        ]
+                        [self.items.iloc[i]["weight"] for i in range(n_items) if self.solver.Value(c_vars[i][j][k]) > 0]
                     )
                     print(f"> Total weight: {curr_tot_weight}")
             print("")
@@ -466,9 +404,7 @@ class SolverORTools:
             for j in range(n_trucks):
                 for k in range(self.max_truck_n[j]):
                     # Check curr. truck contains at least 1 element
-                    if sum(
-                        [self.solver.Value(c_vars[i][j][k]) for i in range(n_items)]
-                    ) or sum(
+                    if sum([self.solver.Value(c_vars[i][j][k]) for i in range(n_items)]) or sum(
                         [self.solver.Value(c_vars_rot[i][j][k]) for i in range(n_items)]
                     ):
                         n_used_trucks += 1
@@ -570,23 +506,16 @@ class SolverORTools:
             for k in range(len(t_vars[j])):
                 # Iterate over the trucks of the same type, looking for a truck
                 # with more than 0 elements inside
-                if sum(
-                    [self.solver.Value(c_vars[i][j][k]) for i in range(n_items)]
-                ) + sum(
+                if sum([self.solver.Value(c_vars[i][j][k]) for i in range(n_items)]) + sum(
                     [self.solver.Value(c_vars_rot[i][j][k]) for i in range(n_items)]
                 ):
                     for i in range(n_items):
-                        if (
-                            self.solver.Value(c_vars[i][j][k]) == 1
-                            or self.solver.Value(c_vars_rot[i][j][k]) == 1
-                        ):
+                        if self.solver.Value(c_vars[i][j][k]) == 1 or self.solver.Value(c_vars_rot[i][j][k]) == 1:
                             check_items[i] += 1
 
-                            assert self.solver.Value(
-                                c_vars[i][j][k]
-                            ) != self.solver.Value(
-                                c_vars_rot[i][j][k]
-                            ), "Something is wron with the variables 'c'"
+                            assert self.solver.Value(c_vars[i][j][k]) != self.solver.Value(c_vars_rot[i][j][k]), (
+                                "Something is wron with the variables 'c'"
+                            )
 
                             self.sol_dict["type_vehicle"].append(curr_type)
                             self.sol_dict["idx_vehicle"].append(trucks_count)
@@ -597,21 +526,13 @@ class SolverORTools:
                             self.sol_dict["id_item"].append(curr_it_id)
                             if self.solver.Value(o_vars[i]) == 0:
                                 # Not rotated
-                                self.sol_dict["x_origin"].append(
-                                    self.solver.Value(x_vars[i][j][k])
-                                )
-                                self.sol_dict["y_origin"].append(
-                                    self.solver.Value(y_vars[i][j][k])
-                                )
+                                self.sol_dict["x_origin"].append(self.solver.Value(x_vars[i][j][k]))
+                                self.sol_dict["y_origin"].append(self.solver.Value(y_vars[i][j][k]))
                                 self.sol_dict["orient"].append("l")
                             elif self.solver.Value(o_vars[i]) == 1:
                                 # Rotated
-                                self.sol_dict["x_origin"].append(
-                                    self.solver.Value(x_vars_rot[i][j][k])
-                                )
-                                self.sol_dict["y_origin"].append(
-                                    self.solver.Value(y_vars_rot[i][j][k])
-                                )
+                                self.sol_dict["x_origin"].append(self.solver.Value(x_vars_rot[i][j][k]))
+                                self.sol_dict["y_origin"].append(self.solver.Value(y_vars_rot[i][j][k]))
                                 self.sol_dict["orient"].append("w")
                             else:
                                 raise ValueError("Invalid rotation")
@@ -620,9 +541,7 @@ class SolverORTools:
 
                     trucks_count += 1
 
-        assert all(
-            check_items > 0
-        ), f"Not all items have been used! {sum(check_items == 0)} unused items"
+        assert all(check_items > 0), f"Not all items have been used! {sum(check_items == 0)} unused items"
 
         assert all(check_items == 1), "Some duplicate exist!"
 

@@ -15,7 +15,7 @@ from .sub.utilities import (buildSingleStack, buildStacks,
                             stackInfo_creation_weight)
 
 
-class columnGeneration:
+class ColumnGeneration:
     """
     columnGeneration
     -----------------------------------------
@@ -34,7 +34,7 @@ class columnGeneration:
     """
 
     def __init__(self):
-        self.name = "columnGeneration"
+        self.name = "ColumnGeneration"
         self.df_vehicles = None
         self.df_items = None
         self.stackInfo = None

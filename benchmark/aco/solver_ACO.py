@@ -32,7 +32,7 @@ class SolverACO:
         -----------------------------------------------------------------
         From solver/group23/
         """
-        self.name = "solverACO"
+        self.name = "SolverACO"
 
         # Id of the vehicle used for solution format
         self.id_vehicle = 0

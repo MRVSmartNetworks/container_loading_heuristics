@@ -3,7 +3,7 @@
 
 import os
 import pandas as pd
-from columnGeneration import columnGeneration
+from columnGeneration import ColumnGeneration
 
 if __name__ == "__main__":
     dataset_name = "dataset_small"
@@ -16,5 +16,5 @@ if __name__ == "__main__":
     )
 
     df_vehicles = df_vehicles.iloc[[0, 1]]
-    model_cg = columnGeneration()
+    model_cg = ColumnGeneration()
     bestAnts = model_cg.solve(df_items, df_vehicles)
