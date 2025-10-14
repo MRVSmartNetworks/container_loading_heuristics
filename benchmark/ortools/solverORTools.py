@@ -368,8 +368,9 @@ class SolverORTools:
         df_sol.to_csv(os.path.join("results", sol_file_name), index=False)
 
         t = round(time.time() - t1, 2)
-        t_not_used = 0
-        return t, t_not_used, self.obj_val
+        # t_not_used = 0
+        # return t, t_not_used, self.obj_val
+        return t, self.obj_val
 
     def printSolution(self, var: List, var_rot: List) -> int:
         """
