@@ -29,6 +29,7 @@ RUNS = {
         "solver": ExactSolver,
         "default_datasets": (exact_datasets,),
     },
+    "solver-aco": {"solver": SolverACO, "default_datasets": (datasets, app)},
     "master-aco": {"solver": MasterAco, "default_datasets": (datasets, app)},
     "or-tools": {
         "solver": SolverORTools,
