@@ -62,6 +62,8 @@ class SolverACO:
         - sol_file_name: solution file name obtained from the specific database
         - time_limit: time limit imposed externally to conclude the iteration after a certain amount of time
         """
+        self.alpha = ALPHA if "alpha" not in kwargs else float(kwargs["alpha"])
+
         t1 = time.time()
         # Max value that will be decreased with the best solution value
         # and other parameters for loop test

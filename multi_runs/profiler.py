@@ -84,7 +84,7 @@ def profile_usage(interval: float = 0.5):
                 "TIMESTAMP",
                 "SOLVER",
                 "DATASET",
-                "RUN",  # FIXME: keep?
+                "RUN",
                 "RUNTIME",
                 "CPU_TIME_USER",
                 "CPU_TIME_SYS",
