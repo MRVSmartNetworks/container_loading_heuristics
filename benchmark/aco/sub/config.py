@@ -14,7 +14,7 @@ PARAM_FILE = "solver\group23\parameters_file\datasetF"
 PRINT = False
 
 # If true select the ACO version with slices
-SLICES = False
+SLICES = True
 
 # Set number of weight clusters (set 1 for avoid clustering)
 N_WEIGHT_CLUSTERS = 1
@@ -45,7 +45,10 @@ SUMMARY = True
 SAVE_CHECKPOINT = True
 CHECKPOINT_PATH = "./results/checkpoints/"
 
-# ATTRACTIVENESS PARAMETERS 
+# Use the attractiveness evaluation presented in the original project
+ORIGINAL_ATTRACTIVENESS = True
+
+# ATTRACTIVENESS PARAMETERS - Only valid if ORIGINAL_ATTRACTIVENESS is False
 # if true adds the fit quality component to the attractiveness
 ATTRACTIVENESS_FIT_QUALITY_COMPONENT = True
 WEIGHT_FIT_QUALITY_COMPONENT = 0.5

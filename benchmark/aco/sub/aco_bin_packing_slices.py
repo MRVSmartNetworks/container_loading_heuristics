@@ -3,6 +3,7 @@
 import time
 from copy import copy
 from typing import Tuple
+from collections import deque
 
 import numpy as np
 
@@ -106,7 +107,10 @@ class ACO:
             self.n_ants += int(0.5 * self.n_iter)
             self.n_iter += int(0.5 * self.n_iter)
 
-        self.statesCreation(dualVars)
+        if ORIGINAL_ATTRACTIVENESS:
+            self.originStatesCreation(dualVars)
+        else:
+            self.statesCreation()
 
         # Variables initialization
         self.bestAnts = [None] * n_bestAnts
@@ -713,8 +717,52 @@ class ACO:
 
     #####################################################################################################
     ######### Utilities
+    
+    def statesCreation(self):
+        self.attractiveness = np.zeros([self.dim_matr, self.dim_matr])
+        vehicleLength = self.vehicle["length"]
+        vehicleWidth = self.vehicle["width"]
 
-    def statesCreation(self, dualVar):
+        attr_mat = np.ones((self.dim_matr, self.dim_matr))
+        pr_mat = np.ones((self.dim_matr, self.dim_matr))
+        pr_mat[:, self.dim_matr - 1] = (
+            0  # last state is the empty truck, no ants can go in this state apart from the start
+        )
+        for i, code in enumerate(self.stackInfo.stackability_code):
+            # Length component
+            lengthState = code
+            widthState = code + self.n_code
+            currStackInfo = self.stackInfo.iloc[code]
+            lengthStack = currStackInfo.length
+            widthStack = currStackInfo.width
+
+            if self.stack_quantity[code] == 0:
+                pr_mat[i, :] = 0
+                pr_mat[:, i] = 0
+                pr_mat[i + self.n_code, :] = 0
+                pr_mat[:, i + self.n_code] = 0
+
+            if lengthStack % vehicleLength == 0 or lengthStack % vehicleWidth == 0:
+                self.attractiveness[:, lengthState] = WEIGHT_FIT_QUALITY_COMPONENT * 2
+            else:
+                self.attractiveness[:, lengthState] = WEIGHT_FIT_QUALITY_COMPONENT * (1 + 0.5 * (1 - min(vehicleWidth, vehicleLength) * abs(lengthStack / vehicleLength - np.floor(lengthStack / vehicleLength + 0.5))))
+            if widthStack % vehicleWidth == 0 or widthState % vehicleWidth:
+                self.attractiveness[:, widthState] = WEIGHT_FIT_QUALITY_COMPONENT * 2
+            else:
+                self.attractiveness[:, widthState] = WEIGHT_FIT_QUALITY_COMPONENT * (1 + 0.5 * (1 - min(vehicleWidth, vehicleLength) * abs(widthStack / vehicleWidth - np.floor(widthStack / vehicleWidth + 0.5))))
+
+
+        # Self.pr_move and attractiveness creation with all the information obtained before
+        self.pr_move = (
+            np.full((self.dim_matr, self.dim_matr), 1.0 / self.dim_matr)
+            * pr_mat
+        )
+        self.attractiveness = (
+            np.full((len(self.pr_move), len(self.pr_move)), 0.5) * attr_mat * pr_mat
+        )
+        self.prMoveUpdate()
+
+    def originStatesCreation(self, dualVar):
         """ 
         statesCreation
         --------------
@@ -1166,6 +1214,117 @@ class ACO:
             i += 1
 
         return area_ratio
+    
+    def find_gaps(self, stacks, area_threshold):
+        """
+        Find number of gaps with area below the threshold.
+
+        Uses coordinate compression to create a grid, then finds
+        connected components of empty cells.
+        """
+        vehicleWidth = self.vehicle["width"]
+        vehicleLength = self.vehicle["length"]
+        vehicleArea = vehicleLength * vehicleWidth
+        if not stacks:
+            # No items means entire box is one gap
+            return 1 if vehicleArea < area_threshold else 0
+
+        # Collect all unique x and y coordinates
+        x_coords = sorted(set([0, vehicleLength] +
+                              [item.vertexes[0][0] for item in stacks] +
+                              [item.vertexes[1][0] for item in stacks]))
+        y_coords = sorted(set([0, vehicleWidth] +
+                              [item.vertexes[0][1] for item in stacks] +
+                              [item.vertexes[2][1] for item in stacks]))
+
+        # Create grid based on coordinate compression
+        rows = len(y_coords) - 1
+        cols = len(x_coords) - 1
+
+        # Mark which grid cells are occupied
+        occupied = [[False] * cols for _ in range(rows)]
+
+        for i in range(rows):
+            for j in range(cols):
+                # Get center point of this cell
+                cx = (x_coords[j] + x_coords[j + 1]) / 2
+                cy = (y_coords[i] + y_coords[i + 1]) / 2
+
+                # Check if any item occupies this cell
+                for item in stacks:
+                    if item.contains_point(cx, cy):
+                        occupied[i][j] = True
+                        break
+
+        # Find connected components of empty cells using BFS
+        visited = [[False] * cols for _ in range(rows)]
+        gap_count = 0
+
+        for i in range(rows):
+            for j in range(cols):
+                if not occupied[i][j] and not visited[i][j]:
+                    # Found a new gap, calculate its area
+                    area = self._bfs_component_area(i, j, occupied, visited,
+                                                     x_coords, y_coords)
+                    if (area / vehicleArea) < area_threshold: # Compare area percentage
+                        gap_count += 1
+
+        return gap_count
+    
+    def _bfs_component_area(self, start_i: int, start_j: int,
+                            occupied,
+                            visited,
+                            x_coords,
+                            y_coords):
+        """
+        Use BFS to find all cells in connected component and calculate total area
+        """
+        rows = len(occupied)
+        cols = len(occupied[0])
+        queue = deque([(start_i, start_j)])
+        visited[start_i][start_j] = True
+        total_area = 0.0
+
+        while queue:
+            i, j = queue.popleft()
+
+            # Add area of this cell
+            cell_width = x_coords[j + 1] - x_coords[j]
+            cell_height = y_coords[i + 1] - y_coords[i]
+            total_area += cell_width * cell_height
+
+            # Check 4 neighbors
+            for di, dj in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                ni, nj = i + di, j + dj
+                if (0 <= ni < rows and 0 <= nj < cols and
+                    not occupied[ni][nj] and not visited[ni][nj]):
+                    visited[ni][nj] = True
+                    queue.append((ni, nj))
+
+        return total_area
+    
+    def dynamicAttractiveness(self, attractiveness, curr_state, curr_area, stacks):
+        def areaComponent():
+            code = curr_state - 1
+            if curr_state > len(self.index_code):
+               code = curr_state - self.n_code
+            length = self.stackInfo.iloc[code].length
+            width = self.stackInfo.iloc[code].width
+            stackArea = length * width
+            vehicleArea = self.vehicle["length"] * self.vehicle["width"]
+
+            fraction = stackArea / (vehicleArea - curr_area)
+            return fraction
+
+        def penaltyComponent():
+            n_gaps = self.find_gaps(stacks, GAPS_AREA_THRESHOLD)
+            return (-1) * GAPS_SCALING_FACTOR * n_gaps
+
+        if ATTRACTIVENESS_AREA_COMPONENT:
+            attractiveness[:, curr_state] += np.ones(self.dim_matr) * WEIGHT_AREA_COMPONENT * areaComponent()
+        if ATTRACTIVENESS_PENALTY_COMPONENT:
+            attractiveness[:, curr_state] += np.ones(self.dim_matr) * WEIGHT_PENALTY_COMPONENT * max(penaltyComponent(), 0)
+        return attractiveness
 
     def dynamicEvapCoeff(self, area_ratio, iter):
         # Change evaportaion coefficient dynamically given the area ratio

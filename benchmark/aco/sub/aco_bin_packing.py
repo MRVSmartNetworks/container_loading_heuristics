@@ -93,7 +93,10 @@ class ACO:
             self.n_iter += int(0.5 * self.n_iter)
 
         # Creation of pr_move and attractiveness
-        self.statesCreation()
+        if ORIGINAL_ATTRACTIVENESS:
+            self.originStatesCreation(dualVars)
+        else:
+            self.statesCreation()
 
         # Variables initialization
         self.bestAnts = [None] * n_bestAnts
@@ -533,7 +536,7 @@ class ACO:
 
 
 
-    def statesCreationOld(self, dualVar):
+    def originStatesCreation(self, dualVar):
         """
         statesCreation
         --------------
